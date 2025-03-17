@@ -1,0 +1,38 @@
+services:
+  api-gateway-server:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend-network
+
+  user-server:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend-network
+
+  map-server:
+    build:
+      context: ./map
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    restart: always
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge

@@ -1,0 +1,11 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /map
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  application:
+    name: map-server

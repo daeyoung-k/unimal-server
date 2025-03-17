@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+  application:
+    name: api-gateway-server
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://user-server:8081
+          predicates:
+            - Path=/user/**
+        - id: map-service
+          uri: http://map-server:8082
+          predicates:
+            - Path=/map/**
+
