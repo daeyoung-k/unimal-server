@@ -9,12 +9,5 @@ import org.springframework.web.bind.annotation.RestController
 class UserController(
 ) {
 
-    @GetMapping("/test")
-    fun test(
-        request: HttpServletRequest
-    ) {
-        println(request)
-        println("testestsetse")
 
-    }
 }
