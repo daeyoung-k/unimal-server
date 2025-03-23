@@ -21,7 +21,7 @@ class SecurityConfig(
             .csrf { it.disable() }
             .formLogin { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            .oauth2Login { it.userInfoEndpoint { it.userService(oauth2LoginService) } }
+//            .oauth2Login { it.userInfoEndpoint { it.userService(oauth2LoginService) } }
             .authorizeHttpRequests {
                 it.anyRequest().permitAll()
             }

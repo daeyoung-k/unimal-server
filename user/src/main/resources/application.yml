@@ -17,13 +17,13 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     show-sql: true
     database: postgresql
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/unimal-user
+    url: jdbc:postgresql://localhost:5432/unimal_user
     username: postgres
     password: 5432
 
