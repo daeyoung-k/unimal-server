@@ -5,13 +5,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
-import org.springframework.web.client.exchange
 
 @Component
 class KakaoLogin : Login {
     override fun provider() = LoginType.KAKAO
 
-    override fun getInfo(token: String) {
+    fun getInfo(token: String) {
         val url = "https://kapi.kakao.com/v2/user/me"
         val restTemplate = RestTemplate()
         val header = HttpHeaders()
