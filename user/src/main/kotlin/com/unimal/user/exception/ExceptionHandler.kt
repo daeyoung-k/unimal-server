@@ -20,3 +20,5 @@ class ExceptionHandler {
 }
 
 open class CustomException(message: String?, val code: Int? = null) : Exception(message)
+
+class LoginException(message: String?) : CustomException(message)
