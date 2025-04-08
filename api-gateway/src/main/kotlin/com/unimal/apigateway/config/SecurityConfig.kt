@@ -17,8 +17,13 @@ class SecurityConfig {
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
             .authorizeExchange {
-                it.pathMatchers("/user/login/oauth2/kakao").permitAll()
-                it.pathMatchers("/user/login/kakao/mobile").permitAll()
+                it.pathMatchers(
+                    "/user/login/**",
+                    "/user/signup"
+                ).permitAll()
+                it.pathMatchers(
+                    "/map/**"
+                ).permitAll()
                 it.anyExchange().authenticated()
             }
 

@@ -13,11 +13,11 @@ spring:
     gateway:
         routes:
           - id: user-service
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
               - Path=/user/**
           - id: map-service
-            uri: http://localhost:8082
+            uri: ${MAP_SERVICE_URI:http://localhost:8082}
             predicates:
               - Path=/map/**
 
