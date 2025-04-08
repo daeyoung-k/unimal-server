@@ -18,7 +18,12 @@ class LoginService(
         when (loginRequest) {
             is KakaoLoginRequest -> {
                 kakaoLoginService as KakaoLogin
-                val memberInfo = kakaoLoginService.getInfo(loginRequest.token)
+                val userInfo = kakaoLoginService.getInfo(loginRequest.token)
+                val member = kakaoLoginService.getMember(userInfo.email)
+                if (member == null) {
+                    kakaoLoginService.signIn(userInfo)
+                }
+
             }
             is NaverLoginRequest -> {
 

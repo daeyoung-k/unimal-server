@@ -23,7 +23,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/unimal_user
+    url: jdbc:postgresql://localhost:5432/unimal-user
     username: postgres
     password: 5432
 

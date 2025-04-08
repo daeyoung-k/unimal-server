@@ -18,6 +18,7 @@ class SecurityConfig {
             .httpBasic { it.disable() }
             .authorizeExchange {
                 it.pathMatchers("/user/login/oauth2/kakao").permitAll()
+                it.pathMatchers("/user/login/kakao/mobile").permitAll()
                 it.anyExchange().authenticated()
             }
 

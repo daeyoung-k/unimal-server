@@ -20,7 +20,7 @@ class LoginController(
         @RequestHeader("Authorization") token: String?
     ): CommonResponse {
         if (token == null) {
-            throw LoginException("token is null")
+            throw LoginException("TOKEN_NOT_FOUND")
         }
 
         loginService.login(KakaoLoginRequest(token = token))
