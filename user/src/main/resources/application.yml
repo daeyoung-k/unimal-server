@@ -23,17 +23,17 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/unimal-user
-    username: postgres
-    password: 5432
+    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost:5432}/${USER_DATABASE_NAME}
+    username: ${USER_DATABASE_USERNAME}
+    password: ${USER_DATABASE_PASSWORD}
 
   security:
     oauth2:
       client:
         registration:
           kakao:
-            client-id: efb296d5c6356e127cef527215b99d8a
-            client-secret: jnAT7TuGXqIqc0TRkyJo7faeM53czsmq
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
             redirect-uri: http://localhost:8080/user/login/oauth2/kakao
             authorization-grant-type: authorization_code
             scope:
