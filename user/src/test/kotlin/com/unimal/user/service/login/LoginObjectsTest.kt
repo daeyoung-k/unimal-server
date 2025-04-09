@@ -1,5 +1,6 @@
 package com.unimal.user.service.login
 
+import com.unimal.user.service.authentication.login.LoginObjects
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
