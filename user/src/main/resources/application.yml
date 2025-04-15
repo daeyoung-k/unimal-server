@@ -23,9 +23,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/${USER_DATABASE_NAME}
-    username: ${USER_DATABASE_USERNAME}
-    password: ${USER_DATABASE_PASSWORD}
+    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/${USER_DATABASE_NAME:unimal-user}
+    username: ${USER_DATABASE_USERNAME:postgres}
+    password: ${USER_DATABASE_PASSWORD:5432}
 
   security:
     oauth2:
@@ -51,3 +51,7 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+custom:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}

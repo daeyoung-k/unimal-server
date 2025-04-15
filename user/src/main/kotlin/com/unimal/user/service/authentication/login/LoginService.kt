@@ -1,10 +1,10 @@
-package com.unimal.user.service.login
+package com.unimal.user.service.authentication.login
 
 import com.unimal.user.controller.request.KakaoLoginRequest
 import com.unimal.user.controller.request.LoginRequest
 import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.exception.LoginException
-import com.unimal.user.service.login.kakao.KakaoLogin
+import com.unimal.user.service.authentication.login.kakao.KakaoLogin
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
@@ -19,11 +19,8 @@ class LoginService(
             is KakaoLoginRequest -> {
                 kakaoLoginService as KakaoLogin
                 val userInfo = kakaoLoginService.getInfo(loginRequest.token)
-                val member = kakaoLoginService.getMember(userInfo.email)
-                if (member == null) {
-                    kakaoLoginService.signIn(userInfo)
-                }
-
+                val member = kakaoLoginService.getMember(userInfo.email) ?: kakaoLoginService.signIn(userInfo)
+                println(member)
             }
             is NaverLoginRequest -> {
 

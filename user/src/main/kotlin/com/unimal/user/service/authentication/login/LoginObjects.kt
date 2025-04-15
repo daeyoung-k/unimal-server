@@ -1,4 +1,4 @@
-package com.unimal.user.service.login
+package com.unimal.user.service.authentication.login
 
 import com.unimal.user.domain.member.Member
 import com.unimal.user.domain.member.MemberRepository

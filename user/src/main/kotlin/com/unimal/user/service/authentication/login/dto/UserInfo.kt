@@ -1,4 +1,4 @@
-package com.unimal.user.service.login.dto
+package com.unimal.user.service.authentication.login.dto
 
 import com.unimal.user.domain.member.Member
 

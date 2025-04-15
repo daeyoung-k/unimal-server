@@ -3,7 +3,7 @@ package com.unimal.user.controller
 import com.unimal.common.dto.CommonResponse
 import com.unimal.user.controller.request.KakaoLoginRequest
 import com.unimal.user.exception.LoginException
-import com.unimal.user.service.login.LoginService
+import com.unimal.user.service.authentication.login.LoginService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -15,8 +15,8 @@ class LoginController(
     private val loginService: LoginService
 ) {
 
-    @GetMapping("/kakao/mobile")
-    fun kakaoMobile(
+    @GetMapping("/mobile/kakao")
+    fun mobileKakao(
         @RequestHeader("Authorization") token: String?
     ): CommonResponse {
         if (token == null) {
