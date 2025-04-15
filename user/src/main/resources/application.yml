@@ -23,7 +23,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/${USER_DATABASE_NAME:unimal_user}
+    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/${USER_DATABASE_NAME:unimal-user}
     username: ${USER_DATABASE_USERNAME:postgres}
     password: ${USER_DATABASE_PASSWORD:5432}
 
@@ -54,4 +54,4 @@ spring:
 
 custom:
   jwt:
-    secret-key: ${JWT_SECRET_KEY:jwt-secret-key-jwt-secret-key-jwt-secret-key}
+    secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}
