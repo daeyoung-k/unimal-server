@@ -1,12 +1,12 @@
-package com.unimal.user.service.login.kakao
+package com.unimal.user.service.authentication.login.kakao
 
 import com.google.gson.Gson
 import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.exception.LoginException
-import com.unimal.user.service.login.Login
-import com.unimal.user.service.login.LoginType
-import com.unimal.user.service.login.dto.UserInfo
-import com.unimal.user.service.login.kakao.dto.KakaoInfo
+import com.unimal.user.service.authentication.login.Login
+import com.unimal.user.service.authentication.login.LoginType
+import com.unimal.user.service.authentication.login.dto.UserInfo
+import com.unimal.user.service.authentication.login.kakao.dto.KakaoInfo
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
