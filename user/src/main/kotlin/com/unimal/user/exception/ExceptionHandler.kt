@@ -2,6 +2,7 @@ package com.unimal.user.exception
 
 import com.unimal.common.dto.CommonResponse
 import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.security.SignatureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +18,7 @@ class ExceptionHandler {
             CommonResponse(
                 code = ex.code ?: HttpStatus.BAD_REQUEST.value(),
                 message = ex.message ?: "error"
-            ),  HttpStatus.OK)
+            ),  ex.status ?: HttpStatus.OK)
     }
 
     @ExceptionHandler(ExpiredJwtException::class)
@@ -34,7 +35,16 @@ class ExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = ex.message ?: "인증 불가 토큰"
+                message = ex.message ?: "서명 오류"
+            ),  HttpStatus.UNAUTHORIZED)
+    }
+
+    @ExceptionHandler(MalformedJwtException::class)
+    fun malformedJwtException(ex: MalformedJwtException): ResponseEntity<CommonResponse> {
+        return ResponseEntity(
+            CommonResponse(
+                code = HttpStatus.UNAUTHORIZED.value(),
+                message = ex.message ?: "잘못된 토큰"
             ),  HttpStatus.UNAUTHORIZED)
     }
 }
@@ -42,6 +52,7 @@ class ExceptionHandler {
 open class CustomException(
     message: String?,
     val code: Int? = null,
+    val status: HttpStatus? = null
 ) : Exception(message)
 
 class LoginException(message: String?) : CustomException(message)
