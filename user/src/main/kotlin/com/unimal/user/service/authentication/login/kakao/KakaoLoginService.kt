@@ -20,6 +20,16 @@ class KakaoLogin(
 ) : Login {
     override fun provider() = LoginType.KAKAO
 
+    /**
+     * Retrieves user information from Kakao using the provided OAuth token.
+     *
+     * Sends a request to Kakao's user info API and returns a UserInfo object containing the user's email and nickname.
+     * Throws a LoginException with a user-not-found error message if the request fails or the response cannot be parsed.
+     *
+     * @param token The OAuth access token issued by Kakao.
+     * @return UserInfo containing the user's email, nickname, and provider.
+     * @throws LoginException if user information cannot be retrieved or parsed.
+     */
     fun getInfo(token: String): UserInfo {
         val gson = Gson()
         val url = "https://kapi.kakao.com/v2/user/me"

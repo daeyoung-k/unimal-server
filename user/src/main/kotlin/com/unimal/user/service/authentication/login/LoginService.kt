@@ -14,6 +14,15 @@ class LoginService(
     @Qualifier("KakaoLogin") private val kakaoLoginService: Login
 ) {
 
+    /**
+     * Processes a user login request based on the type of social login provider.
+     *
+     * Supports Kakao login by retrieving user information and signing in if the user does not exist.
+     * Throws a LoginException if the login type is not supported.
+     *
+     * @param loginRequest The login request containing provider-specific credentials.
+     * @throws LoginException If the login type is not supported.
+     */
     fun login(loginRequest: LoginRequest) {
 
         when (loginRequest) {

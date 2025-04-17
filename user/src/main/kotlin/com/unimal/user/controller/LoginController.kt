@@ -14,6 +14,12 @@ class LoginController(
     private val loginService: LoginService
 ) {
 
+    /**
+     * Handles mobile login requests via Kakao by processing the provided social login token.
+     *
+     * @param token The Kakao social login token extracted using the custom annotation.
+     * @return A generic response indicating the result of the login attempt.
+     */
     @GetMapping("/mobile/kakao")
     fun mobileKakao(
         @SocialLoginToken token: String
