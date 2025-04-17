@@ -8,4 +8,5 @@ enum class ErrorCode(
     INVALID_TOKEN(1002, "유효하지 않은 토큰입니다."),
     TOKEN_NOT_FOUND(1003, "토큰이 없습니다."),
     USER_NOT_FOUND(1004, "존재하지 않는 사용자입니다."),
+    ROLE_NOT_FOUND(1005, "존재하지 않는 권한입니다."),
 }

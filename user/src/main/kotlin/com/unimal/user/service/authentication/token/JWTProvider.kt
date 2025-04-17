@@ -1,6 +1,7 @@
 package com.unimal.user.service.authentication.token
 
 import com.unimal.user.exception.CustomException
+import com.unimal.user.service.authentication.login.enums.LoginType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
@@ -26,12 +27,14 @@ class JWTProvider {
 
     fun createAccessToken(
         email: String,
+        provider: LoginType,
         role: List<String>
     ): String {
         return Jwts.builder()
             .expiration(Date(System.currentTimeMillis() + accessExpiration))
             .signWith(key)
             .claim("type", "access")
+            .claim("provider", provider.name)
             .claim("role", role)
             .subject(email)
             .compact()
@@ -39,12 +42,14 @@ class JWTProvider {
 
     fun createRefreshToken(
         email: String,
+        provider: LoginType,
         role: List<String>
     ): String {
         return Jwts.builder()
             .expiration(Date(System.currentTimeMillis() + refreshExpiration))
             .signWith(key)
             .claim("type", "refresh")
+            .claim("provider", provider.name)
             .claim("role", role)
             .subject(email)
             .compact()

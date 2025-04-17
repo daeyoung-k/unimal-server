@@ -1,6 +1,6 @@
 package com.unimal.user.controller.request
 
-import com.unimal.user.service.authentication.login.LoginType
+import com.unimal.user.service.authentication.login.enums.LoginType
 
 interface LoginRequest {
     val provider: LoginType
