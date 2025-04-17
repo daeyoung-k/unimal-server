@@ -2,6 +2,7 @@ package com.unimal.user.service.authentication.login.kakao
 
 import com.google.gson.Gson
 import com.unimal.user.domain.member.MemberRepository
+import com.unimal.user.exception.ErrorCode
 import com.unimal.user.exception.LoginException
 import com.unimal.user.service.authentication.login.Login
 import com.unimal.user.service.authentication.login.LoginType
@@ -38,7 +39,7 @@ class KakaoLogin(
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            throw LoginException("kakao login error")
+            throw LoginException(ErrorCode.USER_NOT_FOUND.message)
         }
     }
 

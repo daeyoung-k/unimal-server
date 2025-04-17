@@ -3,6 +3,7 @@ package com.unimal.user.service.authentication.login
 import com.unimal.user.controller.request.KakaoLoginRequest
 import com.unimal.user.controller.request.LoginRequest
 import com.unimal.user.controller.request.NaverLoginRequest
+import com.unimal.user.exception.ErrorCode
 import com.unimal.user.exception.LoginException
 import com.unimal.user.service.authentication.login.kakao.KakaoLogin
 import org.springframework.beans.factory.annotation.Qualifier
@@ -26,7 +27,7 @@ class LoginService(
 
             }
             else -> {
-                throw LoginException("지원하지 않는 로그인 방식입니다.")
+                throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)
             }
         }
 
