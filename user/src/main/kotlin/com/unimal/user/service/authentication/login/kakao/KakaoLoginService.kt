@@ -1,13 +1,18 @@
 package com.unimal.user.service.authentication.login.kakao
 
 import com.google.gson.Gson
+import com.unimal.user.domain.member.Member
 import com.unimal.user.domain.member.MemberRepository
+import com.unimal.user.domain.role.MemberRoleRepository
+import com.unimal.user.domain.role.RoleRepository
+import com.unimal.user.domain.role.enums.MemberRoleCode
 import com.unimal.user.exception.ErrorCode
 import com.unimal.user.exception.LoginException
 import com.unimal.user.service.authentication.login.Login
-import com.unimal.user.service.authentication.login.LoginType
+import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.kakao.dto.KakaoInfo
+import com.unimal.user.service.authentication.token.JWTProvider
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -16,7 +21,10 @@ import org.springframework.web.client.RestTemplate
 
 @Component("KakaoLogin")
 class KakaoLogin(
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    private val memberRoleRepository: MemberRoleRepository,
+    private val roleRepository: RoleRepository,
+    private val jWTProvider: JWTProvider
 ) : Login {
     override fun provider() = LoginType.KAKAO
 
@@ -45,5 +53,36 @@ class KakaoLogin(
 
     fun getMember(email: String) = memberRepository.findByEmailAndProvider(email, LoginType.KAKAO.name)
 
-    fun signIn(userInfo: UserInfo) = memberRepository.save(userInfo.toEntity())
+    fun signIn(userInfo: UserInfo): Member {
+        val member = memberRepository.save(userInfo.toEntity())
+        val role = roleRepository.findByName(MemberRoleCode.USER.name)
+            ?: throw LoginException(ErrorCode.ROLE_NOT_FOUND.message)
+        println("회원 가입 됐습니다.")
+        memberRoleRepository.save(
+            member.getMemberRole(role)
+        )
+        return member
+    }
+
+    fun createAccessJwtToken(
+        email: String,
+        role: List<String>
+    ): String {
+        return jWTProvider.createAccessToken(
+            email = email,
+            provider = LoginType.KAKAO,
+            role = role
+        )
+    }
+
+    fun createRefreshJwtToken(
+        email: String,
+        role: List<String>
+    ): String {
+        return jWTProvider.createRefreshToken(
+            email = email,
+            provider = LoginType.KAKAO,
+            role = role
+        )
+    }
 }
