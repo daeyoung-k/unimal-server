@@ -13,10 +13,10 @@ open class MemberRole(
 
     @ManyToOne
     @JoinColumn(name = "member_id")
-    val memberId: Member,
+    var memberId: Member,
 
     @ManyToOne
-    @JoinColumn(name = "role_id")
-    val roleId: Role
+    @JoinColumn(name = "name", referencedColumnName = "name")
+    val roleName: Role
 
 ) : BaseIdEntity()

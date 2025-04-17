@@ -1,5 +1,6 @@
 package com.unimal.user.service.authentication.token
 
+import com.unimal.user.service.authentication.login.enums.LoginType
 import io.jsonwebtoken.ExpiredJwtException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -27,7 +28,7 @@ class JWTProviderTest {
     fun `JWT 액세스 토큰 발급하기`() {
         val email = "test@test.com"
         val role = listOf("ROLE_USER", "ROLE_ADMIN")
-        provider.createAccessToken(email, role).let {
+        provider.createAccessToken(email, LoginType.TEST, role).let {
             assertNotNull(it)
             println("Access Token: $it")
         }
@@ -37,7 +38,7 @@ class JWTProviderTest {
     fun `JWT 리프레쉬 토큰 발급하기`() {
         val email = "test@test.com"
         val role = listOf("ROLE_USER", "ROLE_ADMIN")
-        provider.createRefreshToken(email, role).let {
+        provider.createRefreshToken(email, LoginType.TEST, role).let {
             assertNotNull(it)
             println("Refresh Token: $it")
         }
