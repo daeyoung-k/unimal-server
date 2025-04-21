@@ -26,7 +26,7 @@ class ExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = ex.message ?: "기간 만료 토큰"
+                message = ex.message ?: "토큰이 만료되었습니다."
             ),  HttpStatus.UNAUTHORIZED)
     }
 
@@ -35,7 +35,7 @@ class ExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = ex.message ?: "서명 오류"
+                message = ex.message ?: "잘못된 서명입니다."
             ),  HttpStatus.UNAUTHORIZED)
     }
 
@@ -44,7 +44,7 @@ class ExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = ex.message ?: "잘못된 토큰"
+                message = ex.message ?: "잘못된 토큰입니다."
             ),  HttpStatus.UNAUTHORIZED)
     }
 }
@@ -56,3 +56,4 @@ open class CustomException(
 ) : Exception(message)
 
 class LoginException(message: String?) : CustomException(message)
+class TokenException(message: String?) : CustomException(message)
