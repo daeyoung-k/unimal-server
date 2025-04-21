@@ -17,14 +17,7 @@ class SecurityConfig {
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
             .authorizeExchange {
-                it.pathMatchers(
-                    "/user/login/**",
-                    "/user/signup"
-                ).permitAll()
-                it.pathMatchers(
-                    "/map/**"
-                ).permitAll()
-                it.anyExchange().authenticated()
+                it.anyExchange().permitAll()
             }
 
         return http.build()

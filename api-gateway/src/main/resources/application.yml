@@ -15,9 +15,21 @@ spring:
           - id: user-service
             uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
-              - Path=/user/**
+              - Path=/user/login/**
+              - Path=/user/signup/**
+
+          - id: user-service
+            uri: ${USER_SERVICE_URI:http://localhost:8081}
+            predicates:
+              - Path=/user/auth/access-token
+            filters:
+              - name: RefreshTokenFilter
+
           - id: map-service
             uri: ${MAP_SERVICE_URI:http://localhost:8082}
             predicates:
               - Path=/map/**
 
+custom:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}

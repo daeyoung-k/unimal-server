@@ -1,8 +1,10 @@
 package com.unimal.user.config
 
 import com.unimal.user.config.annotation.SocialLoginToken
+import com.unimal.user.config.annotation.UnimalRefreshToken
 import com.unimal.user.exception.ErrorCode
 import com.unimal.user.exception.LoginException
+import com.unimal.user.exception.TokenException
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
@@ -17,6 +19,7 @@ class CorsConfig : WebMvcConfigurer {
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(SocialLoginTokenResolver())
+        resolvers.add(UnimalRefreshTokenResolver())
     }
 
     inner class SocialLoginTokenResolver : HandlerMethodArgumentResolver {
@@ -32,6 +35,24 @@ class CorsConfig : WebMvcConfigurer {
         ): Any? {
             val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
             val authHeader = request?.getHeader("Authorization") ?: throw LoginException(ErrorCode.TOKEN_NOT_FOUND.message)
+            return authHeader
+        }
+    }
+
+    inner class UnimalRefreshTokenResolver : HandlerMethodArgumentResolver {
+        override fun supportsParameter(parameter: MethodParameter): Boolean {
+            return parameter.getParameterAnnotation(UnimalRefreshToken::class.java) != null
+        }
+
+        override fun resolveArgument(
+            parameter: MethodParameter,
+            mavContainer: ModelAndViewContainer?,
+            webRequest: NativeWebRequest,
+            binderFactory: WebDataBinderFactory?
+        ): Any? {
+            val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
+            val authHeader = request?.getHeader("X-Unimal-Refresh-Token") ?: throw TokenException(ErrorCode.TOKEN_NOT_FOUND.message)
+            println(request)
             return authHeader
         }
     }
