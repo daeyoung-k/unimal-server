@@ -28,9 +28,10 @@ class LoginService(
                 val roles = member.roles.map { it.roleName.name }
 
                 val accessToken = kakaoLoginService.createAccessJwtToken(member.email, roles)
-                tokenManager.saveToken(member.email, accessToken)
+                tokenManager.saveCacheToken(member.email, accessToken)
 
                 val refreshToken = kakaoLoginService.createRefreshJwtToken(member.email, roles)
+                tokenManager.upsertDbToken(member.email, refreshToken)
 
                 return JwtTokenDTO(
                     accessToken = accessToken,

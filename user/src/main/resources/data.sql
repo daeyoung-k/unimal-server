@@ -1,4 +1,5 @@
 
+set search_path to unimal_user;
 insert into role (name) values ('USER');
 insert into role (name) values ('ADMIN');
 insert into role (name) values ('MANAGER');

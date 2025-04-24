@@ -1,4 +1,4 @@
-package com.unimal.user.domain.authentication
+package com.unimal.apigateway.domain.authentication
 
 import com.unimal.common.domain.BaseIdEntity
 import jakarta.persistence.Column
@@ -7,9 +7,8 @@ import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "authentication_token", schema = "unimal_auth")
+@Table(name = "authentication_token")
 open class AuthenticationToken(
-
     @Column(name = "email", nullable = false, unique = true)
     val email: String,
 
@@ -23,5 +22,4 @@ open class AuthenticationToken(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     var updatedAt: LocalDateTime? = null,
-
-    ) : BaseIdEntity()
+) : BaseIdEntity()
