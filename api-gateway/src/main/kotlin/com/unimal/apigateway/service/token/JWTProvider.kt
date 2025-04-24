@@ -1,6 +1,7 @@
-package com.unimal.apigateway.service
+package com.unimal.apigateway.service.token
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.MalformedJwtException
@@ -21,12 +22,14 @@ class JWTProvider {
 
     fun tokenValidation(
         token: String
-    ) {
+    ): Claims {
         try {
-            Jwts.parser()
+            return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
+                .payload
+
         } catch (e: ExpiredJwtException) {
             logger.error { "토큰 인증 실패1: ${e.message}" }
             throw e

@@ -35,7 +35,7 @@ class JWTProvider {
             .signWith(key)
             .claim("type", "access")
             .claim("provider", provider.name)
-            .claim("role", role)
+            .claim("roles", role)
             .subject(email)
             .compact()
     }
@@ -50,7 +50,7 @@ class JWTProvider {
             .signWith(key)
             .claim("type", "refresh")
             .claim("provider", provider.name)
-            .claim("role", role)
+            .claim("roles", role)
             .subject(email)
             .compact()
     }

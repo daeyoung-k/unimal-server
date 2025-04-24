@@ -1,4 +1,4 @@
-package com.unimal.user.config
+package com.unimal.apigateway.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
