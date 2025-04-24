@@ -6,13 +6,15 @@ import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.exception.ErrorCode
 import com.unimal.user.exception.LoginException
 import com.unimal.user.service.authentication.login.kakao.KakaoLogin
+import com.unimal.user.service.authentication.token.TokenManager
 import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
 @Service
 class LoginService(
-    @Qualifier("KakaoLogin") private val kakaoLoginService: Login
+    @Qualifier("KakaoLogin") private val kakaoLoginService: Login,
+    private val tokenManager: TokenManager
 ) {
 
     fun login(loginRequest: LoginRequest): JwtTokenDTO? {
@@ -20,11 +22,16 @@ class LoginService(
         when (loginRequest) {
             is KakaoLoginRequest -> {
                 kakaoLoginService as KakaoLogin
+
                 val userInfo = kakaoLoginService.getInfo(loginRequest.token)
                 val member = kakaoLoginService.getMember(userInfo.email) ?: kakaoLoginService.signIn(userInfo)
                 val roles = member.roles.map { it.roleName.name }
+
                 val accessToken = kakaoLoginService.createAccessJwtToken(member.email, roles)
+                tokenManager.saveToken(member.email, accessToken)
+
                 val refreshToken = kakaoLoginService.createRefreshJwtToken(member.email, roles)
+
                 return JwtTokenDTO(
                     accessToken = accessToken,
                     refreshToken = refreshToken

@@ -21,6 +21,9 @@ spring:
     show-sql: true
     database: postgresql
     defer-datasource-initialization: true
+    properties:
+      hibernate:
+        default_schema: unimal-user
 
   sql:
     init:
@@ -29,9 +32,16 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/${USER_DATABASE_NAME:unimal-user}
+    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/unimal
     username: ${USER_DATABASE_USERNAME:postgres}
     password: ${USER_DATABASE_PASSWORD:5432}
+    dbcp2:
+      default-schema: unimal-user
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
   security:
     oauth2:

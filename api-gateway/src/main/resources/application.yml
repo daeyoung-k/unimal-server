@@ -12,13 +12,13 @@ spring:
   cloud:
     gateway:
         routes:
-          - id: user-service
+          - id: user-service-public
             uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
               - Path=/user/login/**
               - Path=/user/signup/**
 
-          - id: user-service
+          - id: user-service-private
             uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
               - Path=/user/auth/access-token
