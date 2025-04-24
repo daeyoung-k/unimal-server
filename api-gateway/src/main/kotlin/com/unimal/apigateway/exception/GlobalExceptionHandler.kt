@@ -41,6 +41,7 @@ class GlobalExceptionHandler: ErrorWebExceptionHandler {
         }
 
         val body = """{"code":$code, "message":"$message"}"""
+        println(body)
         val buffer = response.bufferFactory().wrap(body.toByteArray(StandardCharsets.UTF_8))
 
         return response.writeWith(Mono.just(buffer))
