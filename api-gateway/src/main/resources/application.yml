@@ -15,8 +15,7 @@ spring:
           - id: user-service-public
             uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
-              - Path=/user/login/**
-              - Path=/user/signup/**
+              - Path=/user/{segment:login|signup}/**
 
           - id: user-service-private
             uri: ${USER_SERVICE_URI:http://localhost:8081}

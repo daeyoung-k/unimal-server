@@ -3,11 +3,13 @@ package com.unimal.apigateway.filter
 import com.unimal.apigateway.service.JWTProvider
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
+@Order(-2)
 class RefreshTokenFilter(
     private val jwtProvider: JWTProvider
 ) : AbstractGatewayFilterFactory<RefreshTokenFilter.Config>(Config::class.java) {

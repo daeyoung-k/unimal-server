@@ -29,8 +29,8 @@ class LoginController(
     }
 
     @GetMapping("/test")
-    fun test() {
+    fun test(): CommonResponse {
         val token = tokenManager.getToken("a5678936@hanmail.net")
-        println(token)
+        return CommonResponse(data = token)
     }
 }
