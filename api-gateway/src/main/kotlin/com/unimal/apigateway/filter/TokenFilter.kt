@@ -36,9 +36,9 @@ class TokenFilter(
             // 토큰 체크 -> 유저정보 전달, 토큰 오류시 예외발생.
             val tokenClaims = jwtProvider.tokenValidation(refreshToken.removePrefix("Bearer ").trim())
             val userInfo = tokenService.getUserInfo(tokenClaims)
-            exchange.response.headers.add("X-Unimal-User-email", userInfo.email)
-            exchange.response.headers.add("X-Unimal-User-roles", userInfo.roles.toString())
-            exchange.response.headers.add("X-Unimal-User-provider", userInfo.provider)
+            exchange.request.headers.add("X-Unimal-User-email", userInfo.email)
+            exchange.request.headers.add("X-Unimal-User-roles", userInfo.roleString)
+            exchange.request.headers.add("X-Unimal-User-provider", userInfo.provider)
             chain.filter(exchange)
         }
     }

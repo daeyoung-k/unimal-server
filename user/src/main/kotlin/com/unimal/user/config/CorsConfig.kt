@@ -1,6 +1,6 @@
 package com.unimal.user.config
 
-import com.unimal.common.dto.UserInfo
+import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.config.annotation.SocialLoginToken
 import com.unimal.user.config.annotation.UserInfoAnnotation
 import com.unimal.user.exception.ErrorCode
@@ -61,7 +61,7 @@ class CorsConfig : WebMvcConfigurer {
             binderFactory: WebDataBinderFactory?
         ): Any? {
             val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
-            return UserInfo(
+            return CommonUserInfo(
                 email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException("유저 email 을 찾을수 없습니다."),
                 roles = request?.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException("유저 roles 을 찾을수 없습니다."),
                 provider = request?.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException("유저 provider 을 찾을수 없습니다."),
