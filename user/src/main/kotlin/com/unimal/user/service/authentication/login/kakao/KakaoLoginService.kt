@@ -12,7 +12,7 @@ import com.unimal.user.service.authentication.login.Login
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.kakao.dto.KakaoInfo
-import com.unimal.user.service.authentication.token.JWTProvider
+import com.unimal.user.service.authentication.token.JwtProvider
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -24,7 +24,7 @@ class KakaoLogin(
     private val memberRepository: MemberRepository,
     private val memberRoleRepository: MemberRoleRepository,
     private val roleRepository: RoleRepository,
-    private val jWTProvider: JWTProvider
+    private val jwtProvider: JwtProvider
 ) : Login {
     override fun provider() = LoginType.KAKAO
 
@@ -68,10 +68,10 @@ class KakaoLogin(
         email: String,
         role: List<String>
     ): String {
-        return jWTProvider.createAccessToken(
+        return jwtProvider.createAccessToken(
             email = email,
             provider = LoginType.KAKAO,
-            role = role
+            roles = role
         )
     }
 
@@ -79,10 +79,10 @@ class KakaoLogin(
         email: String,
         role: List<String>
     ): String {
-        return jWTProvider.createRefreshToken(
+        return jwtProvider.createRefreshToken(
             email = email,
             provider = LoginType.KAKAO,
-            role = role
+            roles = role
         )
     }
 }

@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class JWTProvider {
+class JwtProvider {
 
     val logger = KotlinLogging.logger {}
 
@@ -28,14 +28,14 @@ class JWTProvider {
     fun createAccessToken(
         email: String,
         provider: LoginType,
-        role: List<String>
+        roles: List<String>
     ): String {
         return Jwts.builder()
             .expiration(Date(System.currentTimeMillis() + accessExpiration))
             .signWith(key)
             .claim("type", "access")
             .claim("provider", provider.name)
-            .claim("roles", role)
+            .claim("roles", roles)
             .subject(email)
             .compact()
     }
@@ -43,14 +43,14 @@ class JWTProvider {
     fun createRefreshToken(
         email: String,
         provider: LoginType,
-        role: List<String>
+        roles: List<String>
     ): String {
         return Jwts.builder()
             .expiration(Date(System.currentTimeMillis() + refreshExpiration))
             .signWith(key)
             .claim("type", "refresh")
             .claim("provider", provider.name)
-            .claim("roles", role)
+            .claim("roles", roles)
             .subject(email)
             .compact()
     }

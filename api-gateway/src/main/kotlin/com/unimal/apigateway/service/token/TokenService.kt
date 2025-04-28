@@ -15,30 +15,30 @@ class TokenService(
     private val logger = KotlinLogging.logger {}
 
     fun getUserInfo(
-        token: Claims
-    ): CommonUserInfo {
-        val type = token["type"] as String
-        val email = token.subject
+        claims: Claims,
+        token: String
+        ): CommonUserInfo {
+        val type = claims["type"] as String
+        val email = claims.subject
 
         return when (type) {
             "access" -> {
-                val accessToken = tokenManager.getCacheToken(email) ?: throw TokenNotFoundException("토큰이 만료 되었습니다.")
+                val accessToken = tokenManager.getCacheToken(email, token) ?: throw TokenNotFoundException("토큰이 만료 되었습니다.")
                 CommonUserInfo(
                     email = email,
-                    roles = token["roles"] as List<String>,
-                    provider = token["provider"] as String
+                    roles = claims["roles"] as List<String>,
+                    provider = claims["provider"] as String
                 )
             }
             "refresh" -> {
-                val refreshToken = tokenManager.getDbToken(email) ?: throw TokenNotFoundException("토큰이 만료 되었습니다.")
-                if (
-                    refreshToken.revoked || LocalDateTime.now() > refreshToken.issuedAt.plusDays(180)
+                val refreshToken = tokenManager.getDbToken(email, token)
+                if (refreshToken == null || refreshToken.revoked || LocalDateTime.now() > refreshToken.issuedAt.plusDays(180)
                     ) throw TokenNotFoundException("토큰이 만료 되었습니다.")
 
                 CommonUserInfo(
                     email = email,
-                    roles = token["roles"] as List<String>,
-                    provider = token["provider"] as String
+                    roles = claims["roles"] as List<String>,
+                    provider = claims["provider"] as String
                 )
             }
             else -> {

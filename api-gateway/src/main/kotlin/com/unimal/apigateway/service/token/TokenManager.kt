@@ -14,14 +14,17 @@ class TokenManager(
 
     fun getCacheToken(
         email: String,
+        token: String
     ): String? {
-        return redisTemplate.opsForValue().get("$email:access-token")
+        val cacheToken = redisTemplate.opsForValue().get("$email:access-token")
+        return if (cacheToken == token) cacheToken else null
     }
 
     fun getDbToken(
         email: String,
+        token: String
     ): AuthenticationToken? {
-        return authenticationTokenRepository.findByEmail(email)
+        return authenticationTokenRepository.findByEmailAndRefreshToken(email, token)
     }
 
 }

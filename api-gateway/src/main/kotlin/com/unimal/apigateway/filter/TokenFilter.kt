@@ -20,8 +20,8 @@ class TokenFilter(
     }
     override fun apply(config: Config?): GatewayFilter {
         return GatewayFilter { exchange, chain ->
-            val refreshToken = exchange.request.headers.getFirst("Authorization")
-            if (refreshToken.isNullOrBlank()) {
+            val tokenBearer = exchange.request.headers.getFirst("Authorization")
+            if (tokenBearer.isNullOrBlank()) {
                 exchange.response.statusCode = HttpStatus.UNAUTHORIZED
                 exchange.response.headers.add("Content-Type", "application/json")
                 val body = """
@@ -34,8 +34,9 @@ class TokenFilter(
                 return@GatewayFilter exchange.response.writeWith(Mono.just(buffer))
             }
             // 토큰 체크 -> 유저정보 전달, 토큰 오류시 예외발생.
-            val tokenClaims = jwtProvider.tokenValidation(refreshToken.removePrefix("Bearer ").trim())
-            val userInfo = tokenService.getUserInfo(tokenClaims)
+            val token = tokenBearer.removePrefix("Bearer ").trim()
+            val tokenClaims = jwtProvider.tokenValidation(token)
+            val userInfo = tokenService.getUserInfo(tokenClaims, token)
             exchange.request.headers.add("X-Unimal-User-email", userInfo.email)
             exchange.request.headers.add("X-Unimal-User-roles", userInfo.roleString)
             exchange.request.headers.add("X-Unimal-User-provider", userInfo.provider)

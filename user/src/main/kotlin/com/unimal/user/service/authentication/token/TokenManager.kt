@@ -43,6 +43,7 @@ class TokenManager(
                 refreshToken.refreshToken = token
                 refreshToken.issuedAt = LocalDateTime.now()
                 refreshToken.updatedAt = LocalDateTime.now()
+                refreshToken.revoked = false
                 authenticationTokenRepository.save(refreshToken)
             }
         }
