@@ -15,12 +15,12 @@ spring:
           - id: user-service-public
             uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
-              - Path=/user/{segment:login|signup}/**
+              - Path=/user/auth/{segment:login|signup}/**
 
           - id: user-service-private
             uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
-              - Path=/user/auth/access-token
+              - Path=/user/auth/{segment:token-reissue|logout}
             filters:
               - name: TokenFilter
 

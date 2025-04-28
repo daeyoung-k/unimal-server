@@ -8,6 +8,7 @@ import com.unimal.user.exception.LoginException
 import com.unimal.user.service.authentication.login.kakao.KakaoLogin
 import com.unimal.user.service.authentication.token.TokenManager
 import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
+import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
@@ -17,6 +18,7 @@ class LoginService(
     private val tokenManager: TokenManager
 ) {
 
+    @Transactional
     fun login(loginRequest: LoginRequest): JwtTokenDTO? {
 
         when (loginRequest) {
