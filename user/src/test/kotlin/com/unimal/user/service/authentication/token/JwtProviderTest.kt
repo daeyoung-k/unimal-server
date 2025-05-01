@@ -11,10 +11,10 @@ import java.util.Base64
 
 @SpringBootTest
 @ActiveProfiles("local")
-class JWTProviderTest {
+class JwtProviderTest {
 
     @Autowired
-    private val provider = JWTProvider()
+    private val provider = JwtProvider()
 
     @Test
     fun `Base64 인코딩`() {

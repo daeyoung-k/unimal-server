@@ -12,12 +12,55 @@ spring:
   cloud:
     gateway:
         routes:
-          - id: user-service
+          - id: user-service-public
             uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
-              - Path=/user/**
+              - Path=/user/auth/{segment:login|signup}/**
+
+          - id: user-service-private
+            uri: ${USER_SERVICE_URI:http://localhost:8081}
+            predicates:
+              - Path=/user/auth/{segment:token-reissue|logout}
+            filters:
+              - name: TokenFilter
+
           - id: map-service
             uri: ${MAP_SERVICE_URI:http://localhost:8082}
             predicates:
               - Path=/map/**
 
+  jackson:
+    time-zone: Asia/Seoul
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: postgresql
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        default_schema: unimal_user
+
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/unimal
+    username: ${USER_DATABASE_USERNAME:postgres}
+    password: ${USER_DATABASE_PASSWORD:5432}
+    dbcp2:
+      default-schema: unimal_user
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 6379
+
+custom:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}

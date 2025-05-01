@@ -5,10 +5,6 @@ dependencies {
 	//common 모듈 상속
 	implementation(project(":common"))
 
-//	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-//	implementation("org.springframework.boot:spring-boot-starter-security")
-//	implementation("jakarta.servlet:jakarta.servlet-api:6.1.0")
-
 	//직렬화
 	implementation("com.google.code.gson:gson:2.12.1")
 
@@ -18,6 +14,9 @@ dependencies {
 	//db
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	runtimeOnly("org.postgresql:postgresql")
+
+	//redis
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
 	//jwt token
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
