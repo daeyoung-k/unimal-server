@@ -57,10 +57,7 @@ class KakaoLogin(
         val member = memberRepository.save(userInfo.toEntity())
         val role = roleRepository.findByName(MemberRoleCode.USER.name)
             ?: throw LoginException(ErrorCode.ROLE_NOT_FOUND.message)
-        println("회원 가입 됐습니다.")
-        memberRoleRepository.save(
-            member.getMemberRole(role)
-        )
+        memberRoleRepository.save(member.getMemberRole(role))
         return member
     }
 

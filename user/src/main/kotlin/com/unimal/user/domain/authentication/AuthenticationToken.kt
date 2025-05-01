@@ -7,7 +7,7 @@ import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "authentication_token", schema = "unimal_auth")
+@Table(name = "authentication_token")
 open class AuthenticationToken(
 
     @Column(name = "email", nullable = false, unique = true)
