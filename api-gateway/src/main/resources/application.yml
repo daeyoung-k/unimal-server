@@ -40,7 +40,7 @@ spring:
     defer-datasource-initialization: true
     properties:
       hibernate:
-        default_schema: unimal_auth
+        default_schema: unimal_user
 
   sql:
     init:
@@ -53,7 +53,7 @@ spring:
     username: ${USER_DATABASE_USERNAME:postgres}
     password: ${USER_DATABASE_PASSWORD:5432}
     dbcp2:
-      default-schema: unimal_auth
+      default-schema: unimal_user
 
   data:
     redis:

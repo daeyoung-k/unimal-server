@@ -45,7 +45,7 @@ class CorsConfig : WebMvcConfigurer {
         ): Any? {
             val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
             val authHeader = request?.getHeader("Authorization") ?: throw LoginException(message = ErrorCode.TOKEN_NOT_FOUND.message, code = HttpStatus.UNAUTHORIZED.value(), status = HttpStatus.UNAUTHORIZED)
-            return authHeader
+            return authHeader.removePrefix("Bearer ").trim()
         }
     }
 
