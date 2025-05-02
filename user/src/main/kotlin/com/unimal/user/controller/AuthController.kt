@@ -29,6 +29,14 @@ class AuthController(
         return CommonResponse()
     }
 
+    @GetMapping("/login/mobile/naver")
+    fun mobileNaver(
+        response: HttpServletResponse
+    ): CommonResponse {
+        // Naver login implementation
+        return CommonResponse()
+    }
+
     @GetMapping("/token-reissue")
     fun tokenReissue(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo,
