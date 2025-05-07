@@ -6,6 +6,7 @@ import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.exception.ErrorCode
 import com.unimal.user.exception.LoginException
 import com.unimal.user.service.authentication.login.kakao.KakaoLogin
+import com.unimal.user.service.authentication.login.naver.NaverLoginService
 import com.unimal.user.service.authentication.token.TokenManager
 import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
 import jakarta.transaction.Transactional
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service
 @Service
 class LoginService(
     @Qualifier("KakaoLogin") private val kakaoLoginService: Login,
+    @Qualifier("NaverLogin") private val naverLoginService: Login,
     private val tokenManager: TokenManager
 ) {
 
@@ -41,6 +43,7 @@ class LoginService(
                 )
             }
             is NaverLoginRequest -> {
+                naverLoginService.getInfo(loginRequest)
                 throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)
             }
             else -> {

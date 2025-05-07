@@ -1,5 +1,6 @@
 package com.unimal.user.controller.request
 
+import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
 
 interface LoginRequest {
@@ -13,8 +14,19 @@ data class KakaoLoginRequest(
 
 data class NaverLoginRequest(
     override val provider: LoginType = LoginType.NAVER,
-    val token: String
-) : LoginRequest
+    val email: String,
+    val name: String?,
+    val nickname: String?,
+) : LoginRequest {
+    fun toUserInfo(): UserInfo {
+        return UserInfo(
+            provider = provider.name,
+            email = email,
+            name = name,
+            nickname = nickname
+        )
+    }
+}
 
 data class GoogleLoginRequest(
     override val provider: LoginType = LoginType.KAKAO,
