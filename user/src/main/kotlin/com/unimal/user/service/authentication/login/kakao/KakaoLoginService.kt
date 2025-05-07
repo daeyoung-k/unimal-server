@@ -28,13 +28,13 @@ class KakaoLogin(
 ) : Login {
     override fun provider() = LoginType.KAKAO
 
-    fun getInfo(token: String): UserInfo {
+    override fun <T> getInfo(info: T): UserInfo {
         val gson = Gson()
         val url = "https://kapi.kakao.com/v2/user/me"
         val restTemplate = RestTemplate()
         val header = HttpHeaders()
         header.add("Content-Type", "application/json")
-        header.add("Authorization", "Bearer $token")
+        header.add("Authorization", "Bearer $info")
 
         val entity = HttpEntity<String>(null, header)
         try {

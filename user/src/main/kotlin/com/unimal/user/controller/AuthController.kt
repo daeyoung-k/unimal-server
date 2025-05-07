@@ -5,12 +5,12 @@ import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.config.annotation.SocialLoginToken
 import com.unimal.user.config.annotation.UserInfoAnnotation
 import com.unimal.user.controller.request.KakaoLoginRequest
+import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.service.authentication.login.LoginService
 import com.unimal.user.service.authentication.token.TokenService
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import jakarta.validation.Valid
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/auth")
@@ -29,11 +29,12 @@ class AuthController(
         return CommonResponse()
     }
 
-    @GetMapping("/login/mobile/naver")
+    @PostMapping("/login/mobile/naver")
     fun mobileNaver(
+        @RequestBody @Valid naverLoginRequest: NaverLoginRequest,
         response: HttpServletResponse
     ): CommonResponse {
-        // Naver login implementation
+        println(naverLoginRequest)
         return CommonResponse()
     }
 
