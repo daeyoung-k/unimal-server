@@ -34,7 +34,9 @@ class AuthController(
         @RequestBody @Valid naverLoginRequest: NaverLoginRequest,
         response: HttpServletResponse
     ): CommonResponse {
-        println(naverLoginRequest)
+        val jwtToken = loginService.login(naverLoginRequest)
+        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
+        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
         return CommonResponse()
     }
 
