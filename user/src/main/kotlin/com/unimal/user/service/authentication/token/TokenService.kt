@@ -4,6 +4,7 @@ import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.domain.member.Member
 import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.exception.UserNotFoundException
+import com.unimal.user.service.authentication.login.MemberService
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
 import jakarta.transaction.Transactional
@@ -14,15 +15,20 @@ import org.springframework.stereotype.Service
 class TokenService(
     private val jwtProvider: JwtProvider,
     private val tokenManager: TokenManager,
-    private val memberRepository: MemberRepository
-) {
+    private val memberService: MemberService,
+    ) {
 
     @Transactional
     fun accessTokenCreate(commonUserInfo: CommonUserInfo): JwtTokenDTO {
-        val member = getClientInfo(
+        val member = memberService.getMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)
+        ) ?: throw UserNotFoundException(
+            message = "회원이 존재하지 않습니다.",
+            code = HttpStatus.UNAUTHORIZED.value(),
+            status = HttpStatus.UNAUTHORIZED
         )
+
         val roles = member.roles.map { it.roleName.name }
 
         val provider = LoginType.from(member.provider)
@@ -45,28 +51,5 @@ class TokenService(
             accessToken = accessToken,
             refreshToken = refreshToken
         )
-
-    }
-
-    @Transactional
-    fun logout(commonUserInfo: CommonUserInfo) {
-        val member = getClientInfo(
-            email = commonUserInfo.email,
-            provider = LoginType.from(commonUserInfo.provider)
-        )
-        tokenManager.deleteCacheToken(member.email)
-        tokenManager.revokDbToken(member.email)
-    }
-
-    private fun getClientInfo(
-        email: String,
-        provider: LoginType
-    ): Member {
-        return memberRepository.findByEmailAndProvider(email, provider.name)
-            ?: throw UserNotFoundException(
-                message = "회원이 존재하지 않습니다.",
-                code = HttpStatus.UNAUTHORIZED.value(),
-                status = HttpStatus.UNAUTHORIZED
-            )
     }
 }
