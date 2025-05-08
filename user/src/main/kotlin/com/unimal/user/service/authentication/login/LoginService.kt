@@ -44,7 +44,10 @@ class LoginService(
             }
             is NaverLoginRequest -> {
                 naverLoginService.getInfo(loginRequest)
-                throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)
+                return JwtTokenDTO(
+                    accessToken = "accessToken",
+                    refreshToken = "refreshToken"
+                )
             }
             else -> {
                 throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)

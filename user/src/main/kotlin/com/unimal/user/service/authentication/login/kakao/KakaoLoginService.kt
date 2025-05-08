@@ -39,11 +39,11 @@ class KakaoLogin(
         val entity = HttpEntity<String>(null, header)
         try {
             val response = restTemplate.exchange(url, HttpMethod.GET, entity, String::class.java)
-            val info = gson.fromJson(response.body, KakaoInfo::class.java)
+            val kakaoInfo = gson.fromJson(response.body, KakaoInfo::class.java)
             return UserInfo(
                 provider = LoginType.KAKAO.name,
-                email = info.kakao_account.email,
-                nickname = info.kakao_account.profile.nickname
+                email = kakaoInfo.kakao_account.email,
+                nickname = kakaoInfo.kakao_account.profile.nickname
             )
         } catch (e: Exception) {
             e.printStackTrace()
