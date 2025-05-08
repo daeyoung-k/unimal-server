@@ -1,4 +1,4 @@
-package com.unimal.user.service.authentication.login.kakao.dto
+package com.unimal.user.service.authentication.login.dto
 
 data class KakaoInfo(
     val kakao_account: KakaoAccount

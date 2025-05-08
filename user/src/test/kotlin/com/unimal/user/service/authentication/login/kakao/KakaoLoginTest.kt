@@ -7,9 +7,10 @@ import com.unimal.user.domain.role.Role
 import com.unimal.user.domain.role.RoleRepository
 import com.unimal.user.domain.role.enums.MemberRoleCode
 import com.unimal.user.exception.LoginException
+import com.unimal.user.service.authentication.login.MemberService
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
-import com.unimal.user.service.authentication.token.JwtProvider
+import com.unimal.user.service.authentication.login.social.KakaoLoginService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
@@ -31,9 +32,9 @@ class KakaoLoginTest {
     private val memberRepository: MemberRepository = mockk(relaxed = true)
     private val memberRoleRepository: MemberRoleRepository = mockk(relaxed = true)
     private val roleRepository: RoleRepository = mockk(relaxed = true)
-    private val jwtProvider: JwtProvider = mockk(relaxed = true)
 
-    private val kakaoLogin = KakaoLogin(memberRepository, memberRoleRepository, roleRepository, jwtProvider)
+    private val kakaoLoginService = KakaoLoginService()
+    private val memberService = MemberService(memberRepository, memberRoleRepository, roleRepository)
 
     // 테스트 실행 전 모킹 초기화
     @AfterEach
@@ -77,7 +78,7 @@ class KakaoLoginTest {
         } returns ResponseEntity(fakeResponseBody, HttpStatus.OK)
 
         // when
-        val result: UserInfo = kakaoLogin.getInfo(fakeToken)
+        val result: UserInfo = kakaoLoginService.getInfo(fakeToken)
 
         // then
         assertEquals("KAKAO", result.provider)
@@ -114,7 +115,7 @@ class KakaoLoginTest {
         } returns ResponseEntity(fakeResponseBody, HttpStatus.OK)
 
         // when // then
-        assertThrows(LoginException::class.java) { kakaoLogin.getInfo(fakeToken) }
+        assertThrows(LoginException::class.java) { kakaoLoginService.getInfo(fakeToken) }
 
     }
 
@@ -125,7 +126,7 @@ class KakaoLoginTest {
         every { memberRepository.findByEmailAndProvider(email, LoginType.KAKAO.name) } returns Member(email = email, provider = LoginType.KAKAO.name)
 
         // when
-        val result = kakaoLogin.getMember(email)
+        val result = memberService.getMember(email, LoginType.KAKAO)
 
         // then
         assertEquals("test@kakao.com", result?.email)
@@ -139,7 +140,7 @@ class KakaoLoginTest {
         every { memberRepository.findByEmailAndProvider(email, LoginType.KAKAO.name) } returns null
 
         // when
-        val result = kakaoLogin.getMember(email)
+        val result = memberService.getMember(email, LoginType.KAKAO)
 
         // then
         assertNull(result)
@@ -157,7 +158,7 @@ class KakaoLoginTest {
         every { memberRoleRepository.save(userInfo.toEntity().getMemberRole(Role(name = MemberRoleCode.USER.name))) }
 
         // when
-        val result = kakaoLogin.signIn(userInfo)
+        val result = memberService.signIn(userInfo)
 
         // then
         assertEquals("test@kakao.com", result.email)
