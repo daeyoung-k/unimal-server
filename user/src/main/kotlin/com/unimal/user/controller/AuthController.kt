@@ -4,6 +4,7 @@ import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.config.annotation.SocialLoginToken
 import com.unimal.user.config.annotation.UserInfoAnnotation
+import com.unimal.user.controller.request.GoogleLoginRequest
 import com.unimal.user.controller.request.KakaoLoginRequest
 import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.service.authentication.login.LoginService
@@ -37,6 +38,17 @@ class AuthController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(naverLoginRequest)
+        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
+        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        return CommonResponse()
+    }
+
+    @PostMapping("/login/mobile/google")
+    fun mobileGoogle(
+        @RequestBody @Valid googleLoginRequest: GoogleLoginRequest,
+        response: HttpServletResponse
+    ): CommonResponse {
+        val jwtToken = loginService.login(googleLoginRequest)
         response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
         response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
         return CommonResponse()

@@ -29,9 +29,18 @@ data class NaverLoginRequest(
 }
 
 data class GoogleLoginRequest(
-    override val provider: LoginType = LoginType.KAKAO,
-    val token: String
-) : LoginRequest
+    override val provider: LoginType = LoginType.GOOGLE,
+    val email: String,
+    val name: String?,
+) : LoginRequest {
+    fun toUserInfo(): UserInfo {
+        return UserInfo(
+            provider = provider.name,
+            email = email,
+            name = name
+        )
+    }
+}
 
 data class ManualLoginRequest(
     override val provider: LoginType = LoginType.MANUAL,
