@@ -1,6 +1,7 @@
 package com.unimal.user.service.authentication.login
 
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.user.controller.request.GoogleLoginRequest
 import com.unimal.user.controller.request.KakaoLoginRequest
 import com.unimal.user.controller.request.LoginRequest
 import com.unimal.user.controller.request.NaverLoginRequest
@@ -20,8 +21,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class LoginService(
-    @Qualifier("KakaoLoginService") private val kakaoLoginInterfaceService: LoginInterface,
-    @Qualifier("NaverLoginService") private val naverLoginInterfaceService: LoginInterface,
+    @Qualifier("KakaoLoginService") private val kakaoLoginService: LoginInterface,
+    @Qualifier("NaverLoginService") private val naverLoginService: LoginInterface,
+    @Qualifier("GoogleLoginService") private val googleLoginService: LoginInterface,
     private val tokenManager: TokenManager,
     private val jwtProvider: JwtProvider,
     private val memberService: MemberService,
@@ -35,12 +37,16 @@ class LoginService(
 
         when (loginRequest) {
             is KakaoLoginRequest -> {
-                userInfo = kakaoLoginInterfaceService.getInfo(loginRequest.token)
+                userInfo = kakaoLoginService.getInfo(loginRequest.token)
                 provider = LoginType.KAKAO
             }
             is NaverLoginRequest -> {
-                userInfo = naverLoginInterfaceService.getInfo(loginRequest)
+                userInfo = naverLoginService.getInfo(loginRequest)
                 provider = LoginType.NAVER
+            }
+            is GoogleLoginRequest -> {
+                userInfo = googleLoginService.getInfo(loginRequest)
+                provider = LoginType.GOOGLE
             }
             else -> {
                 throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)
