@@ -32,22 +32,11 @@ class LoginService(
     @Transactional
     fun login(loginRequest: LoginRequest): JwtTokenDTO? {
 
-        val userInfo: UserInfo
-        val provider: LoginType
-
-        when (loginRequest) {
-            is KakaoLoginRequest -> {
-                userInfo = kakaoLoginService.getInfo(loginRequest.token)
-                provider = LoginType.KAKAO
-            }
-            is NaverLoginRequest -> {
-                userInfo = naverLoginService.getInfo(loginRequest)
-                provider = LoginType.NAVER
-            }
-            is GoogleLoginRequest -> {
-                userInfo = googleLoginService.getInfo(loginRequest)
-                provider = LoginType.GOOGLE
-            }
+        val provider: LoginType = loginRequest.provider
+        val userInfo: UserInfo = when (loginRequest) {
+            is KakaoLoginRequest -> kakaoLoginService.getInfo(loginRequest.token)
+            is NaverLoginRequest -> naverLoginService.getInfo(loginRequest)
+            is GoogleLoginRequest -> googleLoginService.getInfo(loginRequest)
             else -> {
                 throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)
             }
