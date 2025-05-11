@@ -27,7 +27,7 @@ class TokenFilter(
                 val body = """
                     {
                         "code": ${HttpStatus.UNAUTHORIZED.value()},
-                        "message": "Refresh token is missing"
+                        "message": "token is missing"
                     }
                     """.trimIndent().toByteArray(Charsets.UTF_8)
                 val buffer = exchange.response.bufferFactory().wrap(body)

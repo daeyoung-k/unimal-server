@@ -31,13 +31,13 @@ class JWTProvider {
                 .payload
 
         } catch (e: ExpiredJwtException) {
-            logger.error { "토큰 인증 실패1: ${e.message}" }
+            logger.error { "토큰 인증 실패 - 토큰 만료: ${e.message}" }
             throw e
         } catch (e: SignatureException) {
-            logger.error { "토큰 인증 실패2: ${e.message}" }
+            logger.error { "토큰 인증 실패 - 잘못된 서명: ${e.message}" }
             throw e
         } catch (e: MalformedJwtException) {
-            logger.error { "토큰 인증 실패3: ${e.message}" }
+            logger.error { "토큰 인증 실패 - 잘못된 토큰: ${e.message}" }
             throw e
         } catch (e: Exception) {
             logger.error { "토큰 인증 실패: ${e.message}" }
