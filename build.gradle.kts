@@ -1,3 +1,7 @@
+import org.gradle.kotlin.dsl.implementation
+
+extra["springGrpcVersion"] = "0.8.0"
+
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
@@ -43,6 +47,7 @@ subprojects {
         testImplementation("org.springframework.boot:spring-boot-starter-test")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+        testImplementation("com.h2database:h2")
     }
 
     kotlin {
@@ -54,5 +59,41 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+}
+
+// 특정 모듈만 gRPC 라이브러리 추가
+configure(listOf(
+    project(":photo"),
+    project(":board"),
+    project(":map")
+)) {
+    dependencyManagement {
+        imports {
+            mavenBom("org.springframework.grpc:spring-grpc-dependencies:${property("springGrpcVersion")}")
+        }
+    }
+
+    dependencies {
+
+        // grpc 서버, 클라이언트 설정
+        implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
+        implementation("io.grpc:grpc-netty:1.72.0")
+        implementation("io.grpc:grpc-stub:1.72.0")
+        implementation("io.grpc:grpc-protobuf:1.72.0")
+        implementation("io.grpc:grpc-api:1.72.0")
+        implementation("com.google.protobuf:protobuf-java:4.31.0")
+        implementation("javax.annotation:javax.annotation-api:1.3.2") // gRPC 컴파일시 javax 어노테이션 오류가 발생하지 않는다.
+
+//        // json 타입을 DB에 저장하기 위한 라이브러리
+//        implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
+
+        // Grpc-Test-Support
+        testImplementation("io.grpc:grpc-testing:1.72.0")
+    }
+
+    tasks.withType<Test> {
+        enabled = false
+    }
+
 }
 
