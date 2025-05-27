@@ -1,14 +1,16 @@
 server:
-  port: 8082
+  port: 8083
   servlet:
-    context-path: /map
+    context-path: /board
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   config:
     activate:
       on-profile: local
   application:
-    name: map-server
+    name: board-server
 
   jackson:
     time-zone: Asia/Seoul
@@ -21,7 +23,7 @@ spring:
     defer-datasource-initialization: true
     properties:
       hibernate:
-        default_schema: unimal_photo
+        default_schema: unimal_board
 
   sql:
     init:
@@ -34,7 +36,7 @@ spring:
     username: ${USER_DATABASE_USERNAME:postgres}
     password: ${USER_DATABASE_PASSWORD:5432}
     dbcp2:
-      default-schema: unimal_photo
+      default-schema: unimal_board
 
   data:
     redis:

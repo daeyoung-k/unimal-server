@@ -1,4 +1,3 @@
-
 dependencies {
     apply(plugin = "kotlin-jpa")
 
