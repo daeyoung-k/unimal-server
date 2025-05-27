@@ -43,3 +43,10 @@ spring:
       host: localhost
       port: 6379
       password: 6379
+
+grpc:
+  server:
+    port: 50084
+    enable-keep-alive: true
+    keep-alive-time: 60s
+    keep-alive-timeout: 30s

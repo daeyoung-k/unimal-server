@@ -43,3 +43,17 @@ spring:
       host: localhost
       port: 6379
       password: 6379
+
+grpc:
+  server:
+    port: 50083
+    enable-keep-alive: true
+    keep-alive-time: 60s
+    keep-alive-timeout: 30s
+  client:
+    photo-grpc:
+      address: static://localhost:50084
+      negotiation-type: plaintext
+    map-grpc:
+      address: static://localhost:50082
+      negotiation-type: plaintext

@@ -1,3 +1,28 @@
+import com.google.protobuf.gradle.id
+
+plugins {
+    id("com.google.protobuf") version "0.9.4"
+}
+
+// gRPC 설정
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:4.31.0"
+    }
+    plugins {
+        id("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.72.0"
+        }
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.plugins {
+                id("grpc")
+            }
+        }
+    }
+}
+
 dependencies {
     apply(plugin = "kotlin-jpa")
 
