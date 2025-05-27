@@ -1,14 +1,16 @@
 server:
-  port: 8082
+  port: 8084
   servlet:
-    context-path: /map
+    context-path: /photo
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   config:
     activate:
       on-profile: local
   application:
-    name: map-server
+    name: photo-server
 
   jackson:
     time-zone: Asia/Seoul

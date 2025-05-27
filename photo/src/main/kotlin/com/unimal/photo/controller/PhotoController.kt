@@ -1,14 +1,14 @@
-package com.unimal.map.controller
+package com.unimal.photo.controller
 
 import com.unimal.common.TestDTO
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class MapController {
+class PhotoController {
 
     @GetMapping("/test")
     fun test(): TestDTO {
-        return TestDTO(2)
+        return TestDTO(4)
     }
 }
