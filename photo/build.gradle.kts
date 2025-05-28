@@ -1,17 +1,16 @@
 import com.google.protobuf.gradle.id
 
-plugins {
-    id("com.google.protobuf") version "0.9.4"
-}
+val grpcVersion: String by rootProject.extra
+val protobufVersion: String by rootProject.extra
 
 // gRPC 설정
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:4.31.0"
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.72.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
         }
     }
     generateProtoTasks {
@@ -28,6 +27,7 @@ dependencies {
 
     //common 모듈 상속
     implementation(project(":common"))
+    implementation(project(":proto-common"))
 
     //직렬화
     implementation("com.google.code.gson:gson:2.12.1")
@@ -41,6 +41,9 @@ dependencies {
 
     //redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    //gRPC Server
+    implementation("net.devh:grpc-server-spring-boot-starter:3.1.0.RELEASE")
 
     testImplementation("io.mockk:mockk:1.14.2")
 }
