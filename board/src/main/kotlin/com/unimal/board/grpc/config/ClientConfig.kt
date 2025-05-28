@@ -1,5 +1,6 @@
 package com.unimal.board.grpc.config
 
+import com.unimal.proto.photo.PhotoServiceGrpc
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import org.springframework.context.annotation.Bean
@@ -14,8 +15,8 @@ class ClientConfig {
             .usePlaintext()
             .build()
 
-//    @Bean
-//    fun photoBlockingStub(photoGrpcChannel: ManagedChannel): PhotoServiceGrpc.PhotoServiceBlockingStub =
-//        PhotoServiceGrpc.newBlockingStub(photoGrpcChannel)
+    @Bean
+    fun photoBlockingStub(photoGrpcChannel: ManagedChannel): PhotoServiceGrpc.PhotoServiceBlockingStub =
+        PhotoServiceGrpc.newBlockingStub(photoGrpcChannel)
 
 }

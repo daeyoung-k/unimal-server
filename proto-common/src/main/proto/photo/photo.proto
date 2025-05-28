@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.unimal.proto.photo";
+option java_outer_classname = "PhotoProto";
+
+service PhotoService {
+  rpc getPhoto (PhotoGetRequest) returns (PhotoGetResponse);
+  rpc getPhotoService (PhotoGetEmptyRequest) returns (PhotoGetResponse);
+}
+
+message PhotoGetRequest {
+  string photo = 1;
+}
+
+message PhotoGetEmptyRequest {}
+
+message PhotoGetResponse {
+  string photos = 1;
+}

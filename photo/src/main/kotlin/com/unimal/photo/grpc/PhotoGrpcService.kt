@@ -1,9 +1,10 @@
 package com.unimal.photo.grpc
 
-import com.unimal.grpc.photo.GetEmptyRequest
-import com.unimal.grpc.photo.GetRequest
-import com.unimal.grpc.photo.GetResponse
-import com.unimal.grpc.photo.PhotoServiceGrpc
+
+import com.unimal.proto.photo.PhotoGetEmptyRequest
+import com.unimal.proto.photo.PhotoGetRequest
+import com.unimal.proto.photo.PhotoGetResponse
+import com.unimal.proto.photo.PhotoServiceGrpc
 import io.grpc.stub.StreamObserver
 import net.devh.boot.grpc.server.service.GrpcService
 
@@ -11,19 +12,19 @@ import net.devh.boot.grpc.server.service.GrpcService
 class PhotoGrpcService: PhotoServiceGrpc.PhotoServiceImplBase() {
 
     override fun getPhoto(
-        request: GetRequest,
-        responseObserver: StreamObserver<GetResponse>
+        request: PhotoGetRequest,
+        responseObserver: StreamObserver<PhotoGetResponse>
     ) {
-        val boardData = request.photo.toByteArray() // ByteString → ByteArray
+        val photoData = request.photo.toByteArray() // ByteString → ByteArray
 
-        // 비즈니스 로직 예제 (예: board 데이터를 문자열로 변환)
-        val boardString = String(boardData)
+        // 비즈니스 로직 예제 (예: photo 데이터를 문자열로 변환)
+        val photoString = String(photoData)
 
         // 예: 가공 후의 결과 데이터
-        val responseString = "받은 photo 데이터: $boardString"
+        val responseString = "받은 photo 데이터: $photoString"
 
         // 응답 메시지 생성
-        val response = GetResponse.newBuilder()
+        val response = PhotoGetResponse.newBuilder()
             .setPhotos(responseString)
             .build()
 
@@ -33,11 +34,11 @@ class PhotoGrpcService: PhotoServiceGrpc.PhotoServiceImplBase() {
     }
 
     override fun getPhotoService(
-        request: GetEmptyRequest?,
-        responseObserver: StreamObserver<GetResponse>
+        request: PhotoGetEmptyRequest?,
+        responseObserver: StreamObserver<PhotoGetResponse>
     ) {
         // 응답 메시지 생성
-        val response = GetResponse.newBuilder()
+        val response = PhotoGetResponse.newBuilder()
             .setPhotos("Hello, Photo Service!")
             .build()
 
