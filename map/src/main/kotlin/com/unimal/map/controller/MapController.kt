@@ -1,14 +1,29 @@
 package com.unimal.map.controller
 
 import com.unimal.common.TestDTO
+import com.unimal.common.dto.CommonResponse
+import com.unimal.map.controller.request.LatLngRequest
+import com.unimal.map.service.MapService
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class MapController {
+class MapController(
+    private val mapService: MapService,
+) {
 
     @GetMapping("/test")
     fun test(): TestDTO {
         return TestDTO(2)
+    }
+
+    @GetMapping("/reverse-geocoding")
+    fun reverseGeocoding(
+        @ModelAttribute @Valid latLngRequest: LatLngRequest
+    ): CommonResponse {
+        mapService.reverseGeocoding(latLngRequest)
+        return CommonResponse()
     }
 }

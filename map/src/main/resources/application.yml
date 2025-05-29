@@ -48,3 +48,8 @@ grpc:
     enable-keep-alive: true
     keep-alive-time: 60s
     keep-alive-timeout: 30s
+
+custom:
+  data:
+    map:
+      api-key: AIzaSyAziInK93g5Kaa0g8OF36e7XznLd62Th-c
