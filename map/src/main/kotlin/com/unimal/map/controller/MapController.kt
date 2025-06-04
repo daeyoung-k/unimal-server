@@ -23,7 +23,6 @@ class MapController(
     fun reverseGeocoding(
         @ModelAttribute @Valid latLngRequest: LatLngRequest
     ): CommonResponse {
-        mapService.reverseGeocoding(latLngRequest)
-        return CommonResponse()
+        return CommonResponse(data = mapService.reverseGeocoding(latLngRequest))
     }
 }
