@@ -1,12 +1,12 @@
-package com.unimal.user.service.authentication.token
+package com.unimal.user.service
 
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.user.domain.member.Member
-import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.exception.UserNotFoundException
-import com.unimal.user.service.authentication.login.MemberService
 import com.unimal.user.service.authentication.login.enums.LoginType
+import com.unimal.user.service.authentication.token.JwtProvider
+import com.unimal.user.service.authentication.token.TokenManager
 import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
+import com.unimal.user.service.member.MemberObject
 import jakarta.transaction.Transactional
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -15,12 +15,12 @@ import org.springframework.stereotype.Service
 class TokenService(
     private val jwtProvider: JwtProvider,
     private val tokenManager: TokenManager,
-    private val memberService: MemberService,
+    private val memberObject: MemberObject,
     ) {
 
     @Transactional
     fun accessTokenCreate(commonUserInfo: CommonUserInfo): JwtTokenDTO {
-        val member = memberService.getMember(
+        val member = memberObject.getMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(
