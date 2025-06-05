@@ -1,9 +1,8 @@
 package com.unimal.user.service.login
 
-import com.unimal.user.service.authentication.login.LoginObjects
+import com.unimal.user.service.member.MemberObject
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
@@ -11,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest
 class LoginObjectsTest {
 
     @Autowired
-    lateinit var loginObjects: LoginObjects
+    lateinit var memberObject: MemberObject
 
     @Test
     fun `멤버가 있는지 확인한다`() {}

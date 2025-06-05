@@ -24,10 +24,27 @@ spring:
             filters:
               - name: TokenFilter
 
+          - id: user-service-private
+            uri: ${USER_SERVICE_URI:http://localhost:8081}
+            predicates:
+              - Path=/user/member/**
+            filters:
+              - name: TokenFilter
+
           - id: map-service
             uri: ${MAP_SERVICE_URI:http://localhost:8082}
             predicates:
               - Path=/map/**
+
+          - id: board-service
+            uri: ${BOARD_SERVICE_URI:http://localhost:8083}
+            predicates:
+              - Path=/board/**
+
+          - id: photo-service
+            uri: ${PHOTO_SERVICE_URI:http://localhost:8084}
+            predicates:
+              - Path=/photo/**
 
   jackson:
     time-zone: Asia/Seoul
