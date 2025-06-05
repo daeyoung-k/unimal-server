@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.unimal.proto.board";
+option java_outer_classname = "BoardProto";
+
+service BoardService {
+  rpc getBoard (BoardGetRequest) returns (BoardGetResponse);
+  rpc getBoardService (BoardGetEmptyRequest) returns (BoardGetResponse);
+}
+
+message BoardGetRequest {
+  bytes board = 1;
+}
+
+message BoardGetEmptyRequest {}
+
+message BoardGetResponse {
+  string boards = 1;
+}

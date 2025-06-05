@@ -1,0 +1,54 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /board
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  config:
+    activate:
+      on-profile: local
+  application:
+    name: board-server
+
+  jackson:
+    time-zone: Asia/Seoul
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: postgresql
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        default_schema: unimal_board
+
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/unimal
+    username: ${USER_DATABASE_USERNAME:postgres}
+    password: ${USER_DATABASE_PASSWORD:5432}
+    dbcp2:
+      default-schema: unimal_board
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 6379
+
+grpc:
+  client:
+    photo-grpc:
+      address: static://localhost:50084
+      negotiation-type: plaintext
+    map-grpc:
+      address: static://localhost:50082
+      negotiation-type: plaintext
