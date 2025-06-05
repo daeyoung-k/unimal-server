@@ -15,7 +15,7 @@ open class Member(
     @Column(length = 20)
     val name: String? = null,
 
-    @Column(length = 30)
+    @Column(length = 30, unique = true)
     val nickname: String? = null,
 
     @Column(length = 50, unique = true, nullable = false)
@@ -29,6 +29,14 @@ open class Member(
 
     @Column(length = 200)
     val password: String? = null,
+
+    @Column(length = 10)
+    val gender: String? = null,
+
+    @Column
+    val introduction: String? = null,
+
+    val birthday: LocalDateTime? = null,
 
     @CreatedDate
     val createdAt: LocalDateTime? = LocalDateTime.now(),

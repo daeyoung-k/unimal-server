@@ -7,9 +7,8 @@ import com.unimal.user.config.annotation.UserInfoAnnotation
 import com.unimal.user.controller.request.GoogleLoginRequest
 import com.unimal.user.controller.request.KakaoLoginRequest
 import com.unimal.user.controller.request.NaverLoginRequest
-import com.unimal.user.service.authentication.login.LoginService
-import com.unimal.user.service.authentication.login.MemberService
-import com.unimal.user.service.authentication.token.TokenService
+import com.unimal.user.service.LoginService
+import com.unimal.user.service.TokenService
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*
 class AuthController(
     private val loginService: LoginService,
     private val tokenService: TokenService,
-    private val memberService: MemberService,
 ) {
     @GetMapping("/login/mobile/kakao")
     fun mobileKakao(

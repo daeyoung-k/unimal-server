@@ -1,4 +1,4 @@
-package com.unimal.user.service.authentication.login
+package com.unimal.user.service
 
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.controller.request.GoogleLoginRequest
@@ -14,6 +14,7 @@ import com.unimal.user.service.authentication.login.social.LoginInterface
 import com.unimal.user.service.authentication.token.JwtProvider
 import com.unimal.user.service.authentication.token.TokenManager
 import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
+import com.unimal.user.service.member.MemberObject
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
@@ -21,12 +22,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class LoginService(
-    @Qualifier("KakaoLoginService") private val kakaoLoginService: LoginInterface,
-    @Qualifier("NaverLoginService") private val naverLoginService: LoginInterface,
-    @Qualifier("GoogleLoginService") private val googleLoginService: LoginInterface,
+    @Qualifier("KakaoLoginObject") private val kakaoLoginObject: LoginInterface,
+    @Qualifier("NaverLoginObject") private val naverLoginObject: LoginInterface,
+    @Qualifier("GoogleLoginObject") private val googleLoginObject: LoginInterface,
     private val tokenManager: TokenManager,
     private val jwtProvider: JwtProvider,
-    private val memberService: MemberService,
+    private val memberObject: MemberObject,
 ) {
 
     @Transactional
@@ -34,15 +35,15 @@ class LoginService(
 
         val provider: LoginType = loginRequest.provider
         val userInfo: UserInfo = when (loginRequest) {
-            is KakaoLoginRequest -> kakaoLoginService.getInfo(loginRequest.token)
-            is NaverLoginRequest -> naverLoginService.getInfo(loginRequest)
-            is GoogleLoginRequest -> googleLoginService.getInfo(loginRequest)
+            is KakaoLoginRequest -> kakaoLoginObject.getInfo(loginRequest.token)
+            is NaverLoginRequest -> naverLoginObject.getInfo(loginRequest)
+            is GoogleLoginRequest -> googleLoginObject.getInfo(loginRequest)
             else -> {
                 throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)
             }
         }
 
-        val member = memberService.getMember(userInfo.email, provider) ?: memberService.signIn(userInfo)
+        val member = memberObject.getMember(userInfo.email, provider) ?: memberObject.signIn(userInfo)
         val roles = member.roles.map { it.roleName.name }
 
         val accessToken = createAccessJwtToken(member.email, provider, roles)
@@ -59,7 +60,7 @@ class LoginService(
 
     @Transactional
     fun logout(commonUserInfo: CommonUserInfo) {
-        val member = memberService.getMember(
+        val member = memberObject.getMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(

@@ -12,8 +12,8 @@ import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 
-@Component("KakaoLoginService")
-class KakaoLoginService: LoginInterface {
+@Component("KakaoLoginObject")
+class KakaoLoginObject: LoginInterface {
     override fun provider() = LoginType.KAKAO
     override fun <T> getInfo(info: T): UserInfo {
         val gson = Gson()

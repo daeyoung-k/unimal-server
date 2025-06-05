@@ -24,6 +24,13 @@ spring:
             filters:
               - name: TokenFilter
 
+          - id: user-service-private
+            uri: ${USER_SERVICE_URI:http://localhost:8081}
+            predicates:
+              - Path=/user/member/**
+            filters:
+              - name: TokenFilter
+
           - id: map-service
             uri: ${MAP_SERVICE_URI:http://localhost:8082}
             predicates:
