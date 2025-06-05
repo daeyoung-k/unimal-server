@@ -3,24 +3,23 @@ package com.unimal.map.service.geocoding.dto
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ReverseGeocodingApiResult(
+data class StreetNameAddress(
     val formattedAddress: String = "",
     val postalAddress: PostalCode = PostalCode(),
-) {
-    fun toResult(): ReverseGeocodingResult {
-        return ReverseGeocodingResult(
-            address = formattedAddress,
-            postalCode = postalAddress.postalCode
-        )
-    }
-}
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class StreetNumberAddress(
+    val formattedAddress: String = "",
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class PostalCode(
     val postalCode: String = "",
 )
 
-data class ReverseGeocodingResult(
-    val address: String = "",
+data class AddressResult(
+    val streetName: String = "",
+    val streetNumber: String = "",
     val postalCode: String = "",
 )
