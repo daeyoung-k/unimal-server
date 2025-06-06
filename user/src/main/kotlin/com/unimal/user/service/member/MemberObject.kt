@@ -1,5 +1,7 @@
 package com.unimal.user.service.member
 
+import com.unimal.common.enums.Gender
+import com.unimal.common.extension.toPatternString
 import com.unimal.user.domain.member.Member
 import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.domain.role.MemberRoleRepository
@@ -32,9 +34,17 @@ class MemberObject(
         return getMember(email, provider)?.let { member ->
             MemberInfo(
                 email = member.email,
-                nickName = member.nickname,
                 provider = provider.name,
+                nickname = member.nickname,
+                name = member.name,
+                tel = member.tel,
+                birthday = member.birthday?.toPatternString("yyyy-MM-dd HH:mm"),
+                gender = Gender.from(member.gender)?.name,
+                introduction = member.introduction,
             )
         } ?: throw LoginException(ErrorCode.USER_NOT_FOUND.message)
     }
+
+    fun update(member: Member) = memberRepository.save(member)
+
 }
