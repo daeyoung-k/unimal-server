@@ -3,7 +3,6 @@ package com.unimal.user.domain.member
 import com.unimal.common.domain.BaseIdEntity
 import com.unimal.user.domain.role.MemberRole
 import com.unimal.user.domain.role.Role
-import com.unimal.user.domain.role.enums.MemberRoleCode
 import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import java.time.LocalDateTime
@@ -13,16 +12,16 @@ import java.time.LocalDateTime
 open class Member(
 
     @Column(length = 20)
-    val name: String? = null,
+    var name: String? = null,
 
     @Column(length = 30, unique = true)
-    val nickname: String? = null,
+    var nickname: String? = null,
 
     @Column(length = 50, unique = true, nullable = false)
     val email: String,
 
     @Column(length = 20)
-    val tel: String? = null,
+    var tel: String? = null,
 
     @Column(length = 10)
     val provider: String? = null,
@@ -31,19 +30,19 @@ open class Member(
     val password: String? = null,
 
     @Column(length = 10)
-    val gender: String? = null,
+    var gender: String? = null,
 
     @Column
-    val introduction: String? = null,
+    var introduction: String? = null,
 
-    val birthday: LocalDateTime? = null,
+    var birthday: LocalDateTime? = null,
 
     @CreatedDate
     val createdAt: LocalDateTime? = LocalDateTime.now(),
 
-    val updatedAt: LocalDateTime? = null,
+    var updatedAt: LocalDateTime? = null,
 
-): BaseIdEntity() {
+    ): BaseIdEntity() {
     @OneToMany(mappedBy = "memberId", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     val roles: MutableList<MemberRole> = mutableListOf()
 
@@ -58,6 +57,23 @@ open class Member(
         ).also {
             this.addRole(it)
         }
+    }
+
+    fun updateMember(
+        name: String? = null,
+        nickname: String? = null,
+        tel: String? = null,
+        introduction: String? = null,
+        birthday: LocalDateTime? = null,
+        gender: String? = null,
+    ) {
+        if (name != null) this.name = name
+        if (nickname != null) this.nickname = nickname
+        if (tel != null) this.tel = tel
+        if (introduction != null) this.introduction = introduction
+        if (birthday != null) this.birthday = birthday
+        if (gender != null) this.gender = gender
+        this.updatedAt = LocalDateTime.now()
     }
 
 }

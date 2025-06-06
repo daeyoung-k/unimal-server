@@ -26,8 +26,8 @@ class GlobalExceptionHandler: ErrorWebExceptionHandler {
         logger.info { "발생한 예외: $ex" }
         val message = when (ex) {
             is CustomException -> {
-                code = HttpStatus.BAD_REQUEST.value()
-                response.statusCode = HttpStatus.BAD_REQUEST
+                code = ex.code ?: HttpStatus.BAD_REQUEST.value()
+                response.statusCode = ex.status ?: HttpStatus.BAD_REQUEST
                 ex.message ?: "error"
             }
             is TokenNotFoundException -> {

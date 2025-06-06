@@ -1,5 +1,6 @@
 package com.unimal.apigateway.service.token
 
+import com.unimal.apigateway.exception.CustomException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
@@ -8,6 +9,7 @@ import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.security.Keys
 import io.jsonwebtoken.security.SignatureException
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -41,7 +43,11 @@ class JWTProvider {
             throw e
         } catch (e: Exception) {
             logger.error { "토큰 인증 실패: ${e.message}" }
-            throw e
+            throw CustomException(
+                code = HttpStatus.UNAUTHORIZED.value(),
+                status = HttpStatus.UNAUTHORIZED,
+                message = "토큰 인증 실패 - 알수없는 오류: ${e.message}"
+            )
         }
     }
 }

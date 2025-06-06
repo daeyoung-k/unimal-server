@@ -6,12 +6,34 @@ import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.security.SignatureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.FieldError
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.nio.file.attribute.UserPrincipalNotFoundException
 
 @RestControllerAdvice
 class ExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handlerValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<CommonResponse> {
+        val errors = mutableMapOf<String, String?>()
+        ex.bindingResult.allErrors.forEach { error ->
+            val fieldName: String = if (error is FieldError) {
+                error.field
+            } else {
+                "Unknown Field"
+            }
+            val errorMessage = error.defaultMessage ?: "Validation error"
+
+            errors["message"] = "$fieldName: $errorMessage"
+        }
+        return ResponseEntity(
+            CommonResponse(
+                code = HttpStatus.BAD_REQUEST.value(),
+                message = errors["message"]
+            ),  HttpStatus.OK)
+    }
 
     @ExceptionHandler(CustomException::class)
     fun handlerException(ex: CustomException): ResponseEntity<CommonResponse> {
