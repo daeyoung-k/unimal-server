@@ -1,8 +1,8 @@
 package com.unimal.user.service.authentication.login.social
 
+import com.unimal.server.webcommon.exception.ErrorCode
+import com.unimal.server.webcommon.exception.LoginException
 import com.unimal.user.controller.request.NaverLoginRequest
-import com.unimal.user.exception.ErrorCode
-import com.unimal.user.exception.LoginException
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
 import org.springframework.stereotype.Component

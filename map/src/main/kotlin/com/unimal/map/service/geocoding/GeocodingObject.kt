@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.unimal.map.service.geocoding.dto.AddressResult
 import com.unimal.map.service.geocoding.dto.StreetNameAddress
 import com.unimal.map.service.geocoding.dto.StreetNumberAddress
+import com.unimal.server.webcommon.exception.ApiCallException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -39,7 +40,7 @@ class GeocodingObject(
 
         } catch (e: Exception) {
             // Handle the exception, e.g., log it or rethrow it
-            throw RuntimeException("Failed to get address for coordinates: $latitude, $longitude", e)
+            throw ApiCallException("Geocoding API 호출 중 오류가 발생했습니다: ${e.message}")
         }
 
     }
