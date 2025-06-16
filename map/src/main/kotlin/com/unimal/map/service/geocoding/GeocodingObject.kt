@@ -1,9 +1,8 @@
 package com.unimal.map.service.geocoding
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.unimal.map.service.geocoding.dto.AddressResult
-import com.unimal.map.service.geocoding.dto.StreetNameAddress
-import com.unimal.map.service.geocoding.dto.StreetNumberAddress
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.unimal.map.service.geocoding.dto.*
 import com.unimal.server.webcommon.exception.ApiCallException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -27,12 +26,38 @@ class GeocodingObject(
             val mapper = jacksonObjectMapper()
             val root = mapper.readTree(response)
             return if (root["results"].isArray) {
-                val streetNameAddress = mapper.treeToValue(root["results"][0], StreetNameAddress::class.java)
-                val streetNumberAddress = mapper.treeToValue(root["results"][1], StreetNumberAddress::class.java)
+
+                val streetNameAddressObject = root["results"].firstOrNull {
+                    val types = mapper.treeToValue(it["types"], List::class.java)
+                    types.contains("street_address")
+                }
+
+                val streetNumberAddressObject = root["results"].firstOrNull {
+                    val types = mapper.treeToValue(it["types"], List::class.java)
+                    types.contains("point_of_interest")
+                }
+
+                val sublocalityObject = root["results"].firstOrNull {
+                    val types = mapper.treeToValue(it["types"], List::class.java)
+                    types.contains("sublocality") && types.contains("sublocality_level_2")
+                }
+
+
+                val streetNameAddress = mapper.treeToValue(streetNameAddressObject, StreetNameAddress::class.java)
+                val streetNumberAddress = mapper.treeToValue(streetNumberAddressObject, StreetNumberAddress::class.java)
+                val sublocality: List<Sublocality> = mapper.readValue(sublocalityObject?.get("addressComponents").toString()) ?: emptyList()
+
+                val siDo = sublocality.firstOrNull { it.types.contains("administrative_area_level_1") }?.longText.orEmpty()
+                val guGun = sublocality.firstOrNull { it.types.contains("sublocality_level_1") }?.longText.orEmpty()
+                val dong = sublocality.firstOrNull { it.types.contains("sublocality_level_2") }?.longText.orEmpty()
+
                 AddressResult(
-                    streetNameAddress.formattedAddress,
-                    streetNumberAddress.formattedAddress,
+                    streetNameAddress.formattedAddress.replace("대한민국", "").trim(),
+                    streetNumberAddress.formattedAddress.replace("대한민국", "").trim(),
                     streetNameAddress.postalAddress.postalCode,
+                    siDo = siDo,
+                    guGun = guGun,
+                    dong = dong,
                 )
             } else {
                 AddressResult()
