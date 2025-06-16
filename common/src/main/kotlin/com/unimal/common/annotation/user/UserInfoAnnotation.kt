@@ -1,4 +1,4 @@
-package com.unimal.user.config.annotation
+package com.unimal.common.annotation.user
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)

@@ -1,6 +1,6 @@
 package com.unimal.user.service.authentication.token
 
-import com.unimal.user.exception.CustomException
+import com.unimal.webcommon.exception.TokenException
 import com.unimal.user.service.authentication.login.enums.LoginType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
@@ -72,7 +72,7 @@ class JwtProvider {
             throw e
         } catch (e: Exception) {
             logger.error { "토큰 인증 실패: ${e.message}" }
-            throw CustomException("토큰 인증 실패", 401, HttpStatus.UNAUTHORIZED)
+            throw TokenException("토큰 인증 실패", 401, HttpStatus.UNAUTHORIZED)
         }
     }
 }

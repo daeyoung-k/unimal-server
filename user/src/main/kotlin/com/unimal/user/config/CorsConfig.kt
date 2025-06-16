@@ -1,11 +1,11 @@
 package com.unimal.user.config
 
+import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.webcommon.exception.ErrorCode
+import com.unimal.webcommon.exception.LoginException
+import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.config.annotation.SocialLoginToken
-import com.unimal.user.config.annotation.UserInfoAnnotation
-import com.unimal.user.exception.ErrorCode
-import com.unimal.user.exception.LoginException
-import com.unimal.user.exception.UserNotFoundException
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
@@ -23,7 +23,7 @@ class CorsConfig : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
             .allowedOriginPatterns("*")
-            .allowedMethods("GET", "POST", "PATCH", "OPTIONS")
+            .allowedMethods("GET", "POST", "PATCH", "OPTIONS", "DELETE")
             .exposedHeaders("X-Unimal-User-email", "X-Unimal-User-roles", "X-Unimal-User-provider")
     }
 
@@ -62,9 +62,9 @@ class CorsConfig : WebMvcConfigurer {
         ): Any? {
             val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
             return CommonUserInfo(
-                email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException("유저 email 을 찾을수 없습니다."),
-                roles = request.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException("유저 roles 을 찾을수 없습니다."),
-                provider = request.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException("유저 provider 을 찾을수 없습니다."),
+                email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException(ErrorCode.EMAIL_NOT_FOUND.message),
+                roles = request.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException(ErrorCode.ROLE_NOT_FOUND.message),
+                provider = request.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException(ErrorCode.PROVIDER_NOT_FOUND.message),
 
             )
         }

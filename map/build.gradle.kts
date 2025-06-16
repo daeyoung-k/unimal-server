@@ -28,6 +28,7 @@ dependencies {
     //common 모듈 상속
     implementation(project(":common"))
     implementation(project(":proto-common"))
+    implementation(project(":web-common"))
 
     //직렬화
     implementation("com.google.code.gson:gson:2.12.1")
