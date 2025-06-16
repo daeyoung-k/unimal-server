@@ -1,12 +1,12 @@
 package com.unimal.user.service.authentication.login.kakao
 
+import com.unimal.webcommon.exception.LoginException
 import com.unimal.user.domain.member.Member
 import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.domain.role.MemberRoleRepository
 import com.unimal.user.domain.role.Role
 import com.unimal.user.domain.role.RoleRepository
 import com.unimal.user.domain.role.enums.MemberRoleCode
-import com.unimal.user.exception.LoginException
 import com.unimal.user.service.member.MemberObject
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType

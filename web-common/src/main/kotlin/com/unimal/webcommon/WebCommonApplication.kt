@@ -1,4 +1,4 @@
-package com.unimal.server.webcommon
+package com.unimal.webcommon
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

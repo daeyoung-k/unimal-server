@@ -1,9 +1,8 @@
 package com.unimal.user.service.authentication.login.social
 
 import com.google.gson.Gson
-import com.unimal.server.webcommon.exception.ApiCallException
-import com.unimal.server.webcommon.exception.ErrorCode
-import com.unimal.server.webcommon.exception.LoginException
+import com.unimal.webcommon.exception.ApiCallException
+import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.authentication.login.dto.KakaoInfo

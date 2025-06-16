@@ -7,7 +7,6 @@ import com.unimal.user.domain.role.MemberRoleRepository
 import com.unimal.user.domain.role.Role
 import com.unimal.user.domain.role.RoleRepository
 import com.unimal.user.domain.role.enums.MemberRoleCode
-import com.unimal.user.exception.LoginException
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
@@ -21,6 +20,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import com.unimal.webcommon.exception.LoginException
 import kotlin.test.assertNotNull
 
 @SpringBootTest

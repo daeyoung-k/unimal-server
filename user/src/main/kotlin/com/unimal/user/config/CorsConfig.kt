@@ -2,9 +2,9 @@ package com.unimal.user.config
 
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.server.webcommon.exception.ErrorCode
-import com.unimal.server.webcommon.exception.LoginException
-import com.unimal.server.webcommon.exception.UserNotFoundException
+import com.unimal.webcommon.exception.ErrorCode
+import com.unimal.webcommon.exception.LoginException
+import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.config.annotation.SocialLoginToken
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Configuration

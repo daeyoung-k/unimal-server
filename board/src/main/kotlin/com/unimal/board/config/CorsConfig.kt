@@ -2,8 +2,8 @@ package com.unimal.board.config
 
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.server.webcommon.exception.ErrorCode
-import com.unimal.server.webcommon.exception.UserNotFoundException
+import com.unimal.webcommon.exception.ErrorCode
+import com.unimal.webcommon.exception.UserNotFoundException
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter

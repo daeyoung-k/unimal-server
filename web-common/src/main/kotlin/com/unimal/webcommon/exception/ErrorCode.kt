@@ -1,4 +1,4 @@
-package com.unimal.server.webcommon.exception
+package com.unimal.webcommon.exception
 
 enum class ErrorCode(
     val code: Int,

@@ -1,7 +1,6 @@
 package com.unimal.user.service.authentication.token
 
-import com.unimal.server.webcommon.exception.CustomException
-import com.unimal.server.webcommon.exception.TokenException
+import com.unimal.webcommon.exception.TokenException
 import com.unimal.user.service.authentication.login.enums.LoginType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims

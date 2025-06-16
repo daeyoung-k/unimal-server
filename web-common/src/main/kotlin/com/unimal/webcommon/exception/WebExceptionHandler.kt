@@ -1,4 +1,4 @@
-package com.unimal.server.webcommon.exception
+package com.unimal.webcommon.exception
 
 import com.unimal.common.dto.CommonResponse
 import io.jsonwebtoken.ExpiredJwtException

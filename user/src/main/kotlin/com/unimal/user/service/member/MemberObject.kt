@@ -2,8 +2,8 @@ package com.unimal.user.service.member
 
 import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternString
-import com.unimal.server.webcommon.exception.ErrorCode
-import com.unimal.server.webcommon.exception.LoginException
+import com.unimal.webcommon.exception.ErrorCode
+import com.unimal.webcommon.exception.LoginException
 import com.unimal.user.domain.member.Member
 import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.domain.role.MemberRoleRepository

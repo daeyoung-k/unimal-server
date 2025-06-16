@@ -3,8 +3,8 @@ package com.unimal.user.service
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternLocalDateTime
-import com.unimal.server.webcommon.exception.CustomException
-import com.unimal.server.webcommon.exception.UserNotFoundException
+import com.unimal.webcommon.exception.CustomException
+import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.controller.request.InfoUpdateRequest
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.member.MemberObject
