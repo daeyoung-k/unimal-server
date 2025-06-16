@@ -1,7 +1,7 @@
 package com.unimal.user.service
 
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.user.exception.UserNotFoundException
+import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.authentication.token.JwtProvider
 import com.unimal.user.service.authentication.token.TokenManager

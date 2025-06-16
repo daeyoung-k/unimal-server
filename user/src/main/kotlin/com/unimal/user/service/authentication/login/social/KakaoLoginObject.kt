@@ -1,8 +1,8 @@
 package com.unimal.user.service.authentication.login.social
 
 import com.google.gson.Gson
-import com.unimal.user.exception.ErrorCode
-import com.unimal.user.exception.LoginException
+import com.unimal.webcommon.exception.ApiCallException
+import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.authentication.login.dto.KakaoInfo
@@ -34,7 +34,7 @@ class KakaoLoginObject: LoginInterface {
             )
         } catch (e: Exception) {
             e.printStackTrace()
-            throw LoginException(ErrorCode.USER_NOT_FOUND.message)
+            throw ApiCallException("카카오 유저 정보 조회 - ${ErrorCode.API_CALL_ERROR.message}")
         }
     }
 }
