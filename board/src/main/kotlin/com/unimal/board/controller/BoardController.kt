@@ -11,9 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class BoardController(
-    private val photoGrpcService: PhotoGrpcService
-) {
+class BoardController{
 
     @GetMapping("/posts/list")
     fun getPostsList(): CommonResponse {
