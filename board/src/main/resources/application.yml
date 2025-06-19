@@ -44,6 +44,19 @@ spring:
       port: 6379
       password: 6379
 
+  kafka:
+    bootstrap-servers: kafka-1:9091,kafka-2:9092,kafka-3:9093
+    consumer:
+      group-id: unimal-board-group
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      missing-topics-fatal: false
+
 grpc:
   client:
     photo-grpc:
