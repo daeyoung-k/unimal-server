@@ -45,7 +45,7 @@ spring:
       password: 6379
 
   kafka:
-    bootstrap-servers: kafka-1:9091,kafka-2:9092,kafka-3:9093
+    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
     consumer:
       group-id: unimal-photo-group
       auto-offset-reset: latest
