@@ -47,5 +47,8 @@ dependencies {
     //gRPC Client
     implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
 
+    //kafka
+    implementation("org.springframework.kafka:spring-kafka")
+
     testImplementation("io.mockk:mockk:1.14.2")
 }
