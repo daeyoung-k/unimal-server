@@ -1,6 +1,5 @@
 package com.unimal.board.controller
 
-import com.unimal.board.kafka.topic.TestProducer
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
@@ -8,7 +7,6 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 class BoardController(
-    private val testProducer: TestProducer
 ) {
 
     @GetMapping("/posts/list")
@@ -32,13 +30,5 @@ class BoardController(
     @DeleteMapping("/posts/delete")
     fun deletePost(): CommonResponse {
         return CommonResponse(data = "게시글 삭제")
-    }
-
-    @GetMapping("/kafka/test")
-    fun testKafka(
-        @RequestParam(value = "message", required = false) message: String?,
-    ): CommonResponse {
-        testProducer.testTopic(message!!)
-        return CommonResponse()
     }
 }
