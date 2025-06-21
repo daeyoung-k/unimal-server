@@ -70,4 +70,12 @@ class AuthController(
         loginService.logout(commonUserInfo)
         return CommonResponse()
     }
+
+    @GetMapping("/withdrawal")
+    fun withdrawal(
+        @UserInfoAnnotation commonUserInfo: CommonUserInfo
+    ): CommonResponse {
+        loginService.withdrawal(commonUserInfo)
+        return CommonResponse()
+    }
 }
