@@ -10,18 +10,19 @@ import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.domain.role.MemberRoleRepository
 import com.unimal.user.domain.role.RoleRepository
 import com.unimal.user.domain.role.enums.MemberRoleCode
-import com.unimal.user.kafka.topics.SignInTopic
+import com.unimal.user.kafka.topics.MemberKafkaTopic
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 
 @Component
 class MemberObject(
     private val memberRepository: MemberRepository,
     private val memberRoleRepository: MemberRoleRepository,
     private val roleRepository: RoleRepository,
-    private val signInTopic: SignInTopic
+    private val memberKafkaTopic: MemberKafkaTopic
 ) {
     fun getMember(email: String, provider: LoginType) = memberRepository.findByEmailAndProvider(email, provider.name)
 
@@ -52,8 +53,19 @@ class MemberObject(
 
     fun update(member: Member) = memberRepository.save(member)
 
+    fun withdrawal(member: Member) {
+        member.withdrawalAt = LocalDateTime.now()
+        memberRepository.save(member)
+    }
+
+    fun reSignIn(member: Member) {
+        member.withdrawalAt = null
+        memberRepository.save(member)
+        memberKafkaTopic.reSignInTopicIssue(member.email)
+    }
+
     fun signInTopicIssue(member: Member) {
-        signInTopic.signInTopicIssue(
+        memberKafkaTopic.signInTopicIssue(
             SignInUser(
                 email = member.email,
                 name = member.name,
@@ -62,6 +74,10 @@ class MemberObject(
                 withdrawalAt = member.withdrawalAt
             )
         )
+    }
+
+    fun withdrawalTopicIssue(member: Member) {
+        memberKafkaTopic.withdrawalTopicIssue(member.email)
     }
 
 }

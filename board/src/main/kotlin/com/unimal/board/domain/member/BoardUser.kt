@@ -19,5 +19,5 @@ open class BoardUser(
 
     val profileImageUrl: String? = null,
 
-    val withdrawalAt: LocalDateTime? = null,
+    var withdrawalAt: LocalDateTime? = null,
 ) : BaseIdEntity()

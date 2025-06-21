@@ -28,7 +28,7 @@ class LoginService(
     @Qualifier("GoogleLoginObject") private val googleLoginObject: LoginInterface,
     private val tokenManager: TokenManager,
     private val jwtProvider: JwtProvider,
-    private val memberObject: MemberObject,
+    private val memberObject: MemberObject
 ) {
 
     @Transactional
@@ -45,6 +45,11 @@ class LoginService(
         }
 
         val member = memberObject.getMember(userInfo.email, provider) ?: memberObject.signIn(userInfo)
+
+        if (member.withdrawalAt != null) {
+            memberObject.reSignIn(member)
+        }
+
         val roles = member.roles.map { it.roleName.name }
 
         val accessToken = createAccessJwtToken(member.email, provider, roles)
@@ -71,6 +76,23 @@ class LoginService(
         )
         tokenManager.deleteCacheToken(member.email)
         tokenManager.revokDbToken(member.email)
+    }
+
+    @Transactional
+    fun withdrawal(commonUserInfo: CommonUserInfo) {
+        val member = memberObject.getMember(
+            email = commonUserInfo.email,
+            provider = LoginType.from(commonUserInfo.provider)
+        ) ?: throw UserNotFoundException(
+            message = "회원이 존재하지 않습니다.",
+            code = HttpStatus.UNAUTHORIZED.value(),
+            status = HttpStatus.UNAUTHORIZED
+        )
+
+        tokenManager.deleteCacheToken(member.email)
+        tokenManager.deleteDbToken(member.email)
+        memberObject.withdrawal(member)
+        memberObject.withdrawalTopicIssue(member)
     }
 
     private fun createAccessJwtToken(
