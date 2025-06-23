@@ -1,6 +1,5 @@
 package com.unimal.map.controller
 
-import com.unimal.common.TestDTO
 import com.unimal.common.dto.CommonResponse
 import com.unimal.map.controller.request.LatLngRequest
 import com.unimal.map.service.MapService
@@ -13,11 +12,6 @@ import org.springframework.web.bind.annotation.RestController
 class MapController(
     private val mapService: MapService,
 ) {
-
-    @GetMapping("/test")
-    fun test(): TestDTO {
-        return TestDTO(2)
-    }
 
     @GetMapping("/reverse-geocoding")
     fun reverseGeocoding(

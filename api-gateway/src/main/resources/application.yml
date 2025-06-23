@@ -20,7 +20,7 @@ spring:
           - id: user-service-private
             uri: ${USER_SERVICE_URI:http://localhost:8081}
             predicates:
-              - Path=/user/auth/{segment:token-reissue|logout}
+              - Path=/user/auth/{segment:token-reissue|logout|withdrawal}
             filters:
               - name: TokenFilter
 

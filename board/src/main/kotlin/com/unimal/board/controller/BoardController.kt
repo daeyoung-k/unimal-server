@@ -1,18 +1,12 @@
 package com.unimal.board.controller
 
-import com.unimal.board.grpc.service.PhotoGrpcService
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PatchMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 class BoardController(
-    private val photoGrpcService: PhotoGrpcService
 ) {
 
     @GetMapping("/posts/list")

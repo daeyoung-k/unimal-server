@@ -27,7 +27,8 @@ class TokenService(
                 CommonUserInfo(
                     email = email,
                     roles = claims["roles"] as List<String>,
-                    provider = claims["provider"] as String
+                    provider = claims["provider"] as String,
+                    tokenType = type
                 )
             }
             "refresh" -> {
@@ -38,7 +39,8 @@ class TokenService(
                 CommonUserInfo(
                     email = email,
                     roles = claims["roles"] as List<String>,
-                    provider = claims["provider"] as String
+                    provider = claims["provider"] as String,
+                    tokenType = type
                 )
             }
             else -> {

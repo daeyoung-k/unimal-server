@@ -12,11 +12,13 @@ enum class ErrorCode(
     TOKEN_NOT_FOUND(1003, "토큰이 없습니다."),
     EXPIRED_TOKEN(1004, "만료된 토큰입니다."),
     SIGNATURE_TOKEN(1005, "잘못된 서명입니다."),
+    TOKEN_TYPE_NOT_FOUND(1006, "존재하지 않는 토큰 타입입니다."),
 
     USER_NOT_FOUND(2001, "사용자 정보를 찾을 수 없습니다."),
     ROLE_NOT_FOUND(2002, "존재하지 않는 권한입니다."),
     EMAIL_NOT_FOUND(2003, "존재하지 않는 이메일입니다."),
     PROVIDER_NOT_FOUND(2004, "존재하지 않는 소셜종류입니다."),
+    PASSWORD_NOT_MATCH(2005, "비밀번호가 일치하지 않습니다."),
 
     API_CALL_ERROR(3001, "API 호출에 실패했습니다."),
 }

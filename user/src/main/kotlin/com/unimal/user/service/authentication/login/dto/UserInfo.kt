@@ -7,7 +7,8 @@ data class UserInfo(
     val email: String,
     var nickname: String? = null,
     var name: String? = null,
-    var tel: String? = null
+    var tel: String? = null,
+    var password: String? = null
 ) {
     fun toEntity(): Member {
         return Member(

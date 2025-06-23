@@ -6,6 +6,7 @@ import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException
 import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.config.annotation.SocialLoginToken
+import com.unimal.webcommon.exception.TokenException
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
@@ -65,6 +66,7 @@ class CorsConfig : WebMvcConfigurer {
                 email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException(ErrorCode.EMAIL_NOT_FOUND.message),
                 roles = request.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException(ErrorCode.ROLE_NOT_FOUND.message),
                 provider = request.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException(ErrorCode.PROVIDER_NOT_FOUND.message),
+                tokenType = request.getHeader("X-Unimal-User-token-type") ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message)
 
             )
         }
