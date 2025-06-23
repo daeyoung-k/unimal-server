@@ -7,6 +7,8 @@ import com.unimal.user.service.authentication.token.JwtProvider
 import com.unimal.user.service.authentication.token.TokenManager
 import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
 import com.unimal.user.service.member.MemberObject
+import com.unimal.webcommon.exception.CustomException
+import com.unimal.webcommon.exception.TokenException
 import jakarta.transaction.Transactional
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -20,6 +22,15 @@ class TokenService(
 
     @Transactional
     fun accessTokenCreate(commonUserInfo: CommonUserInfo): JwtTokenDTO {
+
+        if (commonUserInfo.tokenType != "refresh") {
+            throw CustomException(
+                message = "잘못된 토큰 타입입니다.",
+                code = HttpStatus.UNAUTHORIZED.value(),
+                status = HttpStatus.UNAUTHORIZED
+            )
+        }
+
         val member = memberObject.getMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)

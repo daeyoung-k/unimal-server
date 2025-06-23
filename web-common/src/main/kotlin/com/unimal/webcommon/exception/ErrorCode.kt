@@ -12,6 +12,7 @@ enum class ErrorCode(
     TOKEN_NOT_FOUND(1003, "토큰이 없습니다."),
     EXPIRED_TOKEN(1004, "만료된 토큰입니다."),
     SIGNATURE_TOKEN(1005, "잘못된 서명입니다."),
+    TOKEN_TYPE_NOT_FOUND(1006, "존재하지 않는 토큰 타입입니다."),
 
     USER_NOT_FOUND(2001, "사용자 정보를 찾을 수 없습니다."),
     ROLE_NOT_FOUND(2002, "존재하지 않는 권한입니다."),
