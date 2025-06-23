@@ -46,6 +46,12 @@ data class ManualLoginRequest(
     override val provider: LoginType = LoginType.MANUAL,
     val email: String,
     val password: String,
-    val name: String,
-    val tel: String
-) : LoginRequest
+) : LoginRequest {
+    fun toUserInfo(): UserInfo {
+        return UserInfo(
+            provider = provider.name,
+            email = email,
+            password = password
+        )
+    }
+}

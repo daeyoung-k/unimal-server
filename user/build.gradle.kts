@@ -11,6 +11,8 @@ dependencies {
 
 	//web
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	//암호화
+	implementation("org.springframework.boot:spring-boot-starter-security")
 
 	//db
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")

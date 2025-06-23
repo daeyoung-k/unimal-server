@@ -14,6 +14,7 @@ import com.unimal.user.kafka.topics.MemberKafkaTopic
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 
@@ -22,9 +23,15 @@ class MemberObject(
     private val memberRepository: MemberRepository,
     private val memberRoleRepository: MemberRoleRepository,
     private val roleRepository: RoleRepository,
-    private val memberKafkaTopic: MemberKafkaTopic
+    private val memberKafkaTopic: MemberKafkaTopic,
+    private val passwordEncoder: BCryptPasswordEncoder
 ) {
     fun getMember(email: String, provider: LoginType) = memberRepository.findByEmailAndProvider(email, provider.name)
+
+    fun passwordCheck(
+        password: String,
+        encodePassword: String
+    ): Boolean = passwordEncoder.matches(password, encodePassword)
 
     fun signIn(userInfo: UserInfo): Member {
         val member = memberRepository.save(userInfo.toEntity())

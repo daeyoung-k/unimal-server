@@ -8,10 +8,11 @@ import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.controller.request.GoogleLoginRequest
 import com.unimal.user.controller.request.KakaoLoginRequest
 import com.unimal.user.controller.request.LoginRequest
+import com.unimal.user.controller.request.ManualLoginRequest
 import com.unimal.user.controller.request.NaverLoginRequest
-import com.unimal.user.service.authentication.login.dto.UserInfo
+import com.unimal.user.domain.member.Member
 import com.unimal.user.service.authentication.login.enums.LoginType
-import com.unimal.user.service.authentication.login.social.LoginInterface
+import com.unimal.user.service.authentication.login.LoginInterface
 import com.unimal.user.service.authentication.token.JwtProvider
 import com.unimal.user.service.authentication.token.TokenManager
 import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
@@ -26,6 +27,7 @@ class LoginService(
     @Qualifier("KakaoLoginObject") private val kakaoLoginObject: LoginInterface,
     @Qualifier("NaverLoginObject") private val naverLoginObject: LoginInterface,
     @Qualifier("GoogleLoginObject") private val googleLoginObject: LoginInterface,
+    @Qualifier("ManualLoginObject") private val manualLoginObject: LoginInterface,
     private val tokenManager: TokenManager,
     private val jwtProvider: JwtProvider,
     private val memberObject: MemberObject
@@ -35,17 +37,29 @@ class LoginService(
     fun login(loginRequest: LoginRequest): JwtTokenDTO? {
 
         val provider: LoginType = loginRequest.provider
-        val userInfo: UserInfo = when (loginRequest) {
-            is KakaoLoginRequest -> kakaoLoginObject.getInfo(loginRequest.token)
-            is NaverLoginRequest -> naverLoginObject.getInfo(loginRequest)
-            is GoogleLoginRequest -> googleLoginObject.getInfo(loginRequest)
+        val member: Member = when (loginRequest) {
+            is KakaoLoginRequest -> {
+                val userInfo = kakaoLoginObject.getUserInfo(loginRequest.token)
+                kakaoLoginObject.getMember(userInfo)
+            }
+            is NaverLoginRequest -> {
+                val userInfo = naverLoginObject.getUserInfo(loginRequest)
+                naverLoginObject.getMember(userInfo)
+            }
+            is GoogleLoginRequest -> {
+                val userInfo = googleLoginObject.getUserInfo(loginRequest)
+                googleLoginObject.getMember(userInfo)
+            }
+            is ManualLoginRequest -> {
+                val userInfo = manualLoginObject.getUserInfo(loginRequest)
+                manualLoginObject.getMember(userInfo)
+            }
             else -> {
                 throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)
             }
         }
 
-        val member = memberObject.getMember(userInfo.email, provider) ?: memberObject.signIn(userInfo)
-
+        // 재가입
         if (member.withdrawalAt != null) {
             memberObject.reSignIn(member)
         }

@@ -18,6 +18,7 @@ enum class ErrorCode(
     ROLE_NOT_FOUND(2002, "존재하지 않는 권한입니다."),
     EMAIL_NOT_FOUND(2003, "존재하지 않는 이메일입니다."),
     PROVIDER_NOT_FOUND(2004, "존재하지 않는 소셜종류입니다."),
+    PASSWORD_NOT_MATCH(2005, "비밀번호가 일치하지 않습니다."),
 
     API_CALL_ERROR(3001, "API 호출에 실패했습니다."),
 }

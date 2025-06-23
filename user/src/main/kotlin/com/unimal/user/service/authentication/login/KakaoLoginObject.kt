@@ -1,11 +1,13 @@
-package com.unimal.user.service.authentication.login.social
+package com.unimal.user.service.authentication.login
 
 import com.google.gson.Gson
+import com.unimal.user.domain.member.Member
 import com.unimal.webcommon.exception.ApiCallException
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
 import com.unimal.user.service.authentication.login.dto.KakaoInfo
+import com.unimal.user.service.member.MemberObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -13,9 +15,11 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 
 @Component("KakaoLoginObject")
-class KakaoLoginObject: LoginInterface {
+class KakaoLoginObject(
+    private val memberObject: MemberObject
+): LoginInterface {
     override fun provider() = LoginType.KAKAO
-    override fun <T> getInfo(info: T): UserInfo {
+    override fun <T> getUserInfo(info: T): UserInfo {
         val gson = Gson()
         val url = "https://kapi.kakao.com/v2/user/me"
         val restTemplate = RestTemplate()
@@ -36,5 +40,9 @@ class KakaoLoginObject: LoginInterface {
             e.printStackTrace()
             throw ApiCallException("카카오 유저 정보 조회 - ${ErrorCode.API_CALL_ERROR.message}")
         }
+    }
+
+    override fun getMember(userInfo: UserInfo): Member {
+        return memberObject.getMember(userInfo.email, provider()) ?: memberObject.signIn(userInfo)
     }
 }

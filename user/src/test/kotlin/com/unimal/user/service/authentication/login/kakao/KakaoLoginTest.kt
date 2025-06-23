@@ -10,7 +10,7 @@ import com.unimal.user.domain.role.enums.MemberRoleCode
 import com.unimal.user.service.member.MemberObject
 import com.unimal.user.service.authentication.login.dto.UserInfo
 import com.unimal.user.service.authentication.login.enums.LoginType
-import com.unimal.user.service.authentication.login.social.KakaoLoginObject
+import com.unimal.user.service.authentication.login.KakaoLoginObject
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
@@ -78,7 +78,7 @@ class KakaoLoginTest {
         } returns ResponseEntity(fakeResponseBody, HttpStatus.OK)
 
         // when
-        val result: UserInfo = kakaoLoginObject.getInfo(fakeToken)
+        val result: UserInfo = kakaoLoginObject.getUserInfo(fakeToken)
 
         // then
         assertEquals("KAKAO", result.provider)
@@ -115,7 +115,7 @@ class KakaoLoginTest {
         } returns ResponseEntity(fakeResponseBody, HttpStatus.OK)
 
         // when // then
-        assertThrows(LoginException::class.java) { kakaoLoginObject.getInfo(fakeToken) }
+        assertThrows(LoginException::class.java) { kakaoLoginObject.getUserInfo(fakeToken) }
 
     }
 
