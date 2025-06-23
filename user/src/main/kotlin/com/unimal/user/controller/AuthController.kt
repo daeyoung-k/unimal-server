@@ -6,6 +6,7 @@ import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.config.annotation.SocialLoginToken
 import com.unimal.user.controller.request.GoogleLoginRequest
 import com.unimal.user.controller.request.KakaoLoginRequest
+import com.unimal.user.controller.request.ManualLoginRequest
 import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.service.LoginService
 import com.unimal.user.service.TokenService
@@ -52,6 +53,17 @@ class AuthController(
         return CommonResponse()
     }
 
+    @PostMapping("/login/manual")
+    fun manualLogin(
+        @RequestBody @Valid manualLoginRequest: ManualLoginRequest,
+        response: HttpServletResponse
+    ): CommonResponse {
+        val jwtToken = loginService.login(manualLoginRequest)
+        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
+        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        return CommonResponse()
+    }
+
     @GetMapping("/token-reissue")
     fun tokenReissue(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo,
@@ -68,6 +80,14 @@ class AuthController(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo
     ): CommonResponse {
         loginService.logout(commonUserInfo)
+        return CommonResponse()
+    }
+
+    @GetMapping("/withdrawal")
+    fun withdrawal(
+        @UserInfoAnnotation commonUserInfo: CommonUserInfo
+    ): CommonResponse {
+        loginService.withdrawal(commonUserInfo)
         return CommonResponse()
     }
 }

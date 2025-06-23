@@ -14,6 +14,8 @@ open class Member(
     @Column(length = 20)
     var name: String? = null,
 
+    val profileImageUrl: String? = null,
+
     @Column(length = 30, unique = true)
     var nickname: String? = null,
 
@@ -41,6 +43,7 @@ open class Member(
     val createdAt: LocalDateTime? = LocalDateTime.now(),
 
     var updatedAt: LocalDateTime? = null,
+    var withdrawalAt: LocalDateTime? = null,
 
     ): BaseIdEntity() {
     @OneToMany(mappedBy = "memberId", cascade = [CascadeType.ALL], fetch = FetchType.LAZY)

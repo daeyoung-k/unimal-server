@@ -40,6 +40,7 @@ class TokenFilter(
             exchange.request.headers.add("X-Unimal-User-email", userInfo.email)
             exchange.request.headers.add("X-Unimal-User-roles", userInfo.roleString)
             exchange.request.headers.add("X-Unimal-User-provider", userInfo.provider)
+            exchange.request.headers.add("X-Unimal-User-token-type", userInfo.tokenType)
             chain.filter(exchange)
         }
     }

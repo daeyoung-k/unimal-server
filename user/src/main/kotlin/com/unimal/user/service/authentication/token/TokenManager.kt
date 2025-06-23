@@ -72,5 +72,13 @@ class TokenManager(
         return authenticationTokenRepository.findByEmail(email)
     }
 
+    fun deleteDbToken(
+        email: String
+    ) {
+        val refreshToken = getDbToken(email)
+        if (refreshToken == null) return
+        authenticationTokenRepository.delete(refreshToken)
+    }
+
 
 }
