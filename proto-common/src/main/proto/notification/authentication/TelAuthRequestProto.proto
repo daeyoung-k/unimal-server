@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.unimal.proto.notification.authentication";
+option java_outer_classname = "TelAuthRequestProto";
+
+service TelAuthRequestService {
+  rpc sendTelAuthRequest (TelAuthRequestSendRequest) returns (TelAuthRequestSendResponse);
+}
+
+message TelAuthRequestSendRequest {
+  string tel = 1;
+  string email = 2;
+}
+
+message TelAuthRequestSendResponse {}

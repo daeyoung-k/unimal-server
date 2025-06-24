@@ -1,6 +1,7 @@
 package com.unimal.user.service.authentication.token
 
-import com.unimal.user.service.authentication.login.enums.LoginType
+import com.unimal.user.service.login.enums.LoginType
+import com.unimal.user.service.token.JwtProvider
 import io.jsonwebtoken.ExpiredJwtException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
