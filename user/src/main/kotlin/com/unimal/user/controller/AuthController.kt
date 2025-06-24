@@ -4,12 +4,9 @@ import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.config.annotation.SocialLoginToken
-import com.unimal.user.controller.request.GoogleLoginRequest
-import com.unimal.user.controller.request.KakaoLoginRequest
-import com.unimal.user.controller.request.ManualLoginRequest
-import com.unimal.user.controller.request.NaverLoginRequest
-import com.unimal.user.service.LoginService
-import com.unimal.user.service.TokenService
+import com.unimal.user.controller.request.*
+import com.unimal.user.service.login.LoginService
+import com.unimal.user.service.token.TokenService
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
@@ -64,6 +61,15 @@ class AuthController(
         return CommonResponse()
     }
 
+    @PostMapping("/signup/manual")
+    fun manualSignup(
+        @RequestBody @Valid signupRequest: SignupRequest,
+        response: HttpServletResponse
+    ): CommonResponse {
+        loginService.signup(signupRequest)
+        return CommonResponse()
+    }
+
     @GetMapping("/token-reissue")
     fun tokenReissue(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo,
@@ -88,6 +94,32 @@ class AuthController(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo
     ): CommonResponse {
         loginService.withdrawal(commonUserInfo)
+        return CommonResponse()
+    }
+
+    @PostMapping("/email-code/request")
+    fun emailCodeRequest(): CommonResponse {
+        return CommonResponse()
+    }
+
+    @PostMapping("/email-code/verify")
+    fun emailCodeVerify(
+        @RequestBody @Valid emailCodeVerifyRequest: EmailCodeVerifyRequest
+    ): CommonResponse {
+        return CommonResponse()
+    }
+
+    @PostMapping("/tel-code/request")
+    fun telCodeRequest(
+        @RequestBody @Valid telCodeRequest: TelCodeRequest
+    ): CommonResponse {
+        return CommonResponse()
+    }
+
+    @PostMapping("/tel-code/verify")
+    fun telCodeVerify(
+        @RequestBody @Valid telVerifyCodeRequest: TelVerifyCodeRequest
+    ): CommonResponse {
         return CommonResponse()
     }
 }

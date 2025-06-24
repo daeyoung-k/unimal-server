@@ -1,14 +1,11 @@
-package com.unimal.user.service
+package com.unimal.user.service.token
 
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.webcommon.exception.UserNotFoundException
-import com.unimal.user.service.authentication.login.enums.LoginType
-import com.unimal.user.service.authentication.token.JwtProvider
-import com.unimal.user.service.authentication.token.TokenManager
-import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
+import com.unimal.user.service.login.enums.LoginType
+import com.unimal.user.service.token.dto.JwtTokenDTO
 import com.unimal.user.service.member.MemberObject
 import com.unimal.webcommon.exception.CustomException
-import com.unimal.webcommon.exception.TokenException
 import jakarta.transaction.Transactional
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service

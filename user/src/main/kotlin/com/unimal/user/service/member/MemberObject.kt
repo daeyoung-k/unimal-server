@@ -11,8 +11,8 @@ import com.unimal.user.domain.role.MemberRoleRepository
 import com.unimal.user.domain.role.RoleRepository
 import com.unimal.user.domain.role.enums.MemberRoleCode
 import com.unimal.user.kafka.topics.MemberKafkaTopic
-import com.unimal.user.service.authentication.login.dto.UserInfo
-import com.unimal.user.service.authentication.login.enums.LoginType
+import com.unimal.user.service.login.dto.UserInfo
+import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component

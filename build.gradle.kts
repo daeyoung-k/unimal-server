@@ -71,6 +71,7 @@ configure(listOf(
     project(":photo"),
     project(":board"),
     project(":map"),
+    project(":notification"),
 )) {
     apply(plugin = "com.google.protobuf")
 

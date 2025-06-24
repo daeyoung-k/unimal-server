@@ -1,7 +1,7 @@
-package com.unimal.user.service.authentication.token
+package com.unimal.user.service.token
 
 import com.unimal.webcommon.exception.TokenException
-import com.unimal.user.service.authentication.login.enums.LoginType
+import com.unimal.user.service.login.enums.LoginType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException

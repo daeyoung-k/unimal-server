@@ -1,4 +1,4 @@
-package com.unimal.user.service.authentication.token
+package com.unimal.user.service.token
 
 import com.unimal.user.domain.authentication.AuthenticationToken
 import com.unimal.user.domain.authentication.AuthenticationTokenRepository

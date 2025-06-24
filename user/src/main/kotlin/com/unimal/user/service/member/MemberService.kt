@@ -1,4 +1,4 @@
-package com.unimal.user.service
+package com.unimal.user.service.member
 
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.enums.Gender
@@ -6,8 +6,7 @@ import com.unimal.common.extension.toPatternLocalDateTime
 import com.unimal.webcommon.exception.CustomException
 import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.controller.request.InfoUpdateRequest
-import com.unimal.user.service.authentication.login.enums.LoginType
-import com.unimal.user.service.member.MemberObject
+import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
