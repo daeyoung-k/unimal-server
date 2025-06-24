@@ -1,12 +1,12 @@
-package com.unimal.user.service.authentication.login
+package com.unimal.user.service.login
 
 import com.google.gson.Gson
 import com.unimal.user.domain.member.Member
 import com.unimal.webcommon.exception.ApiCallException
 import com.unimal.webcommon.exception.ErrorCode
-import com.unimal.user.service.authentication.login.dto.UserInfo
-import com.unimal.user.service.authentication.login.enums.LoginType
-import com.unimal.user.service.authentication.login.dto.KakaoInfo
+import com.unimal.user.service.login.dto.UserInfo
+import com.unimal.user.service.login.enums.LoginType
+import com.unimal.user.service.login.dto.KakaoInfo
 import com.unimal.user.service.member.MemberObject
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders

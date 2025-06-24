@@ -1,4 +1,4 @@
-package com.unimal.user.service.authentication.token.dto
+package com.unimal.user.service.token.dto
 
 data class JwtTokenDTO(
     val accessToken: String,

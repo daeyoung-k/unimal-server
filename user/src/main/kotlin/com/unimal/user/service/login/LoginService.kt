@@ -1,21 +1,16 @@
-package com.unimal.user.service
+package com.unimal.user.service.login
 
 
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.user.controller.request.*
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException
 import com.unimal.webcommon.exception.UserNotFoundException
-import com.unimal.user.controller.request.GoogleLoginRequest
-import com.unimal.user.controller.request.KakaoLoginRequest
-import com.unimal.user.controller.request.LoginRequest
-import com.unimal.user.controller.request.ManualLoginRequest
-import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.domain.member.Member
-import com.unimal.user.service.authentication.login.enums.LoginType
-import com.unimal.user.service.authentication.login.LoginInterface
-import com.unimal.user.service.authentication.token.JwtProvider
-import com.unimal.user.service.authentication.token.TokenManager
-import com.unimal.user.service.authentication.token.dto.JwtTokenDTO
+import com.unimal.user.service.login.enums.LoginType
+import com.unimal.user.service.token.JwtProvider
+import com.unimal.user.service.token.TokenManager
+import com.unimal.user.service.token.dto.JwtTokenDTO
 import com.unimal.user.service.member.MemberObject
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Qualifier
@@ -76,6 +71,11 @@ class LoginService(
             accessToken = accessToken,
             refreshToken = refreshToken
         )
+    }
+
+    @Transactional
+    fun signup(signupRequest: SignupRequest) {
+        TODO("일반 유저 회원가입 로직 구현")
     }
 
     @Transactional
