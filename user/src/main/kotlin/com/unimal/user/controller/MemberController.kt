@@ -4,7 +4,7 @@ import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.controller.request.InfoUpdateRequest
-import com.unimal.user.service.MemberService
+import com.unimal.user.service.member.MemberService
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
