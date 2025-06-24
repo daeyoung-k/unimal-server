@@ -24,8 +24,15 @@ protobuf {
 
 dependencies {
     //common 모듈 상속
-    implementation(project(":common"))
+    // Spring Boot Starter Data JPA는 common 모듈에서 제외 상속
+    implementation(project(":common")){
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-data-jpa")
+    }
     implementation(project(":proto-common"))
+
+    //mail
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
     //redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
