@@ -3,8 +3,6 @@ import org.gradle.kotlin.dsl.implementation
 extra["protobufVersion"] = "4.31.0"
 extra["grpcVersion"] = "1.72.0"
 
-val protobufPluginVersion: String by extra
-
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
