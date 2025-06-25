@@ -50,26 +50,6 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/login/manual")
-    fun manualLogin(
-        @RequestBody @Valid manualLoginRequest: ManualLoginRequest,
-        response: HttpServletResponse
-    ): CommonResponse {
-        val jwtToken = loginService.login(manualLoginRequest)
-        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
-        return CommonResponse()
-    }
-
-    @PostMapping("/signup/manual")
-    fun manualSignup(
-        @RequestBody @Valid signupRequest: SignupRequest,
-        response: HttpServletResponse
-    ): CommonResponse {
-        loginService.signup(signupRequest)
-        return CommonResponse()
-    }
-
     @GetMapping("/token-reissue")
     fun tokenReissue(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo,
@@ -97,8 +77,30 @@ class AuthController(
         return CommonResponse()
     }
 
+    @PostMapping("/login/manual")
+    fun manualLogin(
+        @RequestBody @Valid manualLoginRequest: ManualLoginRequest,
+        response: HttpServletResponse
+    ): CommonResponse {
+        val jwtToken = loginService.login(manualLoginRequest)
+        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
+        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        return CommonResponse()
+    }
+
+    @PostMapping("/signup/manual")
+    fun manualSignup(
+        @RequestBody @Valid signupRequest: SignupRequest,
+        response: HttpServletResponse
+    ): CommonResponse {
+        loginService.signup(signupRequest)
+        return CommonResponse()
+    }
+
     @PostMapping("/email-code/request")
-    fun emailCodeRequest(): CommonResponse {
+    fun emailCodeRequest(
+        @RequestBody @Valid emailCodeRequest: EmailCodeRequest,
+    ): CommonResponse {
         return CommonResponse()
     }
 
