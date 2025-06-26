@@ -40,7 +40,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = ex.code ?: HttpStatus.BAD_REQUEST.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.DEFAULT_ERROR.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.DEFAULT_ERROR.message
             ),  ex.status ?: HttpStatus.OK)
     }
 
@@ -49,7 +49,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.EXPIRED_TOKEN.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.EXPIRED_TOKEN.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 
@@ -58,7 +58,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.SIGNATURE_TOKEN.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.SIGNATURE_TOKEN.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 
@@ -67,7 +67,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.INVALID_TOKEN.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.INVALID_TOKEN.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 
@@ -76,7 +76,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.USER_NOT_FOUND.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.USER_NOT_FOUND.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 }

@@ -8,6 +8,7 @@ import com.unimal.webcommon.exception.UserNotFoundException
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
@@ -21,7 +22,6 @@ class CorsConfig: WebMvcConfigurer {
         registry.addMapping("/**")
             .allowedOriginPatterns("*")
             .allowedMethods("GET", "POST", "PATCH", "OPTIONS", "DELETE")
-            .exposedHeaders("X-Unimal-User-email", "X-Unimal-User-roles", "X-Unimal-User-provider")
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
@@ -40,12 +40,20 @@ class CorsConfig: WebMvcConfigurer {
             binderFactory: WebDataBinderFactory?
         ): Any? {
             val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
-            return CommonUserInfo(
+            val userInfo = CommonUserInfo(
                 email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException(ErrorCode.EMAIL_NOT_FOUND.message),
                 roles = request.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException(ErrorCode.ROLE_NOT_FOUND.message),
                 provider = request.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException(ErrorCode.PROVIDER_NOT_FOUND.message),
-                tokenType = request.getHeader("X-Unimal-User-token-type") ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message)
+                tokenType = request.getHeader("X-Unimal-User-token-type") ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED)
             )
+
+            // 액세스 토큰만 허용
+            return if (userInfo.tokenType == "access") {
+                userInfo
+            } else {
+                throw TokenException(ErrorCode.ALLOW_ACCESS_TOKEN_ONLY.message, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED)
+            }
+
         }
     }
 
