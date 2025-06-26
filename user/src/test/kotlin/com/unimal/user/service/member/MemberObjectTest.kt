@@ -7,6 +7,7 @@ import com.unimal.user.domain.role.MemberRoleRepository
 import com.unimal.user.domain.role.Role
 import com.unimal.user.domain.role.RoleRepository
 import com.unimal.user.domain.role.enums.MemberRoleCode
+import com.unimal.user.kafka.topics.MemberKafkaTopic
 import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import com.unimal.webcommon.exception.LoginException
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import kotlin.test.assertNotNull
 
 @SpringBootTest
@@ -30,8 +32,16 @@ class MemberObjectTest {
     private val memberRepository: MemberRepository = mockk(relaxed = true)
     private val memberRoleRepository: MemberRoleRepository = mockk(relaxed = true)
     private val roleRepository: RoleRepository = mockk(relaxed = true)
+    private val memberKafkaTopic: MemberKafkaTopic = mockk(relaxed = true)
+    private val passwordEncoder: BCryptPasswordEncoder = mockk(relaxed = true)
 
-    private val memberObject = MemberObject(memberRepository, memberRoleRepository, roleRepository)
+    private val memberObject = MemberObject(
+        memberRepository,
+        memberRoleRepository,
+        roleRepository,
+        memberKafkaTopic,
+        passwordEncoder
+    )
 
     companion object {
         private val TEST_EMAIL = "test@test.com"
