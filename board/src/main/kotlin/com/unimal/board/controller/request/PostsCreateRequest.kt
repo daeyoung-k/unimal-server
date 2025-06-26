@@ -1,9 +1,18 @@
 package com.unimal.board.controller.request
 
-import org.springframework.web.multipart.MultipartFile
-
 data class PostsCreateRequest(
-    val images: List<MultipartFile>,
     val title: String,
     val content: String,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val streetName: String? = null,
+    val postalCode: String? = null,
+    val siDo: String? = null,
+    val guGun: String? = null,
+    val dong: String? = null,
+)
+
+data class ImageMetadata(
+    val order: Int,
+    val isMain: Boolean = false,
 )
