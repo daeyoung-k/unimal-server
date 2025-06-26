@@ -16,5 +16,12 @@ class CreateAuthCodeObject(
         return randomCode
     }
 
+    fun createMailTelAuthCode(email: String, tel: String): String {
+        val key = "$email:$tel:auth-code"
+        val randomCode = random()
+        redisTemplate.opsForValue().set(key, randomCode, Duration.ofMinutes(5))
+        return randomCode
+    }
+
     private fun random() = (100000..999999).random().toString()
 }
