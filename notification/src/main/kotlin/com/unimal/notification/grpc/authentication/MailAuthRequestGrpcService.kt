@@ -10,7 +10,6 @@ import net.devh.boot.grpc.server.service.GrpcService
 
 @GrpcService
 class MailAuthRequestGrpcService(
-    private val createAuthCodeObject: CreateAuthCodeObject,
     private val notificationService: NotificationService
 ): MailAuthRequestServiceGrpc.MailAuthRequestServiceImplBase() {
 
@@ -20,8 +19,7 @@ class MailAuthRequestGrpcService(
     ) {
 
         val email = request.email
-        val authCode = createAuthCodeObject.createMailAuthCode(email)
-        notificationService.authenticationCodeSendMail(email, authCode)
+        notificationService.mailAuthenticationCodeSend(email)
 
         val response = MailAuthRequestSendResponse.newBuilder()
             .build()

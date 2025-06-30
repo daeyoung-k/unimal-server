@@ -1,47 +1,28 @@
 package com.unimal.notification.service.navercloud
 
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
+
 import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-@Component
-class NaverCloudSignatureUtil(
-    @Value("\${custom.navercloud.access-key}")
-    private val naverCloudAccessKey: String,
-    @Value("\${custom.navercloud.secret-key}")
-    private val naverCloudSecretKey: String
+object NaverCloudSignatureUtil{
+    fun makeSignature(
+        timestamp: String,
+        naverCloudAccessKey: String,
+        naverCloudSecretKey: String,
+        naverCloudSmsServiceId: String,
+    ): String {
+        val method = "POST"
+        val url = "/sms/v2/services/$naverCloudSmsServiceId/messages"
 
-) {
+        val message = "$method $url\n$timestamp\n$naverCloudAccessKey"
 
-    fun makeSignature(): String {
-        val message = builderMessage()
-
+        val signingKey = SecretKeySpec(naverCloudSecretKey.toByteArray(Charsets.UTF_8), "HmacSHA256")
         val mac = Mac.getInstance("HmacSHA256")
-        val sks = SecretKeySpec(naverCloudSecretKey.toByteArray(charset("UTF-8")), "HmacSHA256")
-        mac.init(sks)
-        val rawHmac = mac.doFinal(message.toByteArray())
+        mac.init(signingKey)
+        val rawHmac = mac.doFinal(message.toByteArray(Charsets.UTF_8))
         return Base64.getEncoder().encodeToString(rawHmac)
-
     }
 
-    fun builderMessage(): String {
-        val space = " "
-        val newLine = "\n"
-        val method = "GET"
-        val url = "/photos/puppy.jpg?query1=&query2"
-        val timestamp = System.currentTimeMillis().toString()
-
-        return StringBuilder()
-            .append(method)
-            .append(space)
-            .append(url)
-            .append(newLine)
-            .append(timestamp)
-            .append(newLine)
-            .append(naverCloudAccessKey)
-            .toString()
-    }
 }
 
