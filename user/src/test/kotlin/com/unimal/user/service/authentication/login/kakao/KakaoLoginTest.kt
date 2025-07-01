@@ -7,6 +7,7 @@ import com.unimal.user.domain.role.MemberRoleRepository
 import com.unimal.user.domain.role.Role
 import com.unimal.user.domain.role.RoleRepository
 import com.unimal.user.domain.role.enums.MemberRoleCode
+import com.unimal.user.kafka.topics.MemberKafkaTopic
 import com.unimal.user.service.member.MemberObject
 import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
@@ -23,6 +24,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.client.RestTemplate
 
@@ -32,9 +34,11 @@ class KakaoLoginTest {
     private val memberRepository: MemberRepository = mockk(relaxed = true)
     private val memberRoleRepository: MemberRoleRepository = mockk(relaxed = true)
     private val roleRepository: RoleRepository = mockk(relaxed = true)
+    private val memberKafkaTopic: MemberKafkaTopic = mockk(relaxed = true)
+    private val passwordEncoder: BCryptPasswordEncoder = mockk(relaxed = true)
 
-    private val kakaoLoginObject = KakaoLoginObject()
-    private val memberObject = MemberObject(memberRepository, memberRoleRepository, roleRepository)
+    private val memberObject = MemberObject(memberRepository, memberRoleRepository, roleRepository, memberKafkaTopic, passwordEncoder)
+    private val kakaoLoginObject = KakaoLoginObject(memberObject)
 
     // 테스트 실행 전 모킹 초기화
     @AfterEach

@@ -89,3 +89,10 @@ spring:
 custom:
   jwt:
     secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}
+
+
+grpc:
+  client:
+    notification-grpc:
+      address: static://localhost:50085
+      negotiation-type: plaintext
