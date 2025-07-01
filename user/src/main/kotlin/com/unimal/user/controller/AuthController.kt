@@ -5,6 +5,7 @@ import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.config.annotation.SocialLoginToken
 import com.unimal.user.controller.request.*
+import com.unimal.user.service.authentication.AuthenticationService
 import com.unimal.user.service.login.LoginService
 import com.unimal.user.service.token.TokenService
 import jakarta.servlet.http.HttpServletResponse
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*
 class AuthController(
     private val loginService: LoginService,
     private val tokenService: TokenService,
+    private val authenticationService: AuthenticationService
 ) {
     @GetMapping("/login/mobile/kakao")
     fun mobileKakao(
@@ -101,6 +103,7 @@ class AuthController(
     fun emailCodeRequest(
         @RequestBody @Valid emailCodeRequest: EmailCodeRequest,
     ): CommonResponse {
+        authenticationService.sendMailAuthRequest(emailCodeRequest.email)
         return CommonResponse()
     }
 
@@ -115,6 +118,7 @@ class AuthController(
     fun telCodeRequest(
         @RequestBody @Valid telCodeRequest: TelCodeRequest
     ): CommonResponse {
+        authenticationService.sendTelAuthRequest(telCodeRequest.email, telCodeRequest.tel)
         return CommonResponse()
     }
 

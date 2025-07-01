@@ -66,6 +66,7 @@ subprojects {
 // 특정 모듈만 gRPC 라이브러리 추가
 configure(listOf(
     project(":proto-common"),
+    project(":user"),
     project(":photo"),
     project(":board"),
     project(":map"),

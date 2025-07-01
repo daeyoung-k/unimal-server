@@ -1,7 +1,6 @@
 package com.unimal.notification.grpc.authentication
 
 import com.unimal.notification.service.NotificationService
-import com.unimal.notification.service.authcode.CreateAuthCodeObject
 import com.unimal.proto.notification.authentication.MailAuthRequestSendRequest
 import com.unimal.proto.notification.authentication.MailAuthRequestSendResponse
 import com.unimal.proto.notification.authentication.MailAuthRequestServiceGrpc
