@@ -3,26 +3,26 @@ package com.unimal.user.controller.request
 import jakarta.validation.constraints.NotBlank
 
 
-data class EmailCodeRequest(
+data class EmailRequest(
     @field:NotBlank
     val email: String,
 )
 
-data class TelCodeRequest(
+data class TelAuthCodeRequest(
     @field:NotBlank
     val email: String,
     @field:NotBlank
     val tel: String,
 )
 
-data class EmailCodeVerifyRequest(
+data class EmailAuthCodeVerifyRequest(
     @field:NotBlank
     val code: String,
     @field:NotBlank
     val email: String
 )
 
-data class TelVerifyCodeRequest(
+data class TelAuthCodeVerifyRequest(
     @field:NotBlank
     val code: String,
     @field:NotBlank

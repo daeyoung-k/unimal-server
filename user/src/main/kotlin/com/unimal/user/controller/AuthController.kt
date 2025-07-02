@@ -7,6 +7,7 @@ import com.unimal.user.config.annotation.SocialLoginToken
 import com.unimal.user.controller.request.*
 import com.unimal.user.service.authentication.AuthenticationService
 import com.unimal.user.service.login.LoginService
+import com.unimal.user.service.member.MemberService
 import com.unimal.user.service.token.TokenService
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
@@ -17,7 +18,8 @@ import org.springframework.web.bind.annotation.*
 class AuthController(
     private val loginService: LoginService,
     private val tokenService: TokenService,
-    private val authenticationService: AuthenticationService
+    private val authenticationService: AuthenticationService,
+    private val memberService: MemberService
 ) {
     @GetMapping("/login/mobile/kakao")
     fun mobileKakao(
@@ -99,33 +101,41 @@ class AuthController(
         return CommonResponse()
     }
 
+    @PostMapping("/email-duplicated/check")
+    fun emailDuplicatedCheck(
+        @RequestBody @Valid emailRequest: EmailRequest,
+    ): CommonResponse {
+        memberService.getDuplicatedEmailCheck(emailRequest)
+        return CommonResponse()
+    }
+
     @PostMapping("/email-code/request")
     fun emailCodeRequest(
-        @RequestBody @Valid emailCodeRequest: EmailCodeRequest,
+        @RequestBody @Valid emailRequest: EmailRequest,
     ): CommonResponse {
-        authenticationService.sendMailAuthRequest(emailCodeRequest.email)
+        authenticationService.sendMailAuthCodeRequest(emailRequest)
         return CommonResponse()
     }
 
     @PostMapping("/email-code/verify")
     fun emailCodeVerify(
-        @RequestBody @Valid emailCodeVerifyRequest: EmailCodeVerifyRequest
+        @RequestBody @Valid emailAuthCodeVerifyRequest: EmailAuthCodeVerifyRequest
     ): CommonResponse {
-        return CommonResponse()
+        return CommonResponse(data = authenticationService.emailAuthCodeVerify(emailAuthCodeVerifyRequest))
     }
 
     @PostMapping("/tel-code/request")
     fun telCodeRequest(
-        @RequestBody @Valid telCodeRequest: TelCodeRequest
+        @RequestBody @Valid telAuthCodeRequest: TelAuthCodeRequest
     ): CommonResponse {
-        authenticationService.sendTelAuthRequest(telCodeRequest.email, telCodeRequest.tel)
+        authenticationService.sendTelAuthCodeRequest(telAuthCodeRequest)
         return CommonResponse()
     }
 
     @PostMapping("/tel-code/verify")
     fun telCodeVerify(
-        @RequestBody @Valid telVerifyCodeRequest: TelVerifyCodeRequest
+        @RequestBody @Valid telAuthCodeVerifyRequest: TelAuthCodeVerifyRequest
     ): CommonResponse {
-        return CommonResponse()
+        return CommonResponse(data = authenticationService.telAuthCodeVerify(telAuthCodeVerifyRequest))
     }
 }

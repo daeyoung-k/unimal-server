@@ -26,7 +26,9 @@ class MemberObject(
     private val memberKafkaTopic: MemberKafkaTopic,
     private val passwordEncoder: BCryptPasswordEncoder
 ) {
-    fun getMember(email: String, provider: LoginType) = memberRepository.findByEmailAndProvider(email, provider.name)
+    fun getEmailProviderMember(email: String, provider: LoginType) = memberRepository.findByEmailAndProvider(email, provider.name)
+
+    fun getEmailMember(email: String): Member? = memberRepository.findByEmail(email)
 
     fun passwordCheck(
         password: String,
@@ -44,7 +46,7 @@ class MemberObject(
     }
 
     fun getMemberInfo(email: String, provider: LoginType): MemberInfo {
-        return getMember(email, provider)?.let { member ->
+        return getEmailProviderMember(email, provider)?.let { member ->
             MemberInfo(
                 email = member.email,
                 provider = provider.name,

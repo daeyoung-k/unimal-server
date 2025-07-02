@@ -80,7 +80,7 @@ class LoginService(
 
     @Transactional
     fun logout(commonUserInfo: CommonUserInfo) {
-        val member = memberObject.getMember(
+        val member = memberObject.getEmailProviderMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(
@@ -94,7 +94,7 @@ class LoginService(
 
     @Transactional
     fun withdrawal(commonUserInfo: CommonUserInfo) {
-        val member = memberObject.getMember(
+        val member = memberObject.getEmailProviderMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(
