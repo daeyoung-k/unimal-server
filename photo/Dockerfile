@@ -6,7 +6,5 @@ RUN apk add --no-cache tzdata
 # 타임존을 서울로 설정
 ENV TZ=Asia/Seoul
 
-RUN ./gradlew :photo:clean :photo:bootJar
-
 COPY build/libs/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
