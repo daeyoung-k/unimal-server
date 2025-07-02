@@ -64,7 +64,7 @@ class MemberObjectTest {
         every { memberRepository.findByEmailAndProvider(email, provider.name) } returns member
 
         // when
-        val result = memberObject.getMember(email, provider)
+        val result = memberObject.getEmailProviderMember(email, provider)
 
         // then
         assertNotNull(result)
@@ -81,7 +81,7 @@ class MemberObjectTest {
         every { memberRepository.findByEmailAndProvider(email, provider.name) } returns null
 
         // When
-        val result = memberObject.getMember(email, provider)
+        val result = memberObject.getEmailProviderMember(email, provider)
 
         // Then
         assertNull(result)
@@ -131,7 +131,7 @@ class MemberObjectTest {
             provider = TEST_PROVIDER.name
         )
 
-        every { memberObject.getMember(TEST_EMAIL, TEST_PROVIDER) } returns member
+        every { memberObject.getEmailProviderMember(TEST_EMAIL, TEST_PROVIDER) } returns member
 
         //When
         val result = memberObject.getMemberInfo(TEST_EMAIL, TEST_PROVIDER)
@@ -145,7 +145,7 @@ class MemberObjectTest {
     @Test
     fun `getMemberInfo - 존재하지 않는 유저를 반환하여 예외를 발생한다`() {
         //Given
-        every { memberObject.getMember(TEST_EMAIL, TEST_PROVIDER) } returns null
+        every { memberObject.getEmailProviderMember(TEST_EMAIL, TEST_PROVIDER) } returns null
 
         //When //Then
         assertThrows(LoginException::class.java) {memberObject.getMemberInfo(TEST_EMAIL, TEST_PROVIDER)}

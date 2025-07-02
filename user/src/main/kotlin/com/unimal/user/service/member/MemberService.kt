@@ -3,11 +3,13 @@ package com.unimal.user.service.member
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternLocalDateTime
+import com.unimal.user.controller.request.EmailRequest
 import com.unimal.webcommon.exception.CustomException
 import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.controller.request.InfoUpdateRequest
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
+import com.unimal.webcommon.exception.DuplicatedEmailException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
@@ -27,7 +29,7 @@ class MemberService(
         commonUserInfo: CommonUserInfo,
         infoUpdateRequest: InfoUpdateRequest
     ) {
-        val member = memberObject.getMember(commonUserInfo.email, LoginType.from(commonUserInfo.provider)) ?: throw UserNotFoundException("회원이 존재하지 않습니다.")
+        val member = memberObject.getEmailProviderMember(commonUserInfo.email, LoginType.from(commonUserInfo.provider)) ?: throw UserNotFoundException("회원이 존재하지 않습니다.")
 
         if (!infoUpdateRequest.name.isNullOrBlank() && infoUpdateRequest.name != member.name) {
             member.updateMember(name = infoUpdateRequest.name)
@@ -63,6 +65,13 @@ class MemberService(
                 member.updateMember(gender = infoUpdateRequest.nickname)
                 memberObject.update(member)
             }
+        }
+    }
+
+    fun getDuplicatedEmailCheck(emailRequest: EmailRequest) {
+        val checkEmail = memberObject.getEmailMember(emailRequest.email)
+        if (checkEmail != null) {
+            throw DuplicatedEmailException("이미 사용중인 이메일입니다.")
         }
     }
 }

@@ -130,7 +130,7 @@ class KakaoLoginTest {
         every { memberRepository.findByEmailAndProvider(email, LoginType.KAKAO.name) } returns Member(email = email, provider = LoginType.KAKAO.name)
 
         // when
-        val result = memberObject.getMember(email, LoginType.KAKAO)
+        val result = memberObject.getEmailProviderMember(email, LoginType.KAKAO)
 
         // then
         assertEquals("test@kakao.com", result?.email)
@@ -144,7 +144,7 @@ class KakaoLoginTest {
         every { memberRepository.findByEmailAndProvider(email, LoginType.KAKAO.name) } returns null
 
         // when
-        val result = memberObject.getMember(email, LoginType.KAKAO)
+        val result = memberObject.getEmailProviderMember(email, LoginType.KAKAO)
 
         // then
         assertNull(result)
