@@ -23,7 +23,7 @@ class TokenService(
 
         return when (type) {
             "access" -> {
-                val accessToken = tokenManager.getCacheToken(email, token) ?: throw TokenNotFoundException("토큰이 만료 되었습니다.")
+                tokenManager.getCacheToken(email, token) ?: throw TokenNotFoundException("토큰이 만료 되었습니다.")
                 CommonUserInfo(
                     email = email,
                     roles = claims["roles"] as List<String>,

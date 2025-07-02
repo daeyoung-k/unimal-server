@@ -6,8 +6,8 @@ services:
     ports:
       - "8080:8080"
     restart: always
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
+    env_file:
+      - .env.docker
     networks:
       - backend-network
 
@@ -15,11 +15,14 @@ services:
     build:
       context: ./user
       dockerfile: Dockerfile
+    depends_on:
+      - api-gateway-server
     ports:
       - "8081:8081"
+      - "50081:50081"
     restart: always
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
+    env_file:
+      - .env.docker
     networks:
       - backend-network
 
@@ -27,9 +30,55 @@ services:
     build:
       context: ./map
       dockerfile: Dockerfile
+    depends_on:
+      - api-gateway-server
     ports:
       - "8082:8082"
+      - "50082:50082"
     restart: always
+    env_file:
+      - .env.docker
+    networks:
+      - backend-network
+
+  board-server:
+    build:
+      context: ./board
+      dockerfile: Dockerfile
+    depends_on:
+      - api-gateway-server
+    ports:
+      - "8083:8083"
+      - "50083:50083"
+    restart: always
+    env_file:
+      - .env.docker
+    networks:
+      - backend-network
+
+  photo-server:
+    build:
+      context: ./photo
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+      - "50084:50084"
+    restart: always
+    env_file:
+      - .env.docker
+    networks:
+      - backend-network
+
+  notification-server:
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+      - "50085:50085"
+    restart: always
+    env_file:
+      - .env.docker
     networks:
       - backend-network
 
