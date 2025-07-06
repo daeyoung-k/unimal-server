@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: ${MAP_SERVICE_PORT}
   servlet:
     context-path: /map
 

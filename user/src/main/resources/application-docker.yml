@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: ${USER_SERVICE_PORT}
   servlet:
     context-path: /user
 

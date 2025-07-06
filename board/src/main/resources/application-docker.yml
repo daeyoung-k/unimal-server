@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: ${BOARD_SERVICE_PORT}
   servlet:
     context-path: /board
 
