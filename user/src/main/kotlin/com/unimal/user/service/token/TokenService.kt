@@ -56,6 +56,7 @@ class TokenService(
         tokenManager.upsertDbToken(member.email, refreshToken)
 
         return JwtTokenDTO(
+            email = member.email,
             accessToken = accessToken,
             refreshToken = refreshToken
         )

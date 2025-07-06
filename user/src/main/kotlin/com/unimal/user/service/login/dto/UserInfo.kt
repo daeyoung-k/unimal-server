@@ -16,7 +16,8 @@ data class UserInfo(
             provider = provider,
             nickname = nickname,
             name = name,
-            tel = tel
+            tel = tel,
+            password = password
         )
     }
 }

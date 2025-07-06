@@ -122,3 +122,9 @@ class DuplicatedEmailException(
     code: Int? = null,
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
+
+class TelNotFoundException(
+    message: String = ErrorCode.TEL_NOT_FOUND.message,
+    code: Int? = ErrorCode.TEL_NOT_FOUND.code,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
