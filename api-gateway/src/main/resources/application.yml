@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${API_GATEWAY_SERVICE_PORT}
 
 spring:
   main:
@@ -13,36 +13,36 @@ spring:
     gateway:
         routes:
           - id: user-service-public
-            uri: ${USER_SERVICE_URI:http://localhost:8081}
+            uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
             predicates:
               - Path=/user/auth/{segment:login|signup}/**
 
           - id: user-service-private
-            uri: ${USER_SERVICE_URI:http://localhost:8081}
+            uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
             predicates:
               - Path=/user/auth/{segment:token-reissue|logout|withdrawal}
             filters:
               - name: TokenFilter
 
           - id: user-service-private
-            uri: ${USER_SERVICE_URI:http://localhost:8081}
+            uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
             predicates:
               - Path=/user/member/**
             filters:
               - name: TokenFilter
 
           - id: map-service
-            uri: ${MAP_SERVICE_URI:http://localhost:8082}
+            uri: ${MAP_SERVICE_URI}:${MAP_SERVICE_PORT}
             predicates:
               - Path=/map/**
 
           - id: board-service
-            uri: ${BOARD_SERVICE_URI:http://localhost:8083}
+            uri: ${BOARD_SERVICE_URI}:${BOARD_SERVICE_PORT}
             predicates:
               - Path=/board/**
 
           - id: photo-service
-            uri: ${PHOTO_SERVICE_URI:http://localhost:8084}
+            uri: ${PHOTO_SERVICE_URI}:${PHOTO_SERVICE_PORT}
             predicates:
               - Path=/photo/**
 
@@ -57,7 +57,7 @@ spring:
     defer-datasource-initialization: true
     properties:
       hibernate:
-        default_schema: unimal_user
+        default_schema: ${DATABASE_USER_SCHEMA}
 
   sql:
     init:
@@ -66,17 +66,17 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/unimal
-    username: ${USER_DATABASE_USERNAME:postgres}
-    password: ${USER_DATABASE_PASSWORD:5432}
+    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     dbcp2:
-      default-schema: unimal_user
+      default-schema: ${DATABASE_USER_SCHEMA}
 
   data:
     redis:
-      host: localhost
-      port: 6379
-      password: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
 custom:
   jwt:

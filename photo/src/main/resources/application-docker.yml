@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: ${PHOTO_SERVICE_PORT}
   servlet:
     context-path: /photo
 
