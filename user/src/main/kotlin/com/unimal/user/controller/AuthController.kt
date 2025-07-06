@@ -27,6 +27,7 @@ class AuthController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(KakaoLoginRequest(token = token))
+        response.setHeader("X-Unimal-Email", jwtToken?.email)
         response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
         response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
         return CommonResponse()
@@ -38,6 +39,7 @@ class AuthController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(naverLoginRequest)
+        response.setHeader("X-Unimal-Email", jwtToken?.email)
         response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
         response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
         return CommonResponse()
@@ -49,6 +51,7 @@ class AuthController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(googleLoginRequest)
+        response.setHeader("X-Unimal-Email", jwtToken?.email)
         response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
         response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
         return CommonResponse()
@@ -60,6 +63,7 @@ class AuthController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = tokenService.accessTokenCreate(commonUserInfo)
+        response.setHeader("X-Unimal-Email", jwtToken.email)
         response.setHeader("X-Unimal-Access-Token", jwtToken.accessToken)
         response.setHeader("X-Unimal-Refresh-Token", jwtToken.refreshToken)
         return CommonResponse()
@@ -87,6 +91,7 @@ class AuthController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(manualLoginRequest)
+        response.setHeader("X-Unimal-Email", jwtToken?.email)
         response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
         response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
         return CommonResponse()
@@ -95,7 +100,6 @@ class AuthController(
     @PostMapping("/signup/manual")
     fun manualSignup(
         @RequestBody @Valid signupRequest: SignupRequest,
-        response: HttpServletResponse
     ): CommonResponse {
         loginService.signup(signupRequest)
         return CommonResponse()
@@ -121,7 +125,8 @@ class AuthController(
     fun emailCodeVerify(
         @RequestBody @Valid emailAuthCodeVerifyRequest: EmailAuthCodeVerifyRequest
     ): CommonResponse {
-        return CommonResponse(data = authenticationService.emailAuthCodeVerify(emailAuthCodeVerifyRequest))
+        authenticationService.emailAuthCodeVerify(emailAuthCodeVerifyRequest)
+        return CommonResponse()
     }
 
     @PostMapping("/tel-code/request")
@@ -136,6 +141,15 @@ class AuthController(
     fun telCodeVerify(
         @RequestBody @Valid telAuthCodeVerifyRequest: TelAuthCodeVerifyRequest
     ): CommonResponse {
-        return CommonResponse(data = authenticationService.telAuthCodeVerify(telAuthCodeVerifyRequest))
+        authenticationService.telAuthCodeVerify(telAuthCodeVerifyRequest)
+        return CommonResponse()
+    }
+
+    @PostMapping("/tel-check/update")
+    fun telCheckUpdate(
+        @RequestBody @Valid telCheckUpdateRequest: TelCheckUpdateRequest,
+    ): CommonResponse {
+        loginService.telCheckUpdate(telCheckUpdateRequest)
+        return CommonResponse()
     }
 }

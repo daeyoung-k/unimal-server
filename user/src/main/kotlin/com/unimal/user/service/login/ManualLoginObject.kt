@@ -5,6 +5,7 @@ import com.unimal.user.domain.member.Member
 import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.MemberObject
+import com.unimal.user.utils.RedisCacheManager
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException
 import com.unimal.webcommon.exception.UserNotFoundException
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Component
 
 @Component("ManualLoginObject")
 class ManualLoginObject(
-    private val memberObject: MemberObject
+    private val memberObject: MemberObject,
+    private val redisCacheManager: RedisCacheManager
 ): LoginInterface {
     override fun provider(): LoginType = LoginType.MANUAL
 
@@ -33,5 +35,18 @@ class ManualLoginObject(
             throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
         }
 
+    }
+
+    fun passwordCheck(password: String): Boolean {
+        val regex = Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#\$%^&*(),.?\":{}|<>])[A-Za-z\\d!@#\$%^&*(),.?\":{}|<>]+$")
+        return regex.matches(password)
+    }
+
+    fun emailTelSuccessCheck(email: String, tel: String): Boolean {
+        val emailKey = "$email:auth-code"
+        val telKey = "$email:$tel:auth-code"
+        val emailCheck = redisCacheManager.getCache(emailKey)
+        val telCheck = redisCacheManager.getCache(telKey)
+        return emailCheck == "SUCCESS" && telCheck == "SUCCESS"
     }
 }
