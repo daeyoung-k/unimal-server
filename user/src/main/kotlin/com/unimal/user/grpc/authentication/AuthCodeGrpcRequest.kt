@@ -4,8 +4,6 @@ import com.unimal.proto.notification.authentication.MailAuthRequestSendRequest
 import com.unimal.proto.notification.authentication.MailAuthRequestServiceGrpc
 import com.unimal.proto.notification.authentication.TelAuthRequestSendRequest
 import com.unimal.proto.notification.authentication.TelAuthRequestServiceGrpc
-import com.unimal.proto.notification.authentication.TelFindAuthRequestSendRequest
-import com.unimal.proto.notification.authentication.TelFindAuthRequestServiceGrpc
 import net.devh.boot.grpc.client.inject.GrpcClient
 import org.springframework.stereotype.Component
 
@@ -18,29 +16,20 @@ class AuthCodeGrpcRequest {
     @GrpcClient("notification-grpc")
     lateinit var telAuthRequestServiceGrpc: TelAuthRequestServiceGrpc.TelAuthRequestServiceBlockingStub
 
-    @GrpcClient("notification-grpc")
-    lateinit var telFindAuthRequestServiceGrpc: TelFindAuthRequestServiceGrpc.TelFindAuthRequestServiceBlockingStub
-
-    fun sendMailAuthRequest(email: String) {
+    fun sendMailAuthRequest(key: String, email: String) {
         val request = MailAuthRequestSendRequest.newBuilder()
+            .setKey(key)
             .setEmail(email)
             .build()
 
         mailAuthRequestServiceGrpc.sendMailAuthRequest(request)
     }
 
-    fun sendTelAuthRequest(email: String, tel: String) {
+    fun sendTelAuthRequest(key: String, tel: String) {
         val request = TelAuthRequestSendRequest.newBuilder()
-            .setEmail(email)
+            .setKey(key)
             .setTel(tel)
             .build()
         telAuthRequestServiceGrpc.sendTelAuthRequest(request)
-    }
-
-    fun sendTelFindAuthRequest(tel: String) {
-        val request = TelFindAuthRequestSendRequest.newBuilder()
-            .setTel(tel)
-            .build()
-        telFindAuthRequestServiceGrpc.sendTelFindAuthRequest(request)
     }
 }

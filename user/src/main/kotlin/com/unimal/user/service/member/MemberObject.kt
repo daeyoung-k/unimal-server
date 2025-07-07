@@ -91,4 +91,13 @@ class MemberObject(
         memberKafkaTopic.withdrawalTopicIssue(member.email)
     }
 
+    fun passwordFormatCheck(password: String): Boolean {
+        val regex = Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#\$%^&*(),.?\":{}|<>])[A-Za-z\\d!@#\$%^&*(),.?\":{}|<>]+$")
+        return regex.matches(password)
+    }
+
+    fun passwordEncode(password: String): String {
+        return passwordEncoder.encode(password.lowercase())
+    }
+
 }

@@ -15,10 +15,10 @@ class TelAuthRequestGrpcService(
         request: TelAuthRequestSendRequest,
         responseObserver: StreamObserver<TelAuthRequestSendResponse>
     ) {
-        val email = request.email
+        val key = request.key
         val tel = request.tel
 
-        notificationService.telAuthenticationCodeSend(email, tel)
+        notificationService.telAuthenticationCodeSend(key, tel)
 
         val response = TelAuthRequestSendResponse.newBuilder()
             .build()

@@ -3,8 +3,11 @@ package com.unimal.user.controller
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.user.controller.request.ChangePasswordRequest
+import com.unimal.user.controller.request.EmailTelAuthCodeVerifyRequest
 import com.unimal.user.controller.request.InfoUpdateRequest
-import com.unimal.user.controller.request.TelRequest
+import com.unimal.user.controller.request.TelAuthCodeVerifyRequest
+import com.unimal.user.service.authentication.AuthenticationService
 import com.unimal.user.service.member.MemberService
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,7 +21,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/member")
 class MemberController(
-    private val memberService: MemberService
+    private val memberService: MemberService,
+    private val authenticationService: AuthenticationService
 ) {
 
     @GetMapping("/info")
@@ -39,8 +43,18 @@ class MemberController(
 
     @PostMapping("/find/email")
     fun findEmail(
-        @RequestBody @Valid telRequest: TelRequest
+        @RequestBody @Valid telAuthCodeVerifyRequest: TelAuthCodeVerifyRequest
     ): CommonResponse {
+        authenticationService.telAuthCodeVerify(telAuthCodeVerifyRequest)
+        val message = memberService.findEmailByTel(telAuthCodeVerifyRequest.tel)
+        return CommonResponse(data = message)
+    }
+
+    @PostMapping("/change/password")
+    fun findPassword(
+        @RequestBody @Valid changePasswordRequest: ChangePasswordRequest,
+    ): CommonResponse {
+        memberService.changePassword(changePasswordRequest)
         return CommonResponse()
     }
 

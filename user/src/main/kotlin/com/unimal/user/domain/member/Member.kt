@@ -29,7 +29,7 @@ open class Member(
     val provider: String? = null,
 
     @Column(length = 200)
-    val password: String? = null,
+    var password: String? = null,
 
     @Column(length = 10)
     var gender: String? = null,

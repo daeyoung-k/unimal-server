@@ -16,6 +16,7 @@ enum class ErrorCode(
     ALLOW_ACCESS_TOKEN_ONLY(1007, "액세스 토큰만 허용됩니다."),
     AUTH_CODE_NOT_FOUND(1008, "인증코드가 존재하지 않습니다."),
     TEL_NOT_FOUND(1009, "휴대폰 번호가 존재하지 않습니다."),
+    AUTH_CODE_NOT_MATCH(1010, "인증코드가 일치하지 않습니다."),
 
     USER_NOT_FOUND(2001, "사용자 정보를 찾을 수 없습니다."),
     ROLE_NOT_FOUND(2002, "존재하지 않는 권한입니다."),

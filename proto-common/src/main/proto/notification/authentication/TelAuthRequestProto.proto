@@ -9,8 +9,8 @@ service TelAuthRequestService {
 }
 
 message TelAuthRequestSendRequest {
-  string tel = 1;
-  string email = 2;
+  string key = 1;
+  string tel = 2;
 }
 
 message TelAuthRequestSendResponse {}

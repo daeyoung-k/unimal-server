@@ -24,10 +24,11 @@ class NotificationService(
 ) {
 
     fun mailAuthenticationCodeSend(
-        email: String,
+        key: String,
+        email: String
     ) {
+        val authCode = createAuthCodeObject.createAuthCodeCacheSaved(key)
         val message = javaMailSender.createMimeMessage()
-        val authCode = createAuthCodeObject.createMailAuthCode(email)
         val context = Context().apply {
             setVariable("code", authCode)
         }
@@ -42,10 +43,10 @@ class NotificationService(
     }
 
     fun telAuthenticationCodeSend(
-        email: String,
+        key: String,
         tel: String,
     ) {
-        val authCode = createAuthCodeObject.createMailTelAuthCode(email, tel)
+        val authCode = createAuthCodeObject.createAuthCodeCacheSaved(key)
         naverCloudSmsManager.sendSms(
             SmsBody(
                 from = authTelNumber,
@@ -54,21 +55,5 @@ class NotificationService(
             )
         )
     }
-
-    fun telFindAuthCodeSend(
-        tel: String
-    ) {
-        val authCode = createAuthCodeObject.createTelAuthCode(tel)
-        naverCloudSmsManager.sendSms(
-            SmsBody(
-                from = authTelNumber,
-                content = SmsTemplate.AUTH_CODE.template(authCode),
-                toList = listOf(tel)
-            )
-        )
-
-    }
-
-
 
 }

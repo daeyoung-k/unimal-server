@@ -18,4 +18,8 @@ class AuthenticationObject(
     fun setAuthCodeSuccess(key: String) {
         redisCacheManager.setCacheMinutes(key, "SUCCESS", 10)
     }
+
+    fun authCodeVerify(authCode: String, requestCode: String) {
+        if (authCode != requestCode) throw AuthCodeException(ErrorCode.AUTH_CODE_NOT_MATCH.message)
+    }
 }

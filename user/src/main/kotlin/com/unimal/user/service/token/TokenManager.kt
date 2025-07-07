@@ -2,6 +2,8 @@ package com.unimal.user.service.token
 
 import com.unimal.user.domain.authentication.AuthenticationToken
 import com.unimal.user.domain.authentication.AuthenticationTokenRepository
+import com.unimal.user.service.login.enums.LoginType
+import com.unimal.user.service.token.dto.JwtTokenDTO
 import com.unimal.user.utils.RedisCacheManager
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -9,6 +11,7 @@ import java.time.LocalDateTime
 @Component
 class TokenManager(
     private val redisCacheManager: RedisCacheManager,
+    private val jwtProvider: JwtProvider,
     private val authenticationTokenRepository: AuthenticationTokenRepository
 ) {
 
@@ -79,5 +82,28 @@ class TokenManager(
         authenticationTokenRepository.delete(refreshToken)
     }
 
+    fun createJwtToken(
+        email: String,
+        provider: LoginType,
+        role: List<String>,
+    ): JwtTokenDTO {
+        val accessToken = jwtProvider.createAccessToken(
+            email = email,
+            provider = provider,
+            roles = role
+        )
+        val refreshToken = jwtProvider.createRefreshToken(
+            email = email,
+            provider = provider,
+            roles = role
+        )
+        saveCacheToken(email, accessToken)
+        upsertDbToken(email, refreshToken)
+        return JwtTokenDTO(
+            email = email,
+            accessToken = accessToken,
+            refreshToken = refreshToken
+        )
+    }
 
 }
