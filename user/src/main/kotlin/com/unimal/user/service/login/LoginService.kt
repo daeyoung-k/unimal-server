@@ -56,7 +56,7 @@ class LoginService(
 
         // 전화번호가 없음
         if (member.tel.isNullOrEmpty()) {
-            throw TelNotFoundException()
+            throw TelNotFoundException(data = member.email)
         }
 
         // 재가입
