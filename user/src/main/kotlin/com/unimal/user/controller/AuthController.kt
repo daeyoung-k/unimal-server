@@ -152,4 +152,11 @@ class AuthController(
         loginService.telCheckUpdate(telCheckUpdateRequest)
         return CommonResponse()
     }
+
+    @PostMapping("/tel-find-code/request")
+    fun telFindCodeRequest(
+        @RequestBody @Valid telRequest: TelRequest
+    ): CommonResponse {
+        return CommonResponse()
+    }
 }

@@ -27,9 +27,14 @@ spring:
           - id: user-service-private
             uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
             predicates:
-              - Path=/user/member/**
+              - Path=/user/member/info/**
             filters:
               - name: TokenFilter
+
+          - id: user-service-private
+            uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
+            predicates:
+              - Path=/user/member/find/**
 
           - id: map-service
             uri: ${MAP_SERVICE_URI}:${MAP_SERVICE_PORT}

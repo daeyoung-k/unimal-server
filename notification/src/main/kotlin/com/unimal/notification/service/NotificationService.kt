@@ -55,6 +55,20 @@ class NotificationService(
         )
     }
 
+    fun telFindAuthCodeSend(
+        tel: String
+    ) {
+        val authCode = createAuthCodeObject.createTelAuthCode(tel)
+        naverCloudSmsManager.sendSms(
+            SmsBody(
+                from = authTelNumber,
+                content = SmsTemplate.AUTH_CODE.template(authCode),
+                toList = listOf(tel)
+            )
+        )
+
+    }
+
 
 
 }

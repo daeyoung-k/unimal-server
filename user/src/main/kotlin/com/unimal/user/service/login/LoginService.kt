@@ -14,7 +14,7 @@ import com.unimal.user.service.token.dto.JwtTokenDTO
 import com.unimal.user.service.member.MemberObject
 import com.unimal.user.utils.RedisCacheManager
 import com.unimal.webcommon.exception.AuthCodeException
-import com.unimal.webcommon.exception.DuplicatedEmailException
+import com.unimal.webcommon.exception.DuplicatedException
 import com.unimal.webcommon.exception.TelNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Qualifier
@@ -88,7 +88,12 @@ class LoginService(
     fun signup(signupRequest: SignupRequest) {
         val checkEmail = memberObject.getEmailMember(signupRequest.email)
         if (checkEmail != null) {
-            throw DuplicatedEmailException(ErrorCode.EMAIL_USED.message)
+            throw DuplicatedException(ErrorCode.EMAIL_USED.message)
+        }
+
+        val checkTel = memberObject.getTelMember(signupRequest.tel)
+        if (checkTel != null) {
+            throw DuplicatedException(ErrorCode.TEL_USED.message)
         }
 
         manualLoginObject as ManualLoginObject

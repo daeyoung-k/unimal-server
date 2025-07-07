@@ -8,6 +8,11 @@ data class EmailRequest(
     val email: String,
 )
 
+data class TelRequest(
+    @field:NotBlank
+    val tel: String,
+)
+
 data class TelAuthCodeRequest(
     @field:NotBlank
     val email: String,

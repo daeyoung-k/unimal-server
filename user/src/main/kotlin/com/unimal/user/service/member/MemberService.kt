@@ -9,7 +9,7 @@ import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.controller.request.InfoUpdateRequest
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
-import com.unimal.webcommon.exception.DuplicatedEmailException
+import com.unimal.webcommon.exception.DuplicatedException
 import com.unimal.webcommon.exception.ErrorCode
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -72,7 +72,7 @@ class MemberService(
     fun getDuplicatedEmailCheck(emailRequest: EmailRequest) {
         val checkEmail = memberObject.getEmailMember(emailRequest.email)
         if (checkEmail != null) {
-            throw DuplicatedEmailException(ErrorCode.EMAIL_USED.message)
+            throw DuplicatedException(ErrorCode.EMAIL_USED.message)
         }
     }
 }
