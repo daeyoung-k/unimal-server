@@ -30,6 +30,8 @@ class MemberObject(
 
     fun getEmailMember(email: String): Member? = memberRepository.findByEmail(email)
 
+    fun getTelMember(tel: String): Member? = memberRepository.findByTel(tel)
+
     fun passwordCheck(
         password: String,
         encodePassword: String

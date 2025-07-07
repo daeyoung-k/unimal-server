@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.unimal.proto.notification.authentication";
+option java_outer_classname = "TelFindAuthRequestProto";
+
+service TelFindAuthRequestService {
+  rpc sendTelFindAuthRequest (TelFindAuthRequestSendRequest) returns (TelFindAuthRequestSendResponse);
+}
+
+message TelFindAuthRequestSendRequest {
+  string tel = 1;
+}
+
+message TelFindAuthRequestSendResponse {}

@@ -1,9 +1,6 @@
 package com.unimal.user.service.authentication
 
-import com.unimal.user.controller.request.EmailRequest
-import com.unimal.user.controller.request.EmailAuthCodeVerifyRequest
-import com.unimal.user.controller.request.TelAuthCodeRequest
-import com.unimal.user.controller.request.TelAuthCodeVerifyRequest
+import com.unimal.user.controller.request.*
 import com.unimal.user.grpc.authentication.AuthCodeGrpcRequest
 import com.unimal.webcommon.exception.AuthCodeException
 import org.springframework.stereotype.Service
@@ -42,6 +39,10 @@ class AuthenticationService(
         } else {
             authenticationObject.setAuthCodeSuccess(key)
         }
+
+    }
+
+    fun sendTelFindAuthCodeRequest(telRequest: TelRequest) {
 
     }
 }

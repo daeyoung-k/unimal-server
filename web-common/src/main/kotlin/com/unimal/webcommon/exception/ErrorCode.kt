@@ -23,8 +23,9 @@ enum class ErrorCode(
     PROVIDER_NOT_FOUND(2004, "존재하지 않는 소셜종류입니다."),
     PASSWORD_NOT_MATCH(2005, "비밀번호가 일치하지 않습니다."),
     EMAIL_USED(2006, "이미 사용중인 이메일입니다."),
-    PASSWORD_FORMAT_INVALID(2007, "비밀번호는 영문, 숫자, 특수문자를 포함한 8자 이상이어야 합니다."),
-    AUTHENTICATION_NOT_COMPLETED(2008, "이메일 인증 또는 휴대폰 인증이 완료되지 않았습니다."),
+    TEL_USED(2007, "이미 사용중인 전화번호입니다."),
+    PASSWORD_FORMAT_INVALID(2008, "비밀번호는 영문, 숫자, 특수문자를 포함한 8자 이상이어야 합니다."),
+    AUTHENTICATION_NOT_COMPLETED(2009, "이메일 인증 또는 휴대폰 인증이 완료되지 않았습니다."),
 
     API_CALL_ERROR(3001, "API 호출에 실패했습니다."),
 }

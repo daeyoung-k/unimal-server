@@ -117,7 +117,7 @@ class AuthCodeException(
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
 
-class DuplicatedEmailException(
+class DuplicatedException(
     message: String?,
     code: Int? = null,
     status: HttpStatus? = null
