@@ -32,7 +32,7 @@ class KakaoLoginObject(
             val response = restTemplate.exchange(url, HttpMethod.GET, entity, String::class.java)
             val kakaoInfo = gson.fromJson(response.body, KakaoInfo::class.java)
             return UserInfo(
-                provider = LoginType.KAKAO.name,
+                provider = provider().name,
                 email = kakaoInfo.kakao_account.email,
                 nickname = kakaoInfo.kakao_account.profile.nickname
             )
@@ -43,6 +43,6 @@ class KakaoLoginObject(
     }
 
     override fun getMember(userInfo: UserInfo): Member {
-        return memberObject.getEmailProviderMember(userInfo.email, provider()) ?: memberObject.signIn(userInfo)
+        return memberObject.getEmailMember(userInfo.email) ?: memberObject.signIn(userInfo)
     }
 }

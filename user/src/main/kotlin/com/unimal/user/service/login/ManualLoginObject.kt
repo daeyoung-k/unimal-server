@@ -27,7 +27,7 @@ class ManualLoginObject(
     }
 
     override fun getMember(userInfo: UserInfo): Member {
-        val member =  memberObject.getEmailProviderMember(userInfo.email, provider()) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        val member =  memberObject.getEmailMember(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         val psCheck = memberObject.passwordCheck(userInfo.password!!, member.password!!)
         return if (psCheck) {
             member
