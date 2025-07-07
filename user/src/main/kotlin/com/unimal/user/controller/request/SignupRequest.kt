@@ -11,6 +11,8 @@ data class SignupRequest(
     @field:NotBlank
     val email: String,
     @field:NotBlank
+    val checkPassword: String,
+    @field:NotBlank
     val password: String,
     @field:NotBlank
     val tel: String,
@@ -22,7 +24,7 @@ data class SignupRequest(
     fun toUserInfo() = UserInfo(
         name = name,
         email = email,
-        password = BCryptPasswordEncoder().encode(password),
+        password = BCryptPasswordEncoder().encode(password.lowercase()),
         tel = tel,
         nickname = nickname,
         provider = provider.name

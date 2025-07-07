@@ -131,9 +131,9 @@ class AuthController(
 
     @PostMapping("/tel-code/request")
     fun telCodeRequest(
-        @RequestBody @Valid telAuthCodeRequest: TelAuthCodeRequest
+        @RequestBody @Valid telRequest: TelRequest
     ): CommonResponse {
-        authenticationService.sendTelAuthCodeRequest(telAuthCodeRequest)
+        authenticationService.sendTelAuthCodeRequest(telRequest)
         return CommonResponse()
     }
 
@@ -145,18 +145,32 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/tel-check/update")
-    fun telCheckUpdate(
-        @RequestBody @Valid telCheckUpdateRequest: TelCheckUpdateRequest,
+    @PostMapping("/email-tel-code/request")
+    fun emailTelCodeRequest(
+        @RequestBody @Valid emailTelAuthCodeRequest: EmailTelAuthCodeRequest
     ): CommonResponse {
-        loginService.telCheckUpdate(telCheckUpdateRequest)
+        authenticationService.sendEmailTelAuthCodeRequest(emailTelAuthCodeRequest)
         return CommonResponse()
     }
 
-    @PostMapping("/tel-find-code/request")
-    fun telFindCodeRequest(
-        @RequestBody @Valid telRequest: TelRequest
+    @PostMapping("/email-tel-code/verify")
+    fun emailTelCodeVerify(
+        @RequestBody @Valid emailTelAuthCodeVerifyRequest: EmailTelAuthCodeVerifyRequest
     ): CommonResponse {
+        authenticationService.emailTelAuthCodeVerify(emailTelAuthCodeVerifyRequest)
+        return CommonResponse()
+    }
+
+    @PostMapping("/tel-check/update")
+    fun telCheckUpdate(
+        @RequestBody @Valid emailTelAuthCodeVerifyRequest: EmailTelAuthCodeVerifyRequest,
+        response: HttpServletResponse
+    ): CommonResponse {
+        authenticationService.emailTelAuthCodeVerify(emailTelAuthCodeVerifyRequest)
+        val jwtToken = loginService.telCheckUpdate(emailTelAuthCodeVerifyRequest.email, emailTelAuthCodeVerifyRequest.tel)
+        response.setHeader("X-Unimal-Email", jwtToken?.email)
+        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
+        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
         return CommonResponse()
     }
 }

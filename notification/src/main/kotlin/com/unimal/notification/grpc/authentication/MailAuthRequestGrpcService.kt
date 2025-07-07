@@ -17,8 +17,9 @@ class MailAuthRequestGrpcService(
         responseObserver: StreamObserver<MailAuthRequestSendResponse>
     ) {
 
+        val key = request.key
         val email = request.email
-        notificationService.mailAuthenticationCodeSend(email)
+        notificationService.mailAuthenticationCodeSend(key, email)
 
         val response = MailAuthRequestSendResponse.newBuilder()
             .build()

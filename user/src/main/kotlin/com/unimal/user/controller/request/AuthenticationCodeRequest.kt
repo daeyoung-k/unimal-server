@@ -8,12 +8,7 @@ data class EmailRequest(
     val email: String,
 )
 
-data class TelRequest(
-    @field:NotBlank
-    val tel: String,
-)
-
-data class TelAuthCodeRequest(
+data class EmailTelAuthCodeRequest(
     @field:NotBlank
     val email: String,
     @field:NotBlank
@@ -27,11 +22,23 @@ data class EmailAuthCodeVerifyRequest(
     val email: String
 )
 
-data class TelAuthCodeVerifyRequest(
+data class EmailTelAuthCodeVerifyRequest(
     @field:NotBlank
     val code: String,
     @field:NotBlank
     val email: String,
+    @field:NotBlank
+    val tel: String
+)
+
+data class TelRequest(
+    @field:NotBlank
+    val tel: String,
+)
+
+data class TelAuthCodeVerifyRequest(
+    @field:NotBlank
+    val code: String,
     @field:NotBlank
     val tel: String
 )

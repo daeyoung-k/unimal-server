@@ -3,6 +3,7 @@ package com.unimal.user.service.member
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternLocalDateTime
+import com.unimal.user.controller.request.ChangePasswordRequest
 import com.unimal.user.controller.request.EmailRequest
 import com.unimal.webcommon.exception.CustomException
 import com.unimal.webcommon.exception.UserNotFoundException
@@ -11,6 +12,7 @@ import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
 import com.unimal.webcommon.exception.DuplicatedException
 import com.unimal.webcommon.exception.ErrorCode
+import com.unimal.webcommon.exception.LoginException
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
@@ -74,5 +76,29 @@ class MemberService(
         if (checkEmail != null) {
             throw DuplicatedException(ErrorCode.EMAIL_USED.message)
         }
+    }
+
+    fun findEmailByTel(
+        tel: String
+    ): String {
+        val member = memberObject.getTelMember(tel)
+        return member?.email ?: "해당 전화번호로 회원을 찾을 수 없습니다."
+    }
+
+    @Transactional
+    fun changePassword(changePasswordRequest: ChangePasswordRequest) {
+        val member = memberObject.getEmailMember(changePasswordRequest.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+
+        if (changePasswordRequest.oldPassword.lowercase() != changePasswordRequest.newPassword.lowercase()) {
+            throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
+        }
+
+        if (!memberObject.passwordFormatCheck(changePasswordRequest.newPassword.lowercase())) {
+            throw LoginException(ErrorCode.PASSWORD_FORMAT_INVALID.message)
+        }
+
+        val password = memberObject.passwordEncode(changePasswordRequest.newPassword)
+        member.password = password
+        memberObject.update(member)
     }
 }

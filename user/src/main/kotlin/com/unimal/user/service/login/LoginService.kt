@@ -8,12 +8,9 @@ import com.unimal.webcommon.exception.LoginException
 import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.domain.member.Member
 import com.unimal.user.service.login.enums.LoginType
-import com.unimal.user.service.token.JwtProvider
 import com.unimal.user.service.token.TokenManager
 import com.unimal.user.service.token.dto.JwtTokenDTO
 import com.unimal.user.service.member.MemberObject
-import com.unimal.user.utils.RedisCacheManager
-import com.unimal.webcommon.exception.AuthCodeException
 import com.unimal.webcommon.exception.DuplicatedException
 import com.unimal.webcommon.exception.TelNotFoundException
 import jakarta.transaction.Transactional
@@ -28,9 +25,7 @@ class LoginService(
     @Qualifier("GoogleLoginObject") private val googleLoginObject: LoginInterface,
     @Qualifier("ManualLoginObject") private val manualLoginObject: LoginInterface,
     private val tokenManager: TokenManager,
-    private val jwtProvider: JwtProvider,
     private val memberObject: MemberObject,
-    private val redisCacheManager: RedisCacheManager
 ) {
 
     @Transactional
@@ -70,18 +65,7 @@ class LoginService(
         }
 
         val roles = member.roles.map { it.roleName.name }
-
-        val accessToken = createAccessJwtToken(member.email, provider, roles)
-        tokenManager.saveCacheToken(member.email, accessToken)
-
-        val refreshToken = createRefreshJwtToken(member.email, provider, roles)
-        tokenManager.upsertDbToken(member.email, refreshToken)
-
-        return JwtTokenDTO(
-            email = member.email,
-            accessToken = accessToken,
-            refreshToken = refreshToken
-        )
+        return tokenManager.createJwtToken(member.email, provider, roles)
     }
 
     @Transactional
@@ -96,11 +80,15 @@ class LoginService(
             throw DuplicatedException(ErrorCode.TEL_USED.message)
         }
 
-        manualLoginObject as ManualLoginObject
-        if (!manualLoginObject.passwordCheck(signupRequest.password.lowercase())) {
+        if (signupRequest.password.lowercase() != signupRequest.checkPassword.lowercase()) {
+            throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
+        }
+
+        if (!memberObject.passwordFormatCheck(signupRequest.password.lowercase())) {
             throw LoginException(ErrorCode.PASSWORD_FORMAT_INVALID.message)
         }
 
+        manualLoginObject as ManualLoginObject
         if (!manualLoginObject.emailTelSuccessCheck(signupRequest.email, signupRequest.tel)) {
             throw LoginException(ErrorCode.AUTHENTICATION_NOT_COMPLETED.message)
         }
@@ -124,16 +112,14 @@ class LoginService(
     }
 
     @Transactional
-    fun telCheckUpdate(telCheckUpdateRequest: TelCheckUpdateRequest) {
-        val key = "${telCheckUpdateRequest.email}:${telCheckUpdateRequest.tel}:auth-code"
-        val check = redisCacheManager.getCache(key)
-        if (check.isNullOrEmpty() || check != "SUCCESS") {
-            throw AuthCodeException(ErrorCode.AUTHENTICATION_NOT_COMPLETED.message)
-        }
+    fun telCheckUpdate(email: String, tel: String): JwtTokenDTO {
+        val member = memberObject.getEmailMember(email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        member.updateMember(tel = tel)
+        val updateMember = memberObject.update(member)
 
-        val member = memberObject.getEmailMember(telCheckUpdateRequest.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
-        member.updateMember(tel = telCheckUpdateRequest.tel)
-        memberObject.update(member)
+        val provider = LoginType.from(updateMember.provider)
+        val roles = member.roles.map { it.roleName.name }
+        return tokenManager.createJwtToken(updateMember.email, provider, roles)
     }
 
     @Transactional
@@ -151,29 +137,5 @@ class LoginService(
         tokenManager.deleteDbToken(member.email)
         memberObject.withdrawal(member)
         memberObject.withdrawalTopicIssue(member)
-    }
-
-    private fun createAccessJwtToken(
-        email: String,
-        provider: LoginType,
-        role: List<String>
-    ): String {
-        return jwtProvider.createAccessToken(
-            email = email,
-            provider = provider,
-            roles = role
-        )
-    }
-
-    private fun createRefreshJwtToken(
-        email: String,
-        provider: LoginType,
-        role: List<String>
-    ): String {
-        return jwtProvider.createRefreshToken(
-            email = email,
-            provider = provider,
-            roles = role
-        )
     }
 }

@@ -37,11 +37,6 @@ class ManualLoginObject(
 
     }
 
-    fun passwordCheck(password: String): Boolean {
-        val regex = Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#\$%^&*(),.?\":{}|<>])[A-Za-z\\d!@#\$%^&*(),.?\":{}|<>]+$")
-        return regex.matches(password)
-    }
-
     fun emailTelSuccessCheck(email: String, tel: String): Boolean {
         val emailKey = "$email:auth-code"
         val telKey = "$email:$tel:auth-code"
