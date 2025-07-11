@@ -1,0 +1,7 @@
+cloud:
+  gateway:
+    routes:
+      - id: board-service
+        uri: ${BOARD_SERVICE_URI}:${BOARD_SERVICE_PORT}
+        predicates:
+          - Path=/board/**
