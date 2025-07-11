@@ -105,7 +105,7 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/email-duplicated/check")
+    @PostMapping("/email/duplicated-check")
     fun emailDuplicatedCheck(
         @RequestBody @Valid emailRequest: EmailRequest,
     ): CommonResponse {
@@ -113,7 +113,7 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/email-code/request")
+    @PostMapping("/email/code-request")
     fun emailCodeRequest(
         @RequestBody @Valid emailRequest: EmailRequest,
     ): CommonResponse {
@@ -121,7 +121,7 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/email-code/verify")
+    @PostMapping("/email/code-verify")
     fun emailCodeVerify(
         @RequestBody @Valid emailAuthCodeVerifyRequest: EmailAuthCodeVerifyRequest
     ): CommonResponse {
@@ -129,7 +129,7 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/tel-code/request")
+    @PostMapping("/tel/code-request")
     fun telCodeRequest(
         @RequestBody @Valid telRequest: TelRequest
     ): CommonResponse {
@@ -137,7 +137,7 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/tel-code/verify")
+    @PostMapping("/tel/code-verify")
     fun telCodeVerify(
         @RequestBody @Valid telAuthCodeVerifyRequest: TelAuthCodeVerifyRequest
     ): CommonResponse {
@@ -145,7 +145,7 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/email-tel-code/request")
+    @PostMapping("/email-tel/code-request")
     fun emailTelCodeRequest(
         @RequestBody @Valid emailTelAuthCodeRequest: EmailTelAuthCodeRequest
     ): CommonResponse {
@@ -153,7 +153,7 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/email-tel-code/verify")
+    @PostMapping("/email-tel/code-verify")
     fun emailTelCodeVerify(
         @RequestBody @Valid emailTelAuthCodeVerifyRequest: EmailTelAuthCodeVerifyRequest
     ): CommonResponse {
@@ -161,7 +161,7 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/tel-check/update")
+    @PostMapping("/tel/check-update")
     fun telCheckUpdate(
         @RequestBody @Valid emailTelAuthCodeVerifyRequest: EmailTelAuthCodeVerifyRequest,
         response: HttpServletResponse

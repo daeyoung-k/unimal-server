@@ -1,0 +1,26 @@
+cloud:
+  gateway:
+    routes:
+      - id: user-service-public
+        uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
+        predicates:
+          - Path=/user/auth/{segment:login|signup|email|tel|email-tel}/**
+
+      - id: user-service-private
+        uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
+        predicates:
+          - Path=/user/auth/{segment:token-reissue|logout|withdrawal}
+        filters:
+          - name: TokenFilter
+
+      - id: user-service-private
+        uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
+        predicates:
+          - Path=/user/member/info/**
+        filters:
+          - name: TokenFilter
+
+      - id: user-service-private
+        uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
+        predicates:
+          - Path=/user/member/find/**
