@@ -1,17 +1,16 @@
 server:
   port: ${API_GATEWAY_SERVICE_PORT}
 
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+
 spring:
   main:
     allow-bean-definition-overriding: true
   config:
     activate:
       on-profile: local
-    import:
-        - classpath:routes/route-user.yml
-        - classpath:routes/route-photo.yml
-        - classpath:routes/route-board.yml
-        - classpath:routes/route-map.yml
   application:
     name: api-gateway-server
 
@@ -50,3 +49,13 @@ spring:
 custom:
   jwt:
     secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}
+  route:
+    base-uri: ${BASE_URI}
+    user:
+      port: ${USER_SERVICE_PORT}
+    map:
+      port: ${MAP_SERVICE_PORT}
+    board:
+      port: ${BOARD_SERVICE_PORT}
+    photo:
+      port: ${PHOTO_SERVICE_PORT}

@@ -1,7 +1,0 @@
-cloud:
-  gateway:
-    routes:
-      - id: map-service
-        uri: ${MAP_SERVICE_URI}:${MAP_SERVICE_PORT}
-        predicates:
-          - Path=/map/**
