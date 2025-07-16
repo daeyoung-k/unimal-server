@@ -16,11 +16,16 @@ class TokenFilter(
     private val tokenService: TokenService,
 ) : AbstractGatewayFilterFactory<TokenFilter.Config>(Config::class.java) {
     class Config {
-        // Add any configuration properties you need here
+        val tokenHeaderName = "Authorization"
+        val addHeaderEmail = "X-Unimal-User-email"
+        val addHeaderRoles = "X-Unimal-User-roles"
+        val addHeaderProvider = "X-Unimal-User-provider"
+        val addHeaderTokenType = "X-Unimal-User-token-type"
+
     }
-    override fun apply(config: Config?): GatewayFilter {
+    override fun apply(config: Config): GatewayFilter {
         return GatewayFilter { exchange, chain ->
-            val tokenBearer = exchange.request.headers.getFirst("Authorization")
+            val tokenBearer = exchange.request.headers.getFirst(config.tokenHeaderName)
             if (tokenBearer.isNullOrBlank()) {
                 exchange.response.statusCode = HttpStatus.UNAUTHORIZED
                 exchange.response.headers.add("Content-Type", "application/json")
@@ -37,10 +42,10 @@ class TokenFilter(
             val token = tokenBearer.removePrefix("Bearer ").trim()
             val tokenClaims = jwtProvider.tokenValidation(token)
             val userInfo = tokenService.getUserInfo(tokenClaims, token)
-            exchange.request.headers.add("X-Unimal-User-email", userInfo.email)
-            exchange.request.headers.add("X-Unimal-User-roles", userInfo.roleString)
-            exchange.request.headers.add("X-Unimal-User-provider", userInfo.provider)
-            exchange.request.headers.add("X-Unimal-User-token-type", userInfo.tokenType)
+            exchange.request.headers.add(config.addHeaderEmail, userInfo.email)
+            exchange.request.headers.add(config.addHeaderRoles, userInfo.roleString)
+            exchange.request.headers.add(config.addHeaderProvider, userInfo.provider)
+            exchange.request.headers.add(config.addHeaderTokenType, userInfo.tokenType)
             chain.filter(exchange)
         }
     }

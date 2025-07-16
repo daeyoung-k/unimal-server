@@ -1,7 +1,0 @@
-cloud:
-  gateway:
-    routes:
-      - id: photo-service
-        uri: ${PHOTO_SERVICE_URI}:${PHOTO_SERVICE_PORT}
-        predicates:
-          - Path=/photo/**
