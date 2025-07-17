@@ -102,7 +102,8 @@ class TokenManager(
         return JwtTokenDTO(
             email = email,
             accessToken = accessToken,
-            refreshToken = refreshToken
+            refreshToken = refreshToken,
+            provider = provider.name,
         )
     }
 
