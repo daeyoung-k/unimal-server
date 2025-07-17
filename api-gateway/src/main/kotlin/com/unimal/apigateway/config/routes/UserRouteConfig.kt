@@ -39,7 +39,13 @@ class UserRouteConfig(
         baseUri: String
     ) {
         route("user-service-public-auth") {
-            path("/user/auth/{segment:login|signup|email|tel|email-tel}/**")
+            path(
+                "/user/auth/login/**",
+                "/user/auth/signup/**",
+                "/user/auth/email/**",
+                "/user/auth/tel/**",
+                "/user/auth/email-tel/**"
+            )
             uri(baseUri)
         }
         route("user-service-public-member") {
@@ -52,10 +58,14 @@ class UserRouteConfig(
         baseUri: String
     ) {
         route("user-service-private-auth") {
-            path("/user/auth/{segment:token-reissue|logout|withdrawal}")
-                .filters { f ->
-                    f.filter(tokenFilter.apply(TokenFilter.Config()))
-                }
+            path(
+                "/user/auth/token-reissue",
+                "/user/auth/logout",
+                "/user/auth/withdrawal",
+            )
+            .filters { f ->
+                f.filter(tokenFilter.apply(TokenFilter.Config()))
+            }
             uri(baseUri)
         }
         route("user-service-private-member") {

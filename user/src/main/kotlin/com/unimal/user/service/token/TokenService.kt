@@ -58,7 +58,8 @@ class TokenService(
         return JwtTokenDTO(
             email = member.email,
             accessToken = accessToken,
-            refreshToken = refreshToken
+            refreshToken = refreshToken,
+            provider = provider.name
         )
     }
 }

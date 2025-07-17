@@ -57,6 +57,26 @@ class AuthController(
         return CommonResponse()
     }
 
+    @PostMapping("/login/manual")
+    fun manualLogin(
+        @RequestBody @Valid manualLoginRequest: ManualLoginRequest,
+        response: HttpServletResponse
+    ): CommonResponse {
+        val jwtToken = loginService.login(manualLoginRequest)
+        response.setHeader("X-Unimal-Email", jwtToken?.email)
+        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
+        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        return CommonResponse()
+    }
+
+    @PostMapping("/signup/manual")
+    fun manualSignup(
+        @RequestBody @Valid signupRequest: SignupRequest,
+    ): CommonResponse {
+        loginService.signup(signupRequest)
+        return CommonResponse()
+    }
+
     @GetMapping("/token-reissue")
     fun tokenReissue(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo,
@@ -82,26 +102,6 @@ class AuthController(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo
     ): CommonResponse {
         loginService.withdrawal(commonUserInfo)
-        return CommonResponse()
-    }
-
-    @PostMapping("/login/manual")
-    fun manualLogin(
-        @RequestBody @Valid manualLoginRequest: ManualLoginRequest,
-        response: HttpServletResponse
-    ): CommonResponse {
-        val jwtToken = loginService.login(manualLoginRequest)
-        response.setHeader("X-Unimal-Email", jwtToken?.email)
-        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
-        return CommonResponse()
-    }
-
-    @PostMapping("/signup/manual")
-    fun manualSignup(
-        @RequestBody @Valid signupRequest: SignupRequest,
-    ): CommonResponse {
-        loginService.signup(signupRequest)
         return CommonResponse()
     }
 
@@ -168,9 +168,10 @@ class AuthController(
     ): CommonResponse {
         authenticationService.emailTelAuthCodeVerify(emailTelAuthCodeVerifyRequest)
         val jwtToken = loginService.telCheckUpdate(emailTelAuthCodeVerifyRequest.email, emailTelAuthCodeVerifyRequest.tel)
-        response.setHeader("X-Unimal-Email", jwtToken?.email)
-        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        response.setHeader("X-Unimal-Email", jwtToken.email)
+        response.setHeader("X-Unimal-Access-Token", jwtToken.accessToken)
+        response.setHeader("X-Unimal-Refresh-Token", jwtToken.refreshToken)
+        response.setHeader("X-Unimal-Provider", jwtToken.provider)
         return CommonResponse()
     }
 }
