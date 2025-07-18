@@ -113,6 +113,10 @@ class LoginService(
 
     @Transactional
     fun telCheckUpdate(email: String, tel: String): JwtTokenDTO {
+        val checkTel = memberObject.getTelMember(tel)
+        if (checkTel != null) {
+            throw DuplicatedException(ErrorCode.TEL_USED.message)
+        }
         val member = memberObject.getEmailMember(email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         member.updateMember(tel = tel)
         val updateMember = memberObject.update(member)
