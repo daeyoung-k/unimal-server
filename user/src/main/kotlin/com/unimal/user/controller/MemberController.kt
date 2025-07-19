@@ -46,8 +46,7 @@ class MemberController(
         @RequestBody @Valid telAuthCodeVerifyRequest: TelAuthCodeVerifyRequest
     ): CommonResponse {
         authenticationService.telAuthCodeVerify(telAuthCodeVerifyRequest)
-        val message = memberService.findEmailByTel(telAuthCodeVerifyRequest.tel)
-        return CommonResponse(data = message)
+        return CommonResponse(data = memberService.findEmailByTel(telAuthCodeVerifyRequest.tel))
     }
 
     @PostMapping("/change/password")

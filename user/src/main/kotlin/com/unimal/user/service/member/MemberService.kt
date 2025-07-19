@@ -9,6 +9,7 @@ import com.unimal.webcommon.exception.CustomException
 import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.controller.request.InfoUpdateRequest
 import com.unimal.user.service.login.enums.LoginType
+import com.unimal.user.service.member.dto.FindEmailInfo
 import com.unimal.user.service.member.dto.MemberInfo
 import com.unimal.webcommon.exception.DuplicatedException
 import com.unimal.webcommon.exception.ErrorCode
@@ -80,9 +81,16 @@ class MemberService(
 
     fun findEmailByTel(
         tel: String
-    ): String {
+    ): FindEmailInfo {
         val member = memberObject.getTelMember(tel)
-        return member?.email ?: "해당 전화번호로 회원을 찾을 수 없습니다."
+
+        val email = member?.email
+
+        return FindEmailInfo(
+            email = email,
+            loginType = LoginType.from(member?.provider),
+            message = if (email == null) "해당 전화번호로 회원을 찾을 수 없습니다." else "아이디 찾기 성공"
+        )
     }
 
     @Transactional
