@@ -3,7 +3,7 @@ package com.unimal.user.service.member
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternLocalDateTime
-import com.unimal.user.controller.request.ChangePasswordRequest
+import com.unimal.user.controller.request.ChangePasswordInterface
 import com.unimal.user.controller.request.EmailRequest
 import com.unimal.webcommon.exception.CustomException
 import com.unimal.webcommon.exception.UserNotFoundException
@@ -94,18 +94,18 @@ class MemberService(
     }
 
     @Transactional
-    fun changePassword(changePasswordRequest: ChangePasswordRequest) {
-        val member = memberObject.getEmailMember(changePasswordRequest.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+    fun changePassword(changePassword: ChangePasswordInterface) {
+        val member = memberObject.getEmailMember(changePassword.email!!) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
 
-        if (changePasswordRequest.oldPassword.lowercase() != changePasswordRequest.newPassword.lowercase()) {
+        if (changePassword.oldPassword.lowercase() != changePassword.newPassword.lowercase()) {
             throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
         }
 
-        if (!memberObject.passwordFormatCheck(changePasswordRequest.newPassword.lowercase())) {
+        if (!memberObject.passwordFormatCheck(changePassword.newPassword.lowercase())) {
             throw LoginException(ErrorCode.PASSWORD_FORMAT_INVALID.message)
         }
 
-        val password = memberObject.passwordEncode(changePasswordRequest.newPassword)
+        val password = memberObject.passwordEncode(changePassword.newPassword)
         member.password = password
         memberObject.update(member)
     }
