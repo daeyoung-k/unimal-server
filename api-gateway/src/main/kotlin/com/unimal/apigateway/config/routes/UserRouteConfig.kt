@@ -30,7 +30,7 @@ class UserRouteConfig(
         val baseUri = "${userUri}:${userPort}"
         return builder.routes {
             publicRoutes(baseUri)
-            tokenFilterRoutes(baseUri)
+            filterRoutes(baseUri)
         }
 
     }
@@ -38,7 +38,7 @@ class UserRouteConfig(
     private fun RouteLocatorDsl.publicRoutes(
         baseUri: String
     ) {
-        route("user-service-public-auth") {
+        route("user-public-auth") {
             path(
                 "/user/auth/login/**",
                 "/user/auth/signup/**",
@@ -48,16 +48,16 @@ class UserRouteConfig(
             )
             uri(baseUri)
         }
-        route("user-service-public-member") {
+        route("user-public-member") {
             path("/user/member/find/**")
             uri(baseUri)
         }
     }
 
-    private fun RouteLocatorDsl.tokenFilterRoutes(
+    private fun RouteLocatorDsl.filterRoutes(
         baseUri: String
     ) {
-        route("user-service-private-auth") {
+        route("user-private-auth") {
             path(
                 "/user/auth/token-reissue",
                 "/user/auth/logout",
@@ -68,11 +68,14 @@ class UserRouteConfig(
             }
             uri(baseUri)
         }
-        route("user-service-private-member") {
-            path("/user/member/info/**")
-                .filters { f ->
-                    f.filter(tokenFilter.apply(TokenFilter.Config()))
-                }
+        route("user-private-member") {
+            path(
+                "/user/member/info/**",
+                "/user/member/change/password",
+            )
+            .filters { f ->
+                f.filter(tokenFilter.apply(TokenFilter.Config()))
+            }
             uri(baseUri)
         }
     }

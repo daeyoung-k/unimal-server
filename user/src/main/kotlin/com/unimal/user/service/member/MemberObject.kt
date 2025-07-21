@@ -92,7 +92,8 @@ class MemberObject(
     }
 
     fun passwordFormatCheck(password: String): Boolean {
-        val regex = Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#\$%^&*(),.?\":{}|<>])[A-Za-z\\d!@#\$%^&*(),.?\":{}|<>]+$")
+        // 비밀번호는 8자 ~ 20자 사이, 영문, 숫자, 특수문자를 포함.
+        val regex = Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#\$%^&*(),.?\":{}|<>])[A-Za-z\\d!@#\$%^&*(),.?\":{}|<>]{8,20}$")
         return regex.matches(password)
     }
 

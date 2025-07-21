@@ -7,6 +7,7 @@ import com.unimal.user.controller.request.ChangePasswordRequest
 import com.unimal.user.controller.request.EmailTelAuthCodeVerifyRequest
 import com.unimal.user.controller.request.InfoUpdateRequest
 import com.unimal.user.controller.request.TelAuthCodeVerifyRequest
+import com.unimal.user.controller.request.VerifyChangePasswordRequest
 import com.unimal.user.service.authentication.AuthenticationService
 import com.unimal.user.service.member.MemberService
 import jakarta.validation.Valid
@@ -50,10 +51,21 @@ class MemberController(
     }
 
     @PostMapping("/change/password")
-    fun findPassword(
+    fun changePassword(
+        @UserInfoAnnotation commonUserInfo: CommonUserInfo,
         @RequestBody @Valid changePasswordRequest: ChangePasswordRequest,
     ): CommonResponse {
+
+        changePasswordRequest.email = commonUserInfo.email
         memberService.changePassword(changePasswordRequest)
+        return CommonResponse()
+    }
+
+    @PostMapping("/find/change/password")
+    fun findChangePassword(
+        @RequestBody @Valid verifyChangePasswordRequest: VerifyChangePasswordRequest,
+    ): CommonResponse {
+        memberService.changePassword(verifyChangePasswordRequest)
         return CommonResponse()
     }
 
