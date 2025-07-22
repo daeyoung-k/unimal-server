@@ -52,6 +52,10 @@ class UserRouteConfig(
             path("/user/member/find/**")
             uri(baseUri)
         }
+        route("user-public-slang") {
+            path("/user/slang/**")
+            uri(baseUri)
+        }
     }
 
     private fun RouteLocatorDsl.filterRoutes(
