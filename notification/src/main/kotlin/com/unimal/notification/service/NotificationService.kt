@@ -1,6 +1,11 @@
 package com.unimal.notification.service
 
+import com.unimal.notification.service.authcode.CreateAuthCodeObject
+import com.unimal.notification.service.navercloud.NaverCloudSmsManager
+import com.unimal.notification.service.navercloud.dto.SmsBody
+import com.unimal.notification.service.navercloud.enums.SmsTemplate
 import jakarta.mail.internet.InternetAddress
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
@@ -11,15 +16,21 @@ import org.thymeleaf.context.Context
 class NotificationService(
     private val javaMailSender: JavaMailSender,
     private val templateEngine: TemplateEngine,
+    private val naverCloudSmsManager: NaverCloudSmsManager,
+    private val createAuthCodeObject: CreateAuthCodeObject,
+
+    @Value("\${custom.auth-tel-number}")
+    private val authTelNumber: String
 ) {
 
-    fun authenticationCodeSendMail(
-        email: String,
-        code: String,
+    fun mailAuthenticationCodeSend(
+        key: String,
+        email: String
     ) {
+        val authCode = createAuthCodeObject.createAuthCodeCacheSaved(key)
         val message = javaMailSender.createMimeMessage()
         val context = Context().apply {
-            setVariable("code", code)
+            setVariable("code", authCode)
         }
         val htmlContent = templateEngine.process("authentication-mail", context)
         val helper = MimeMessageHelper(message, true, "UTF-8")
@@ -29,6 +40,20 @@ class NotificationService(
         helper.setText(htmlContent, true)
 
         javaMailSender.send(message)
+    }
+
+    fun telAuthenticationCodeSend(
+        key: String,
+        tel: String,
+    ) {
+        val authCode = createAuthCodeObject.createAuthCodeCacheSaved(key)
+        naverCloudSmsManager.sendSms(
+            SmsBody(
+                from = authTelNumber,
+                content = SmsTemplate.AUTH_CODE.template(authCode),
+                toList = listOf(tel)
+            )
+        )
     }
 
 }

@@ -9,10 +9,9 @@ class CreateAuthCodeObject(
     private val redisTemplate: RedisTemplate<String, String>,
 ) {
 
-    fun createMailAuthCode(email: String): String {
-        val key = "$email:auth-code"
+    fun createAuthCodeCacheSaved(key: String): String {
         val randomCode = random()
-        redisTemplate.opsForValue().set(key, randomCode, Duration.ofMinutes(10))
+        redisTemplate.opsForValue().set(key, randomCode, Duration.ofMinutes(5))
         return randomCode
     }
 

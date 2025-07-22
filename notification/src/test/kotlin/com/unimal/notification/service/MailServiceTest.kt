@@ -14,7 +14,7 @@ class MailServiceTest {
 
     @Test
     fun `test`() {
-        notificationService.authenticationCodeSendMail("123435", "eodud4976@gmail.com")
+        notificationService.mailAuthenticationCodeSend("key", "eodud4976@gmail.com")
     }
 
 }

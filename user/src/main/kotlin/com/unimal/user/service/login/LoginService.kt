@@ -8,10 +8,11 @@ import com.unimal.webcommon.exception.LoginException
 import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.domain.member.Member
 import com.unimal.user.service.login.enums.LoginType
-import com.unimal.user.service.token.JwtProvider
 import com.unimal.user.service.token.TokenManager
 import com.unimal.user.service.token.dto.JwtTokenDTO
 import com.unimal.user.service.member.MemberObject
+import com.unimal.webcommon.exception.DuplicatedException
+import com.unimal.webcommon.exception.TelNotFoundException
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
@@ -24,8 +25,7 @@ class LoginService(
     @Qualifier("GoogleLoginObject") private val googleLoginObject: LoginInterface,
     @Qualifier("ManualLoginObject") private val manualLoginObject: LoginInterface,
     private val tokenManager: TokenManager,
-    private val jwtProvider: JwtProvider,
-    private val memberObject: MemberObject
+    private val memberObject: MemberObject,
 ) {
 
     @Transactional
@@ -54,37 +54,56 @@ class LoginService(
             }
         }
 
+        // 전화번호가 없음
+        if (member.tel.isNullOrEmpty()) {
+            throw TelNotFoundException(data = member.email)
+        }
+
         // 재가입
         if (member.withdrawalAt != null) {
             memberObject.reSignIn(member)
         }
 
         val roles = member.roles.map { it.roleName.name }
-
-        val accessToken = createAccessJwtToken(member.email, provider, roles)
-        tokenManager.saveCacheToken(member.email, accessToken)
-
-        val refreshToken = createRefreshJwtToken(member.email, provider, roles)
-        tokenManager.upsertDbToken(member.email, refreshToken)
-
-        return JwtTokenDTO(
-            accessToken = accessToken,
-            refreshToken = refreshToken
-        )
+        return tokenManager.createJwtToken(member.email, provider, roles)
     }
 
     @Transactional
     fun signup(signupRequest: SignupRequest) {
-        TODO("일반 유저 회원가입 로직 구현")
+        val checkEmail = memberObject.getEmailMember(signupRequest.email)
+        if (checkEmail != null) {
+            throw DuplicatedException(ErrorCode.EMAIL_USED.message)
+        }
+
+        val checkTel = memberObject.getTelMember(signupRequest.tel)
+        if (checkTel != null) {
+            throw DuplicatedException(ErrorCode.TEL_USED.message)
+        }
+
+        if (signupRequest.password.lowercase() != signupRequest.checkPassword.lowercase()) {
+            throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
+        }
+
+        if (!memberObject.passwordFormatCheck(signupRequest.password.lowercase())) {
+            throw LoginException(ErrorCode.PASSWORD_FORMAT_INVALID.message)
+        }
+
+        manualLoginObject as ManualLoginObject
+        if (!manualLoginObject.emailTelSuccessCheck(signupRequest.email, signupRequest.tel)) {
+            throw LoginException(ErrorCode.AUTHENTICATION_NOT_COMPLETED.message)
+        }
+
+        val userInfo = signupRequest.toUserInfo()
+        memberObject.signIn(userInfo)
     }
 
     @Transactional
     fun logout(commonUserInfo: CommonUserInfo) {
-        val member = memberObject.getMember(
+        val member = memberObject.getEmailProviderMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(
-            message = "회원이 존재하지 않습니다.",
+            message = ErrorCode.USER_NOT_FOUND.message,
             code = HttpStatus.UNAUTHORIZED.value(),
             status = HttpStatus.UNAUTHORIZED
         )
@@ -93,12 +112,27 @@ class LoginService(
     }
 
     @Transactional
+    fun telCheckUpdate(email: String, tel: String): JwtTokenDTO {
+        val checkTel = memberObject.getTelMember(tel)
+        if (checkTel != null) {
+            throw DuplicatedException(ErrorCode.TEL_USED.message)
+        }
+        val member = memberObject.getEmailMember(email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        member.updateMember(tel = tel)
+        val updateMember = memberObject.update(member)
+
+        val provider = LoginType.from(updateMember.provider)
+        val roles = member.roles.map { it.roleName.name }
+        return tokenManager.createJwtToken(updateMember.email, provider, roles)
+    }
+
+    @Transactional
     fun withdrawal(commonUserInfo: CommonUserInfo) {
-        val member = memberObject.getMember(
+        val member = memberObject.getEmailProviderMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(
-            message = "회원이 존재하지 않습니다.",
+            message = ErrorCode.USER_NOT_FOUND.message,
             code = HttpStatus.UNAUTHORIZED.value(),
             status = HttpStatus.UNAUTHORIZED
         )
@@ -107,29 +141,5 @@ class LoginService(
         tokenManager.deleteDbToken(member.email)
         memberObject.withdrawal(member)
         memberObject.withdrawalTopicIssue(member)
-    }
-
-    private fun createAccessJwtToken(
-        email: String,
-        provider: LoginType,
-        role: List<String>
-    ): String {
-        return jwtProvider.createAccessToken(
-            email = email,
-            provider = provider,
-            roles = role
-        )
-    }
-
-    private fun createRefreshJwtToken(
-        email: String,
-        provider: LoginType,
-        role: List<String>
-    ): String {
-        return jwtProvider.createRefreshToken(
-            email = email,
-            provider = provider,
-            roles = role
-        )
     }
 }

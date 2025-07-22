@@ -29,6 +29,10 @@ dependencies {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-data-jpa")
     }
     implementation(project(":proto-common"))
+    implementation(project(":web-common"))
+
+    //web
+    implementation("org.springframework.boot:spring-boot-starter-web")
 
     //mail
     implementation("org.springframework.boot:spring-boot-starter-mail")

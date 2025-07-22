@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: ${BOARD_SERVICE_PORT}
   servlet:
     context-path: /board
 
@@ -23,7 +23,7 @@ spring:
     defer-datasource-initialization: true
     properties:
       hibernate:
-        default_schema: unimal_board
+        default_schema: ${DATABASE_BOARD_SCHEMA}
 
   sql:
     init:
@@ -32,17 +32,17 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${USER_DATABASE_HOST:localhost}:${USER_DATABASE_PORT:5432}/unimal
-    username: ${USER_DATABASE_USERNAME:postgres}
-    password: ${USER_DATABASE_PASSWORD:5432}
+    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     dbcp2:
-      default-schema: unimal_board
+      default-schema: ${DATABASE_BOARD_SCHEMA}
 
   data:
     redis:
-      host: localhost
-      port: 6379
-      password: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
   kafka:
     bootstrap-servers: localhost:9091,localhost:9092,localhost:9093

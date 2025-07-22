@@ -23,7 +23,7 @@ class NaverLoginObject(
     }
 
     override fun getMember(userInfo: UserInfo): Member {
-        return memberObject.getMember(userInfo.email, provider()) ?: memberObject.signIn(userInfo)
+        return memberObject.getEmailMember(userInfo.email) ?: memberObject.signIn(userInfo)
     }
 
 }
