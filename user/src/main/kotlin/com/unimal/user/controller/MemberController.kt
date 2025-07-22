@@ -3,11 +3,7 @@ package com.unimal.user.controller
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.user.controller.request.ChangePasswordRequest
-import com.unimal.user.controller.request.EmailTelAuthCodeVerifyRequest
-import com.unimal.user.controller.request.InfoUpdateRequest
-import com.unimal.user.controller.request.TelAuthCodeVerifyRequest
-import com.unimal.user.controller.request.VerifyChangePasswordRequest
+import com.unimal.user.controller.request.*
 import com.unimal.user.service.authentication.AuthenticationService
 import com.unimal.user.service.member.MemberService
 import jakarta.validation.Valid
@@ -48,6 +44,15 @@ class MemberController(
     ): CommonResponse {
         authenticationService.telAuthCodeVerify(telAuthCodeVerifyRequest)
         return CommonResponse(data = memberService.findEmailByTel(telAuthCodeVerifyRequest.tel))
+    }
+
+    @PostMapping("/find/email-tel/check/request")
+    fun findEmailTelCheckRequest(
+        @RequestBody @Valid emailTelAuthCodeRequest: EmailTelAuthCodeRequest
+    ): CommonResponse {
+        memberService.checkEmailByTel(emailTelAuthCodeRequest.email, emailTelAuthCodeRequest.tel)
+        authenticationService.sendEmailTelAuthCodeRequest(emailTelAuthCodeRequest)
+        return CommonResponse()
     }
 
     @PostMapping("/change/password")

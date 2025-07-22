@@ -5,15 +5,11 @@ import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternLocalDateTime
 import com.unimal.user.controller.request.ChangePasswordInterface
 import com.unimal.user.controller.request.EmailRequest
-import com.unimal.webcommon.exception.CustomException
-import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.controller.request.InfoUpdateRequest
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.FindEmailInfo
 import com.unimal.user.service.member.dto.MemberInfo
-import com.unimal.webcommon.exception.DuplicatedException
-import com.unimal.webcommon.exception.ErrorCode
-import com.unimal.webcommon.exception.LoginException
+import com.unimal.webcommon.exception.*
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
@@ -93,9 +89,23 @@ class MemberService(
         )
     }
 
+    fun checkEmailByTel(
+        email: String,
+        tel: String
+    ) {
+        val member = memberObject.getTelMember(tel) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        if (member.email != email) {
+            throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        }
+    }
+
     @Transactional
     fun changePassword(changePassword: ChangePasswordInterface) {
         val member = memberObject.getEmailMember(changePassword.email!!) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+
+        if (member.password != null && memberObject.passwordCheck(changePassword.newPassword.lowercase(), member.password!!)) {
+            throw LoginException(ErrorCode.EXISTING_PASSWORD_NOT_CHANGE.message)
+        }
 
         if (changePassword.oldPassword.lowercase() != changePassword.newPassword.lowercase()) {
             throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
