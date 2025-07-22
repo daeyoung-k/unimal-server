@@ -25,7 +25,6 @@ class CorsConfig : WebMvcConfigurer {
         registry.addMapping("/**")
             .allowedOriginPatterns("*")
             .allowedMethods("GET", "POST", "PATCH", "OPTIONS", "DELETE")
-            .exposedHeaders("X-Unimal-User-email", "X-Unimal-User-roles", "X-Unimal-User-provider")
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
@@ -66,7 +65,7 @@ class CorsConfig : WebMvcConfigurer {
                 email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException(ErrorCode.EMAIL_NOT_FOUND.message),
                 roles = request.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException(ErrorCode.ROLE_NOT_FOUND.message),
                 provider = request.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException(ErrorCode.PROVIDER_NOT_FOUND.message),
-                tokenType = request.getHeader("X-Unimal-User-token-type") ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message)
+                tokenType = request.getHeader("X-Unimal-User-token-type") ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED)
 
             )
         }

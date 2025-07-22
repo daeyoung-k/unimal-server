@@ -1,0 +1,55 @@
+server:
+  port: ${MAP_SERVICE_PORT}
+  servlet:
+    context-path: /map
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+  application:
+    name: map-server
+
+  jackson:
+    time-zone: Asia/Seoul
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: postgresql
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        default_schema: ${DATABASE_MAP_SCHEMA}
+
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}/${DATABASE_NAME}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    dbcp2:
+      default-schema: ${DATABASE_MAP_SCHEMA}
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+grpc:
+  server:
+    port: 50082
+    enable-keep-alive: true
+    keep-alive-time: 60s
+    keep-alive-timeout: 30s
+
+custom:
+  data:
+    map:
+      api-key: ${GOOGLE_GEOCODING_API_KEY}

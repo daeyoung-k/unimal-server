@@ -1,3 +1,26 @@
+import com.google.protobuf.gradle.id
+
+val grpcVersion: String by rootProject.extra
+val protobufVersion: String by rootProject.extra
+
+// gRPC 설정
+protobuf {
+	protoc {
+		artifact = "com.google.protobuf:protoc:${protobufVersion}"
+	}
+	plugins {
+		id("grpc") {
+			artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+		}
+	}
+	generateProtoTasks {
+		all().forEach { task ->
+			task.plugins {
+				id("grpc")
+			}
+		}
+	}
+}
 
 dependencies {
 	apply(plugin = "kotlin-jpa")
@@ -5,6 +28,7 @@ dependencies {
 	//common 모듈 상속
 	implementation(project(":common"))
 	implementation(project(":web-common"))
+	implementation(project(":proto-common"))
 
 	//직렬화
 	implementation("com.google.code.gson:gson:2.12.1")
@@ -25,6 +49,9 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+
+	//gRPC Client
+	implementation("net.devh:grpc-client-spring-boot-starter:3.1.0.RELEASE")
 
 	//kafka
 	implementation("org.springframework.kafka:spring-kafka")

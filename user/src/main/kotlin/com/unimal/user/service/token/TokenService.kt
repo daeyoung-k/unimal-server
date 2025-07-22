@@ -28,7 +28,7 @@ class TokenService(
             )
         }
 
-        val member = memberObject.getMember(
+        val member = memberObject.getEmailProviderMember(
             email = commonUserInfo.email,
             provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(
@@ -56,8 +56,10 @@ class TokenService(
         tokenManager.upsertDbToken(member.email, refreshToken)
 
         return JwtTokenDTO(
+            email = member.email,
             accessToken = accessToken,
-            refreshToken = refreshToken
+            refreshToken = refreshToken,
+            provider = provider.name
         )
     }
 }

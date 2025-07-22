@@ -7,7 +7,9 @@ bootJar.enabled = false     // Spring Boot Application의 jar파일을 비활성
 jar.enabled = true
 
 dependencies {
-    implementation(project(":common"))
+    implementation(project(":common")){
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-data-jpa")
+    }
     //web
     implementation("org.springframework.boot:spring-boot-starter-web")
 

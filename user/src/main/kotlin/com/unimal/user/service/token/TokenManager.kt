@@ -2,28 +2,30 @@ package com.unimal.user.service.token
 
 import com.unimal.user.domain.authentication.AuthenticationToken
 import com.unimal.user.domain.authentication.AuthenticationTokenRepository
-import org.springframework.data.redis.core.RedisTemplate
+import com.unimal.user.service.login.enums.LoginType
+import com.unimal.user.service.token.dto.JwtTokenDTO
+import com.unimal.user.utils.RedisCacheManager
 import org.springframework.stereotype.Component
-import java.time.Duration
 import java.time.LocalDateTime
 
 @Component
 class TokenManager(
-    private val redisTemplate: RedisTemplate<String, String>,
+    private val redisCacheManager: RedisCacheManager,
+    private val jwtProvider: JwtProvider,
     private val authenticationTokenRepository: AuthenticationTokenRepository
 ) {
 
     fun getCacheToken(
         email: String,
     ): String? {
-        return redisTemplate.opsForValue().get("$email:access-token")
+        return redisCacheManager.getCache("$email:access-token")
     }
 
     fun saveCacheToken(
         email: String,
         token: String,
     ) {
-        redisTemplate.opsForValue().set("$email:access-token", token, Duration.ofMinutes(60))
+        redisCacheManager.setCacheMinutes("$email:access-token", token,60)
     }
 
     fun upsertDbToken(
@@ -52,7 +54,7 @@ class TokenManager(
     fun deleteCacheToken(
         email: String,
     ) {
-        redisTemplate.delete("$email:access-token")
+        redisCacheManager.deleteCache("$email:access-token")
     }
 
     fun revokDbToken(
@@ -80,5 +82,29 @@ class TokenManager(
         authenticationTokenRepository.delete(refreshToken)
     }
 
+    fun createJwtToken(
+        email: String,
+        provider: LoginType,
+        role: List<String>,
+    ): JwtTokenDTO {
+        val accessToken = jwtProvider.createAccessToken(
+            email = email,
+            provider = provider,
+            roles = role
+        )
+        val refreshToken = jwtProvider.createRefreshToken(
+            email = email,
+            provider = provider,
+            roles = role
+        )
+        saveCacheToken(email, accessToken)
+        upsertDbToken(email, refreshToken)
+        return JwtTokenDTO(
+            email = email,
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            provider = provider.name,
+        )
+    }
 
 }

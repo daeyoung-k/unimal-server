@@ -26,7 +26,11 @@ class MemberObject(
     private val memberKafkaTopic: MemberKafkaTopic,
     private val passwordEncoder: BCryptPasswordEncoder
 ) {
-    fun getMember(email: String, provider: LoginType) = memberRepository.findByEmailAndProvider(email, provider.name)
+    fun getEmailProviderMember(email: String, provider: LoginType) = memberRepository.findByEmailAndProvider(email, provider.name)
+
+    fun getEmailMember(email: String): Member? = memberRepository.findByEmail(email)
+
+    fun getTelMember(tel: String): Member? = memberRepository.findByTel(tel)
 
     fun passwordCheck(
         password: String,
@@ -44,7 +48,7 @@ class MemberObject(
     }
 
     fun getMemberInfo(email: String, provider: LoginType): MemberInfo {
-        return getMember(email, provider)?.let { member ->
+        return getEmailProviderMember(email, provider)?.let { member ->
             MemberInfo(
                 email = member.email,
                 provider = provider.name,
@@ -85,6 +89,16 @@ class MemberObject(
 
     fun withdrawalTopicIssue(member: Member) {
         memberKafkaTopic.withdrawalTopicIssue(member.email)
+    }
+
+    fun passwordFormatCheck(password: String): Boolean {
+        // 비밀번호는 8자 ~ 20자 사이, 영문, 숫자, 특수문자를 포함.
+        val regex = Regex("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#\$%^&*(),.?\":{}|<>])[A-Za-z\\d!@#\$%^&*(),.?\":{}|<>]{8,20}$")
+        return regex.matches(password)
+    }
+
+    fun passwordEncode(password: String): String {
+        return passwordEncoder.encode(password.lowercase())
     }
 
 }

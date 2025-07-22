@@ -40,7 +40,8 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = ex.code ?: HttpStatus.BAD_REQUEST.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.DEFAULT_ERROR.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.DEFAULT_ERROR.message,
+                data = ex.data ?: emptyMap<String, String>()
             ),  ex.status ?: HttpStatus.OK)
     }
 
@@ -49,7 +50,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.EXPIRED_TOKEN.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.EXPIRED_TOKEN.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 
@@ -58,7 +59,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.SIGNATURE_TOKEN.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.SIGNATURE_TOKEN.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 
@@ -67,7 +68,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.INVALID_TOKEN.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.INVALID_TOKEN.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 
@@ -76,7 +77,7 @@ class WebExceptionHandler {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) "module:user - ${ex.message}" else "module:user - ${ErrorCode.USER_NOT_FOUND.message}"
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.USER_NOT_FOUND.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 }
@@ -84,7 +85,8 @@ class WebExceptionHandler {
 open class CustomException(
     message: String?,
     val code: Int? = null,
-    val status: HttpStatus? = null
+    val status: HttpStatus? = null,
+    val data: Any? = emptyMap<String, String>()
 ) : Exception(message)
 
 class LoginException(
@@ -110,3 +112,22 @@ class ApiCallException(
     code: Int? = null,
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
+
+class AuthCodeException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
+
+class DuplicatedException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
+
+class TelNotFoundException(
+    message: String = ErrorCode.TEL_NOT_FOUND.message,
+    code: Int? = ErrorCode.TEL_NOT_FOUND.code,
+    status: HttpStatus? = null,
+    data: Any? = emptyMap<String, String>()
+) : CustomException(message, code, status, data)

@@ -9,7 +9,8 @@ service MailAuthRequestService {
 }
 
 message MailAuthRequestSendRequest {
-  string email = 1;
+  string key = 1;
+  string email = 2;
 }
 
 message MailAuthRequestSendResponse {}

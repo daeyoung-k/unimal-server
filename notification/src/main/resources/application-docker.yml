@@ -1,0 +1,59 @@
+server:
+  port: ${NOTIFICATION_SERVICE_PORT}
+  servlet:
+    context-path: /notification
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  config:
+    activate:
+      on-profile: docker
+  application:
+    name: notification-server
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_MAIL_USERNAME}
+    password: ${SMTP_MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  kafka:
+    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
+    consumer:
+      group-id: unimal-notification-group
+      auto-offset-reset: latest
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    listener:
+      missing-topics-fatal: false
+
+grpc:
+  server:
+    port: 50085
+    enable-keep-alive: true
+    keep-alive-time: 60s
+    keep-alive-timeout: 30s
+
+custom:
+  auth-tel-number: ${UNIMAL_AUTH_TEL_NUMBER}
+  naver-cloud:
+    access-key: ${NAVER_CLOUD_ACCESS_KEY}
+    secret-key: ${NAVER_CLOUD_SECRET_KEY}
+    sms-service-id: ${NAVER_CLOUD_SMS_SERVICE_ID}
