@@ -15,21 +15,27 @@ class SlangService(
     val logger = KotlinLogging.logger {}
 
     @Transactional
-    fun insertProfanity(profanity: String) {
-        try {
-            slangObject.profanitySaved(profanity)
-        } catch (e: DataIntegrityViolationException) {
-            val message = e.message ?: ""
-            if (message.contains("duplicate key value") && message.contains("slang_slang_key")) {
-                logger.warn { "중복된 비속어 입력 시도: $profanity" }
-            }
-            logger.error(e) { "비속어 저장 중 예외 발생 - $profanity" }
-            throw e
+    fun insertProfanity(profanityList: List<String>) {
+
+        if (profanityList.isEmpty()) {
+            logger.info { "비속어 목록이 비어 있습니다." }
+            return
         }
-        redisCacheManager.addCache(SlangType.PROFANITY.name, profanity)
+
+        profanityList.forEach { profanity ->
+            slangObject.getProfanitySlang(profanity)?.let {
+                return@forEach
+            } ?: run {
+                slangObject.profanitySaved(profanity)
+            }
+        }
+
+        val slangProfanityList = slangObject.getProfanityList()
+
+        redisCacheManager.addCache(SlangType.PROFANITY.name, slangProfanityList)
         val cacheProfanity = redisCacheManager.getCacheSet(SlangType.PROFANITY.name)
         logger.info {
-            "비속어 캐시 업데이트 완료 - $profanity : ${cacheProfanity.size}개의 비속어가 캐시에 저장되었습니다."
+            "비속어 캐시 업데이트 완료: ${cacheProfanity.size}개의 비속어가 캐시에 저장되었습니다."
         }
     }
 
