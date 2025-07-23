@@ -18,7 +18,7 @@ class BoardMemberObject(
             email = signInUser.email,
             name = signInUser.name,
             nickname = signInUser.nickname,
-            profileImageUrl = signInUser.profileImageUrl,
+            profileImage = signInUser.profileImage,
             withdrawalAt = signInUser.withdrawalAt,
         ).let { boardUser ->
             boardUserRepository.save(boardUser)

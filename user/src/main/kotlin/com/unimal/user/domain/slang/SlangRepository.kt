@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query
 
 interface SlangRepository: JpaRepository<Slang, Long> {
 
-    fun findBySlangAndType(slang: String, type: SlangType = SlangType.PROFANITY): Slang?
+    fun findBySlangAndType(slang: String, type: SlangType): Slang?
 
     @Query("SELECT s.slang FROM Slang s WHERE s.type = :type")
     fun findSlangTextsByType(type: SlangType = SlangType.PROFANITY): List<String>
