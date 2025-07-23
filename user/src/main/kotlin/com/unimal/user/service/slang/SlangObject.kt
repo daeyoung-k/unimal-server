@@ -18,4 +18,10 @@ class SlangObject(
         )
 
     }
+
+    fun getProfanitySlang(slang: String): Slang? {
+        return slangRepository.findBySlangAndType(slang)
+    }
+
+    fun getProfanityList(): List<String> = slangRepository.findSlangTextsByType(SlangType.PROFANITY)
 }
