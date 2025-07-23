@@ -14,7 +14,7 @@ open class Member(
     @Column(length = 20)
     var name: String? = null,
 
-    val profileImageUrl: String? = null,
+    val profileImage: String? = null,
 
     @Column(length = 30, unique = true)
     var nickname: String? = null,

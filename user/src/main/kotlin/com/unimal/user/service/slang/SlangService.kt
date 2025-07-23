@@ -4,7 +4,6 @@ import com.unimal.user.domain.slang.SlangType
 import com.unimal.user.utils.RedisCacheManager
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.transaction.Transactional
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 
 @Service

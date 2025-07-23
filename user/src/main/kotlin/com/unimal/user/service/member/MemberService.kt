@@ -119,4 +119,12 @@ class MemberService(
         member.password = password
         memberObject.update(member)
     }
+
+    fun findNicknameDuplicate(nickname: String) {
+        memberObject.nicknameSlangCheck(nickname)
+        val member = memberObject.getNicknameMember(nickname)
+        if (member != null) {
+            throw DuplicatedException(ErrorCode.NICKNAME_USED.message)
+        }
+    }
 }

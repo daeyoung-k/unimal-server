@@ -131,3 +131,9 @@ class TelNotFoundException(
     status: HttpStatus? = null,
     data: Any? = emptyMap<String, String>()
 ) : CustomException(message, code, status, data)
+
+class InvalidException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
