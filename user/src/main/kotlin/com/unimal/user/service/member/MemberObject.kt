@@ -16,7 +16,6 @@ import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
 import com.unimal.user.utils.RedisCacheManager
-import com.unimal.webcommon.exception.InvalidException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -45,7 +44,9 @@ class MemberObject(
 
     fun signIn(userInfo: UserInfo): Member {
 
-        // 닉네임 중복체크 & null 일때 unimal uuid 닉네임 생성 입력
+        if (!userInfo.nickname.isNullOrBlank()) {
+            userInfo.nickname = signInNicknameCheck(userInfo.nickname!!)
+        }
 
         val member = memberRepository.save(userInfo.toEntity())
         val role = roleRepository.findByName(MemberRoleCode.USER.name)
@@ -54,6 +55,14 @@ class MemberObject(
         // 회원가입 토픽 발행
         signInTopicIssue(member)
         return member
+    }
+
+    fun signInNicknameCheck(nickname: String): String {
+        // 비속어 체크
+        if (nicknameSlangCheck(nickname)) return createUnimalNickname()
+        // 중복 닉네임 체크
+        if (getNicknameMember(nickname) != null) return createUnimalNickname()
+        return nickname
     }
 
     fun getMemberInfo(email: String, provider: LoginType): MemberInfo {
@@ -75,6 +84,7 @@ class MemberObject(
 
     fun withdrawal(member: Member) {
         member.withdrawalAt = LocalDateTime.now()
+        member.tel = null
         memberRepository.save(member)
     }
 
@@ -113,10 +123,12 @@ class MemberObject(
     fun nicknameSlangCheck(nickname: String): Boolean {
         val cacheProfanity = redisCacheManager.getCacheSet(SlangType.PROFANITY.name)
         val hasSlang = cacheProfanity.any { slang -> nickname.contains(slang) }
-        if (hasSlang) {
-            throw InvalidException("비속어가 포함된 닉네임입니다.")
-        }
-        return true
+        return hasSlang
+    }
+
+    fun createUnimalNickname(): String {
+        val timestamp = LocalDateTime.now().toPatternString("yyyyMMddHHmmss")
+        return "UNIMAL_$timestamp"
     }
 
 }

@@ -121,7 +121,8 @@ class MemberService(
     }
 
     fun findNicknameDuplicate(nickname: String) {
-        memberObject.nicknameSlangCheck(nickname)
+        val nicknameCheck = memberObject.nicknameSlangCheck(nickname)
+        if (nicknameCheck) throw InvalidException("비속어가 포함된 닉네임입니다.")
         val member = memberObject.getNicknameMember(nickname)
         if (member != null) {
             throw DuplicatedException(ErrorCode.NICKNAME_USED.message)
