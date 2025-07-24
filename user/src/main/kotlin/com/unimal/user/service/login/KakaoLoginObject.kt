@@ -34,7 +34,8 @@ class KakaoLoginObject(
             return UserInfo(
                 provider = provider().name,
                 email = kakaoInfo.kakao_account.email,
-                nickname = kakaoInfo.kakao_account.profile.nickname
+                nickname = kakaoInfo.kakao_account.profile.nickname,
+                profileImage = kakaoInfo.kakao_account.profile.profile_image_url,
             )
         } catch (e: Exception) {
             e.printStackTrace()
