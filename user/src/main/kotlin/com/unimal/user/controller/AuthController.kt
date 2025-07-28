@@ -105,14 +105,6 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/email/duplicated-check")
-    fun emailDuplicatedCheck(
-        @RequestBody @Valid emailRequest: EmailRequest,
-    ): CommonResponse {
-        memberService.getDuplicatedEmailCheck(emailRequest)
-        return CommonResponse()
-    }
-
     @PostMapping("/email/code-request")
     fun emailCodeRequest(
         @RequestBody @Valid emailRequest: EmailRequest,
