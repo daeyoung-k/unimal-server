@@ -7,7 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 data class SignupRequest(
     @field:NotBlank
-    val name: String,
+    val nickname: String,
     @field:NotBlank
     val email: String,
     @field:NotBlank
@@ -17,7 +17,7 @@ data class SignupRequest(
     @field:NotBlank
     val tel: String,
 
-    val nickname: String? = null,
+    val name: String? = null,
 
     val provider: LoginType = LoginType.MANUAL,
 ) {
