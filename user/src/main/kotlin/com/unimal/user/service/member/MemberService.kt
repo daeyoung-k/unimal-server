@@ -6,6 +6,7 @@ import com.unimal.common.extension.toPatternLocalDateTime
 import com.unimal.user.controller.request.ChangePasswordInterface
 import com.unimal.user.controller.request.EmailRequest
 import com.unimal.user.controller.request.InfoUpdateRequest
+import com.unimal.user.controller.request.TelRequest
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.FindEmailInfo
 import com.unimal.user.service.member.dto.MemberInfo
@@ -72,6 +73,13 @@ class MemberService(
         val checkEmail = memberObject.getEmailMember(emailRequest.email)
         if (checkEmail != null) {
             throw DuplicatedException(ErrorCode.EMAIL_USED.message)
+        }
+    }
+
+    fun getDuplicatedTelCheck(telRequest: TelRequest) {
+        val checkTel = memberObject.getTelMember(telRequest.tel)
+        if (checkTel != null) {
+            throw DuplicatedException(ErrorCode.TEL_USED.message)
         }
     }
 

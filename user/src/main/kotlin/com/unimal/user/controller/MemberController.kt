@@ -85,6 +85,24 @@ class MemberController(
         return CommonResponse()
     }
 
+    @PostMapping("/find/email/duplicate")
+    fun emailDuplicatedCheck(
+        @RequestBody @Valid emailRequest: EmailRequest,
+    ): CommonResponse {
+        memberService.getDuplicatedEmailCheck(emailRequest)
+        authenticationService.sendMailAuthCodeRequest(emailRequest)
+        return CommonResponse()
+    }
+
+    @PostMapping("/find/tel/duplicate")
+    fun telDuplicatedCheck(
+        @RequestBody @Valid telRequest: TelRequest,
+    ): CommonResponse {
+        memberService.getDuplicatedTelCheck(telRequest)
+        authenticationService.sendTelAuthCodeRequest(telRequest)
+        return CommonResponse()
+    }
+
 }
 
 
