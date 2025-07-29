@@ -21,8 +21,8 @@ class RedisCacheManager(
     fun setCacheMinutes(key: String, value: String, duration: Long) =
         redisTemplate.opsForValue().set(key, value, Duration.ofMinutes(duration))
 
-    fun addCache(key: String, value: String) {
-        redisTemplate.opsForSet().add(key, value)
+    fun addCache(key: String, values: Collection<String>) {
+        redisTemplate.opsForSet().add(key, *values.toTypedArray())
     }
 
     fun deleteCache(key: String) {

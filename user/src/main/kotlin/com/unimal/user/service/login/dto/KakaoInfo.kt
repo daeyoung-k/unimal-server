@@ -10,5 +10,6 @@ data class KakaoAccount(
 )
 
 data class KakaoProfile(
-    val nickname: String
+    val nickname: String,
+    val profile_image_url: String,
 )

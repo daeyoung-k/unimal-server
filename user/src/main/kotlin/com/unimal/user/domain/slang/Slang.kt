@@ -11,7 +11,7 @@ import jakarta.persistence.Table
 @Table(name = "slang")
 open class Slang(
 
-    @Column(name = "slang", nullable = false, unique = true)
+    @Column(name = "slang", nullable = false)
     val slang: String,
 
     @Enumerated(EnumType.STRING)

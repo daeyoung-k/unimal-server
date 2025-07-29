@@ -8,7 +8,8 @@ data class UserInfo(
     var nickname: String? = null,
     var name: String? = null,
     var tel: String? = null,
-    var password: String? = null
+    var password: String? = null,
+    var profileImage: String? = null,
 ) {
     fun toEntity(): Member {
         return Member(
@@ -17,7 +18,8 @@ data class UserInfo(
             nickname = nickname,
             name = name,
             tel = tel,
-            password = password
+            password = password,
+            profileImage = profileImage
         )
     }
 }
