@@ -4,7 +4,6 @@ import com.unimal.user.domain.slang.SlangType
 import jakarta.validation.constraints.NotBlank
 
 data class ProfanityRequest(
-    @field:NotBlank
-    val profanity: String,
+    val profanity: List<String>,
     val type: SlangType = SlangType.PROFANITY
 )

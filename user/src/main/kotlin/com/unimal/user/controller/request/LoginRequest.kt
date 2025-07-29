@@ -17,13 +17,15 @@ data class NaverLoginRequest(
     val email: String,
     val name: String?,
     val nickname: String?,
+    val profileImage: String?,
 ) : LoginRequest {
     fun toUserInfo(): UserInfo {
         return UserInfo(
             provider = provider.name,
             email = email,
             name = name,
-            nickname = nickname
+            nickname = nickname,
+            profileImage = profileImage
         )
     }
 }
@@ -32,12 +34,16 @@ data class GoogleLoginRequest(
     override val provider: LoginType = LoginType.GOOGLE,
     val email: String,
     val name: String?,
+    val nickname: String?,
+    val profileImage: String?,
 ) : LoginRequest {
     fun toUserInfo(): UserInfo {
         return UserInfo(
             provider = provider.name,
             email = email,
-            name = name
+            name = name,
+            nickname = nickname,
+            profileImage = profileImage
         )
     }
 }

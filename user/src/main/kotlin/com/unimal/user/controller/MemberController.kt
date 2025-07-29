@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 
@@ -38,6 +39,19 @@ class MemberController(
         return CommonResponse()
     }
 
+    @PostMapping("/change/password")
+    fun changePassword(
+        @UserInfoAnnotation commonUserInfo: CommonUserInfo,
+        @RequestBody @Valid changePasswordRequest: ChangePasswordRequest,
+    ): CommonResponse {
+
+        changePasswordRequest.email = commonUserInfo.email
+        memberService.changePassword(changePasswordRequest)
+        return CommonResponse()
+    }
+
+
+
     @PostMapping("/find/email")
     fun findEmail(
         @RequestBody @Valid telAuthCodeVerifyRequest: TelAuthCodeVerifyRequest
@@ -55,22 +69,37 @@ class MemberController(
         return CommonResponse()
     }
 
-    @PostMapping("/change/password")
-    fun changePassword(
-        @UserInfoAnnotation commonUserInfo: CommonUserInfo,
-        @RequestBody @Valid changePasswordRequest: ChangePasswordRequest,
-    ): CommonResponse {
-
-        changePasswordRequest.email = commonUserInfo.email
-        memberService.changePassword(changePasswordRequest)
-        return CommonResponse()
-    }
-
     @PostMapping("/find/change/password")
     fun findChangePassword(
         @RequestBody @Valid verifyChangePasswordRequest: VerifyChangePasswordRequest,
     ): CommonResponse {
         memberService.changePassword(verifyChangePasswordRequest)
+        return CommonResponse()
+    }
+
+    @GetMapping("/find/nickname/duplicate")
+    fun findNicknameDuplicate(
+        @RequestParam(value = "nickname", required = true) nickname: String,
+    ): CommonResponse {
+        memberService.findNicknameDuplicate(nickname)
+        return CommonResponse()
+    }
+
+    @PostMapping("/find/email/duplicate")
+    fun emailDuplicatedCheck(
+        @RequestBody @Valid emailRequest: EmailRequest,
+    ): CommonResponse {
+        memberService.getDuplicatedEmailCheck(emailRequest)
+        authenticationService.sendMailAuthCodeRequest(emailRequest)
+        return CommonResponse()
+    }
+
+    @PostMapping("/find/tel/duplicate")
+    fun telDuplicatedCheck(
+        @RequestBody @Valid telRequest: TelRequest,
+    ): CommonResponse {
+        memberService.getDuplicatedTelCheck(telRequest)
+        authenticationService.sendTelAuthCodeRequest(telRequest)
         return CommonResponse()
     }
 

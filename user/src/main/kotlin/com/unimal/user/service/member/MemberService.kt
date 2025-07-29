@@ -6,6 +6,7 @@ import com.unimal.common.extension.toPatternLocalDateTime
 import com.unimal.user.controller.request.ChangePasswordInterface
 import com.unimal.user.controller.request.EmailRequest
 import com.unimal.user.controller.request.InfoUpdateRequest
+import com.unimal.user.controller.request.TelRequest
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.FindEmailInfo
 import com.unimal.user.service.member.dto.MemberInfo
@@ -75,6 +76,13 @@ class MemberService(
         }
     }
 
+    fun getDuplicatedTelCheck(telRequest: TelRequest) {
+        val checkTel = memberObject.getTelMember(telRequest.tel)
+        if (checkTel != null) {
+            throw DuplicatedException(ErrorCode.TEL_USED.message)
+        }
+    }
+
     fun findEmailByTel(
         tel: String
     ): FindEmailInfo {
@@ -118,5 +126,14 @@ class MemberService(
         val password = memberObject.passwordEncode(changePassword.newPassword)
         member.password = password
         memberObject.update(member)
+    }
+
+    fun findNicknameDuplicate(nickname: String) {
+        val nicknameCheck = memberObject.nicknameSlangCheck(nickname)
+        if (nicknameCheck) throw InvalidException("비속어가 포함된 닉네임입니다.")
+        val member = memberObject.getNicknameMember(nickname)
+        if (member != null) {
+            throw DuplicatedException(ErrorCode.NICKNAME_USED.message)
+        }
     }
 }
