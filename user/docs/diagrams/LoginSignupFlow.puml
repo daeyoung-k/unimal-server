@@ -1,0 +1,121 @@
+@startuml
+!include ../../../docs/plantumltheme/puml-theme-amiga.puml
+
+title Login and Signup Flow
+
+== 일반 회원가입 ==
+group 닉네임 중복
+autonumber 1
+Client -> Server: 닉네임 중복 확인 요청
+Server -> "User module" ++: **GET** /member/find/nickname/duplicate
+"User module" --> "User module": 비속어 포함 여부, 중복 확인
+
+alt 검사 성공
+    "User module" --> Client --: 사용 가능
+else 검사 실패
+    "User module" --> Client !!: 사용 불가 (재입력 요청)
+end
+
+end
+
+group 이메일 중복 & 인증
+autonumber 1
+Client -> Server: 이메일 중복 & 인증번호 발송 요청
+Server -> "User module" ++: **POST** /member/find/email/duplicate
+"User module" --> "User module": 이메일 중복 확인
+"User module" --> Client !!: 이메일 중복
+"User module" --> "Notification module": 인증번호 발송 요청
+"Notification module" --> "Notification module": 이메일 인증번호 발송 진행
+
+Client -> Server: 인증번호 확인 요청
+Server -> "User module": **POST** /auth/email/code-verify
+alt 인증번호 일치
+    "User module" --> Client --: 인증 성공
+else 인증번호 불일치
+    "User module" --> Client !!: 인증 실패 (재입력 요청)
+end
+
+end
+
+group 휴대폰 번호 중복 & 인증
+
+autonumber 1
+Client -> Server: 휴대폰 번호 중복 & 인증번호 발송 요청
+Server -> "User module" ++: **POST** /member/find/tel/duplicate
+"User module" --> "User module": 휴대폰 번호 중복 확인
+"User module" --> Client !!: 휴대폰 번호 중복
+"User module" --> "Notification module": 인증번호 발송 요청
+"Notification module" --> "Notification module": 문자메세지 인증번호 발송 진행
+
+Client -> Server: 인증번호 확인 요청
+Server -> "User module": **POST** /auth/tel/code-verify
+alt 인증번호 일치
+    "User module" --> Client --: 인증 성공
+else 인증번호 불일치
+    "User module" --> Client !!: 인증 실패 (재입력 요청)
+end
+
+end
+
+group 회원가입 진행
+autonumber 1
+Client -> Server: 사용자 정보 입력
+note left: 닉네임\n이메일\n휴대폰 번호\n비밀번호\n비밀번호 확인
+Server -> "User module" ++: **POST** /auth/signup/manual
+
+group 회원정보 검증 및 저장
+
+"User module" --> "User module": 이메일 중복 확인
+"User module" --> Client !!: 이메일 중복
+"User module" --> "User module": 휴대폰 번호 중복 확인
+"User module" --> Client !!: 휴대폰 번호 중복
+"User module" --> "User module": 비밀번호 형식 체크, 인코딩 진행
+"User module" --> "User module": 회원정보 저장
+"User module" --> Client --: 회원가입 완료
+end
+
+end
+
+== 일반 로그인 ==
+autonumber 1
+Client -> Server: 일반 로그인 요청
+note left: 이메일\n비밀번호
+Server -> "User module" ++: **POST** /auth/login/manual
+"User module" --> "User module": 이메일, 비밀번호 확인
+"User module" --> Client --: 로그인 성공
+
+newpage
+
+== 소셜 로그인 요청 ==
+Client -> Server: 소셜로그인 (카카오, 네이버, 구글)
+note left: 소셜: 인증토큰 or 사용자 정보\n일반: 이메일, 비밀번호
+
+Server -> "User module": **POST** /auth/login/{type}
+
+"User module" --> "User module": 유저 정보 조회
+"User module" --> "User module": 정보없음, 회원가입 진행
+"User module" -->  Server: 전화번호 데이터 유무 전달
+
+newpage
+
+Server -> "User module": **POST** /auth/login/{type}
+
+"User module" --> "User module": 유저 정보 조회
+"User module" --> "User module": 정보없음, 회원가입 진행
+"User module" -->  Server: 전화번호 데이터 유무 전달
+
+newpage
+
+== 전화번호 인증 요청 ==
+Server -> Client: 전화번호 인증 요청
+note right: 전화번호 데이터 없음
+Client -> Server: 문자 메세지 전송 요청 & 인증코드 전달
+Server --> "User module": 문자 메세지 전송 요청
+"User module" --> "Notification module": 문자 메세지 전송 요청 & 발송
+Server --> "User module": 인증코드 전달
+
+
+
+== 완료 ==
+Server -> Client: access, refresh 토큰 전달
+@enduml
