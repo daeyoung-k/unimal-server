@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 @Configuration
 class S3Config(
@@ -18,10 +19,14 @@ class S3Config(
 ) {
 
     @Bean
-    fun s3Client(): S3Client {
-        val builder = S3Client.builder()
+    fun s3Client(): S3Client = S3Client.builder()
             .region(Region.of(s3Region))
             .credentialsProvider {  AwsBasicCredentials.create(accessKey, secretKey) }
-        return builder.build()
-    }
+            .build()
+
+    @Bean
+    fun s3Presigner(): S3Presigner = S3Presigner.builder()
+        .region(Region.of(s3Region))
+        .credentialsProvider { AwsBasicCredentials.create(accessKey, secretKey) }
+        .build()
 }
