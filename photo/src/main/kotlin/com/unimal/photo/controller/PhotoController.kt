@@ -1,14 +1,26 @@
 package com.unimal.photo.controller
 
-import com.unimal.common.TestDTO
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RestController
+import com.unimal.common.dto.CommonResponse
+import com.unimal.photo.service.S3Service
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
-class PhotoController {
+class PhotoController(
+    private val s3Service: S3Service
+) {
 
-    @GetMapping("/test")
-    fun test(): TestDTO {
-        return TestDTO(4)
+    @PostMapping("/upload", consumes = ["multipart/form-data"])
+    fun upload(
+        @RequestBody file: MultipartFile
+    ): CommonResponse {
+        return CommonResponse(data = s3Service.uploadFile(file))
+    }
+
+    @GetMapping("/file-url")
+    fun getFileUrl(
+        @RequestParam(value = "key", required = true) key: String,
+    ): CommonResponse {
+        return CommonResponse(data = s3Service.getFileUrl(key))
     }
 }
