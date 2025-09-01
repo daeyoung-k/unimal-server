@@ -16,11 +16,4 @@ class PhotoController(
     ): CommonResponse {
         return CommonResponse(data = s3Service.uploadFile(file))
     }
-
-    @GetMapping("/file-url")
-    fun getFileUrl(
-        @RequestParam(value = "key", required = true) key: String,
-    ): CommonResponse {
-        return CommonResponse(data = s3Service.getFileUrl(key))
-    }
 }
