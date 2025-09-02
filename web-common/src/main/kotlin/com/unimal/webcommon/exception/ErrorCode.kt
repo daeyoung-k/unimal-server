@@ -29,6 +29,8 @@ enum class ErrorCode(
     PASSWORD_FORMAT_INVALID(2008, "비밀번호는 영문, 숫자, 특수문자를 포함한 8자 이상이어야 합니다."),
     AUTHENTICATION_NOT_COMPLETED(2009, "이메일 인증 또는 휴대폰 인증이 완료되지 않았습니다."),
     EXISTING_PASSWORD_NOT_CHANGE(2010, "기존 비밀번호와 동일한 비밀번호로 변경할 수 없습니다."),
+    FILE_UPLOAD_ERROR(2011, "파일 업로드에 실패했습니다."),
+    MULTIFILE_UPLOAD_ERROR(2011, "다중 파일 업로드에 실패했습니다."),
 
     API_CALL_ERROR(3001, "API 호출에 실패했습니다."),
 }
