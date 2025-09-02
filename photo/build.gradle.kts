@@ -51,7 +51,7 @@ dependencies {
     //aws
     implementation("software.amazon.awssdk:s3:2.32.26")
     implementation("software.amazon.awssdk:s3-transfer-manager:2.32.25")
-    implementation("software.amazon.awssdk:netty-nio-client:2.32.25")
+    implementation("software.amazon.awssdk:aws-crt-client:2.33.0")
 
     testImplementation("io.mockk:mockk:1.14.2")
 }
