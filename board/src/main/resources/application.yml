@@ -70,3 +70,7 @@ grpc:
     map-grpc:
       address: static://localhost:50082
       negotiation-type: plaintext
+
+
+etc:
+  base-url: ${BASE_URI}:${API_GATEWAY_SERVICE_PORT}
