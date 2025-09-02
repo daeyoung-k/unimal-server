@@ -1,6 +1,5 @@
 package com.unimal.board.controller
 
-import com.unimal.board.controller.request.ImageMetadata
 import com.unimal.board.controller.request.PostsCreateRequest
 import com.unimal.board.service.BoardService
 import com.unimal.common.annotation.user.UserInfoAnnotation
@@ -14,19 +13,18 @@ class BoardController(
     private val boardService: BoardService
 ) {
 
-    @GetMapping("/posts/list")
+    @GetMapping("/posts")
     fun getPostsList(): CommonResponse {
         return CommonResponse(data = "게시글 목록 조회")
     }
 
-    @PostMapping("/posts/create", consumes = ["multipart/form-data"])
+    @PostMapping("/posts", consumes = ["multipart/form-data"])
     fun createPost(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @ModelAttribute postsCreateRequest: PostsCreateRequest,
-        @RequestPart("imageMetadata") imageMetadata: List<ImageMetadata>?,
-        @RequestPart("images", required = false) images: List<MultipartFile>?,
+        @RequestPart("files", required = false) files: List<MultipartFile>?,
     ): CommonResponse {
-        boardService.createPost(userInfo, postsCreateRequest, imageMetadata, images)
+        boardService.posting(userInfo, postsCreateRequest, files)
         return CommonResponse(data = "게시글 생성")
     }
 

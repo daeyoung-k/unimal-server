@@ -1,20 +1,26 @@
 package com.unimal.board.service
 
-import com.unimal.board.controller.request.ImageMetadata
 import com.unimal.board.controller.request.PostsCreateRequest
+import com.unimal.board.service.files.FilesManager
 import com.unimal.common.dto.CommonUserInfo
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
 @Service
-class BoardService {
+class BoardService(
+    private val filesManager: FilesManager
+) {
 
-    fun createPost(
+    fun posting(
         userInfo: CommonUserInfo,
         postsCreateRequest: PostsCreateRequest,
-        imageMetadata: List<ImageMetadata>?,
-        images: List<MultipartFile>?
+        files: List<MultipartFile>?
     ) {
+
+        if (files?.isNotEmpty() == true) {
+//            filesManager.multipleUploadFile(files)
+            print(filesManager.uploadFile(files[0]))
+        }
 
     }
 

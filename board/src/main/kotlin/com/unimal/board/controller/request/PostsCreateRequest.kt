@@ -11,8 +11,3 @@ data class PostsCreateRequest(
     val guGun: String? = null,
     val dong: String? = null,
 )
-
-data class ImageMetadata(
-    val order: Int,
-    val isMain: Boolean = false,
-)
