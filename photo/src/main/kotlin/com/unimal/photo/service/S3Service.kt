@@ -2,23 +2,17 @@ package com.unimal.photo.service
 
 import com.unimal.photo.service.s3.S3Manager
 import com.unimal.photo.service.s3.UploadType
+import com.unimal.photo.service.s3.dto.MultipleFiles
 import com.unimal.photo.service.s3.dto.UploadFileResult
-import org.springframework.cglib.core.CollectionUtils.bucket
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import software.amazon.awssdk.transfer.s3.S3TransferManager
-import software.amazon.awssdk.transfer.s3.model.FileUpload
-import software.amazon.awssdk.transfer.s3.model.UploadFileRequest
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
-import java.util.concurrent.CompletableFuture
 import kotlin.collections.map
 
 @Service
 class S3Service(
     private val s3Manager: S3Manager,
-    private val transferManager: S3TransferManager,
 ) {
 
     fun uploadFile(file: MultipartFile): UploadFileResult {
@@ -29,7 +23,7 @@ class S3Service(
         val fileType = UploadType.from(getType.type)
 
         val key = fileType.path + encodedFilename + "." + getType.subType
-        s3Manager.fileUpload(key, file)
+        s3Manager.uploadFile(key, file)
 
         return UploadFileResult(
             originalFilename = originalFilename,
@@ -51,9 +45,9 @@ class S3Service(
      * 10장 동시 업로드를 모두 메모리에 올려두면 힙을 크게 잡아먹고 GC 압박이 커짐.
      * 임시 파일로 내려두면 메모리 사용량을 일정하게 유지하면서 병렬 업로드 가능.
      */
-    fun multiUploadFile(files: List<MultipartFile>) {
+    fun multiUploadFile(files: List<MultipartFile>): List<UploadFileResult> {
 
-        val tempFiles = files.map { file ->
+        val multipleTmpFiles = files.map { file ->
             val originalFilename = file.originalFilename ?: "unnamed"
             val encodedFilename = s3Manager.base64EncodeAndUUIDString(originalFilename)
 
@@ -61,36 +55,12 @@ class S3Service(
             val fileType = UploadType.from(getType.type)
 
             val key = fileType.path + encodedFilename + "." + getType.subType
+
             val tmp = Files.createTempFile("unimal-", ".${getType.subType }")
             file.inputStream.use { Files.copy(it, tmp, StandardCopyOption.REPLACE_EXISTING) }
-            Triple(file.originalFilename ?: "unnamed", key, tmp)
-        }
-        println(tempFiles)
-
-        try {
-            // uploadFile 트랜스퍼들을 한 번에 제출 → 내부적으로 병렬 수행
-            val transfers: List<FileUpload> = tempFiles.map { (original, key, path) ->
-                transferManager.uploadFile(
-                    UploadFileRequest.builder()
-                        .source(path)
-                        .putObjectRequest(
-                            PutObjectRequest.builder()
-                                .bucket("unimal-bucket")
-                                .key(key)
-                                .contentType(Files.probeContentType(path)) // or mf.contentType
-                                .build()
-                        ).build()
-                )
-            }
-
-            // 전체 완료 대기
-            CompletableFuture.allOf(*transfers.map { it.completionFuture() }.toTypedArray()).join()
-            // 결과 수집
-//            return tempFiles.map { (original, key, _) -> UploadResult(original, key) }
-        } finally {
-            // 임시 파일 정리, _ 는 kotlin 에서 쓰지 않는 변수를 나타내는 특별한 네이밍 규칙
-            tempFiles.forEach { (_, _, p) -> Files.deleteIfExists(p) }
+            MultipleFiles(originalFilename, key, tmp)
         }
 
+        return s3Manager.multiUploadFile(multipleTmpFiles)
     }
 }

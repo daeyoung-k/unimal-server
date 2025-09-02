@@ -17,11 +17,10 @@ class PhotoController(
         return CommonResponse(data = s3Service.uploadFile(file))
     }
 
-    @PostMapping("/multi-upload", consumes = ["multipart/form-data"])
+    @PostMapping("/multiple-upload", consumes = ["multipart/form-data"])
     fun multiUpload(
         @RequestPart files: List<MultipartFile>
     ): CommonResponse {
-        s3Service.multiUploadFile(files)
-        return CommonResponse()
+        return CommonResponse(data = s3Service.multiUploadFile(files))
     }
 }
