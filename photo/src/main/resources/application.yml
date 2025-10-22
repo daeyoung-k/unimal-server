@@ -11,6 +11,9 @@ spring:
       on-profile: local
   application:
     name: photo-server
+  servlet:
+    multipart:
+      max-file-size: 30MB
 
   jackson:
     time-zone: Asia/Seoul
@@ -60,9 +63,6 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     listener:
       missing-topics-fatal: false
-  servlet:
-    multipart:
-      max-file-size: 30MB
 
 aws:
   access-key: ${AWS_ACCESS_KEY_ID}

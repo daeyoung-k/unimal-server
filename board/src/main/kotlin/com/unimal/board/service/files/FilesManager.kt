@@ -2,12 +2,10 @@ package com.unimal.board.service.files
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.unimal.board.service.files.dto.UploadFileResult
-import com.unimal.webcommon.exception.CustomException
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.FileException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Component
@@ -18,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile
 @Component
 class FilesManager(
     @Value("\${etc.base-url}")
-    private val baseUrl: String
+    private val baseUrl: String,
 ) {
     private val logger = KotlinLogging.logger {}
 
