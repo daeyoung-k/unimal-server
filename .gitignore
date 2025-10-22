@@ -41,3 +41,5 @@ out/
 .kotlin
 
 .env*
+
+.DS_Store

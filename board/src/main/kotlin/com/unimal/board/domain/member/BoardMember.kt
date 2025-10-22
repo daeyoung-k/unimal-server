@@ -7,8 +7,8 @@ import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "board_user")
-open class BoardUser(
+@Table(name = "board_member")
+open class BoardMember(
     @Column(length = 50, unique = true, nullable = false)
     val email: String,
 
