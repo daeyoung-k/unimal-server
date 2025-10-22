@@ -1,4 +1,4 @@
-package com.unimal.board.service.posts
+package com.unimal.board.service.posts.manager
 
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.board.BoardFile
@@ -12,11 +12,11 @@ class BoardManager(
     private val boardRepository: BoardRepository
 ) {
 
-    fun savedBoard(
+    fun saveBoard(
         board: Board
     ) = boardRepository.save(board)
 
-    fun savedBoardFile(
+    fun saveBoardFile(
         boardFile: BoardFile
     ) = boardFileRepository.save(boardFile)
 }
