@@ -1,7 +1,7 @@
 package com.unimal.board.controller
 
 import com.unimal.board.controller.request.PostsCreateRequest
-import com.unimal.board.service.BoardService
+import com.unimal.board.service.posts.BoardService
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
@@ -14,6 +14,11 @@ class BoardController(
 ) {
 
     @GetMapping("/posts")
+    fun getPosts(): CommonResponse {
+        return CommonResponse(data = "게시글 조회")
+    }
+
+    @GetMapping("/posts/list")
     fun getPostsList(): CommonResponse {
         return CommonResponse(data = "게시글 목록 조회")
     }
@@ -24,8 +29,7 @@ class BoardController(
         @ModelAttribute postsCreateRequest: PostsCreateRequest,
         @RequestPart("files", required = false) files: List<MultipartFile>?,
     ): CommonResponse {
-        boardService.posting(userInfo, postsCreateRequest, files)
-        return CommonResponse(data = "게시글 생성")
+        return CommonResponse(data = boardService.posting(userInfo, postsCreateRequest, files))
     }
 
     @PatchMapping("/posts/update")
