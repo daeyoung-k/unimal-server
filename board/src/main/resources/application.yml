@@ -11,13 +11,16 @@ spring:
       on-profile: local
   application:
     name: board-server
+  servlet:
+    multipart:
+      max-file-size: 30MB
 
   jackson:
     time-zone: Asia/Seoul
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: create-drop
     show-sql: true
     database: postgresql
     defer-datasource-initialization: true
@@ -74,3 +77,5 @@ grpc:
 
 etc:
   base-url: ${BASE_URI}:${API_GATEWAY_SERVICE_PORT}
+  files:
+    base-url: ${AWS_CLOUDFRONT_DOMAIN}
