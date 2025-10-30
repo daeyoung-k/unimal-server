@@ -2,6 +2,7 @@ package com.unimal.board.controller.request
 
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.member.BoardMember
+import org.locationtech.jts.geom.Point
 
 data class PostsCreateRequest(
     val title: String? = null,
@@ -16,7 +17,8 @@ data class PostsCreateRequest(
     val public: Boolean = false,
 ) {
     fun toBoardCreateDto(
-        user: BoardMember
+        user: BoardMember,
+        location: Point? = null,
     ): Board {
         return Board(
             email = user,
@@ -27,8 +29,7 @@ data class PostsCreateRequest(
             siDo = siDo,
             guGun = guGun,
             dong = dong,
-            latitude = latitude,
-            longitude = longitude,
+            location = location,
             public = public,
         )
     }

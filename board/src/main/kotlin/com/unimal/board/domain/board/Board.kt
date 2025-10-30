@@ -2,6 +2,8 @@ package com.unimal.board.domain.board
 
 import com.unimal.board.domain.member.BoardMember
 import com.unimal.common.domain.BaseIdEntity
+import jakarta.persistence.*
+import org.locationtech.jts.geom.Point
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.JoinColumn
@@ -18,9 +20,11 @@ open class Board(
     @JoinColumn(name = "email", referencedColumnName = "email")
     val email: BoardMember,
 
+    @Column(columnDefinition = "geography(Point, 4326)")
+    val location: Point? = null,
+
     val title: String? = null,
 
-    @Lob
     @Column(columnDefinition = "text", nullable = false)
     val content: String,
     val streetName: String? = null,
@@ -28,9 +32,7 @@ open class Board(
     val siDo: String? = null,
     val guGun: String? = null,
     val dong: String? = null,
-    val latitude: Double? = null,
-    val longitude: Double? = null,
-    val public: Boolean = false,
+    val public: Boolean? = false,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime? = null,
 
