@@ -137,3 +137,9 @@ class InvalidException(
     code: Int? = null,
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
+
+class FileException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)

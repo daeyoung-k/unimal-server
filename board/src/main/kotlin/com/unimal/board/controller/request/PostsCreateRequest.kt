@@ -1,18 +1,36 @@
 package com.unimal.board.controller.request
 
+import com.unimal.board.domain.board.Board
+import com.unimal.board.domain.member.BoardMember
+import org.locationtech.jts.geom.Point
+
 data class PostsCreateRequest(
-    val title: String,
+    val title: String? = null,
     val content: String,
-    val latitude: Double? = null,
-    val longitude: Double? = null,
     val streetName: String? = null,
     val postalCode: String? = null,
     val siDo: String? = null,
     val guGun: String? = null,
     val dong: String? = null,
-)
-
-data class ImageMetadata(
-    val order: Int,
-    val isMain: Boolean = false,
-)
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val public: Boolean = false,
+) {
+    fun toBoardCreateDto(
+        user: BoardMember,
+        location: Point? = null,
+    ): Board {
+        return Board(
+            email = user,
+            title = title,
+            content = content,
+            streetName = streetName,
+            postalCode = postalCode,
+            siDo = siDo,
+            guGun = guGun,
+            dong = dong,
+            location = location,
+            public = public,
+        )
+    }
+}
