@@ -25,7 +25,6 @@ open class Board(
 
     val title: String? = null,
 
-    @Lob
     @Column(columnDefinition = "text", nullable = false)
     val content: String,
     val streetName: String? = null,
@@ -33,7 +32,7 @@ open class Board(
     val siDo: String? = null,
     val guGun: String? = null,
     val dong: String? = null,
-    val public: Boolean = false,
+    val public: Boolean? = false,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime? = null,
 
