@@ -1,7 +1,7 @@
 package com.unimal.board.controller
 
 import com.unimal.board.controller.request.PostsCreateRequest
-import com.unimal.board.service.BoardService
+import com.unimal.board.service.posts.PostsService
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-class BoardController(
-    private val boardService: BoardService
+class PostsController(
+    private val postsService: PostsService
 ) {
 
     @GetMapping("/posts")
@@ -24,8 +24,7 @@ class BoardController(
         @ModelAttribute postsCreateRequest: PostsCreateRequest,
         @RequestPart("files", required = false) files: List<MultipartFile>?,
     ): CommonResponse {
-        boardService.posting(userInfo, postsCreateRequest, files)
-        return CommonResponse(data = "게시글 생성")
+        return CommonResponse(data = postsService.posting(userInfo, postsCreateRequest, files))
     }
 
     @PatchMapping("/posts/update")

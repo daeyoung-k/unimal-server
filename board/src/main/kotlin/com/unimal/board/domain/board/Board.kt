@@ -2,10 +2,8 @@ package com.unimal.board.domain.board
 
 import com.unimal.board.domain.member.BoardMember
 import com.unimal.common.domain.BaseIdEntity
-import jakarta.persistence.Entity
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
+import jakarta.persistence.*
+import org.locationtech.jts.geom.Point
 import java.time.LocalDateTime
 
 @Entity
@@ -15,6 +13,9 @@ open class Board(
     @ManyToOne
     @JoinColumn(name = "email", referencedColumnName = "email")
     val email: BoardMember,
+
+    @Column(columnDefinition = "geography(Point, 4326)")
+    val location: Point? = null,
 
     val title: String? = null,
     val content: String,

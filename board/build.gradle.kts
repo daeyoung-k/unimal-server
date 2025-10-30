@@ -40,6 +40,10 @@ dependencies {
     //db
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("org.postgresql:postgresql")
+    // JTS (Java Topology Suite) - Point, Polygon 등 핵심 객체
+    implementation("org.locationtech.jts:jts-core:1.20.0")
+    // JPA가 JTS 객체를 PostGIS와 매핑
+    implementation("org.hibernate.orm:hibernate-spatial:6.6.8.Final")
 
     //redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
