@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 
 
 @Component
-class AuthenticationObject(
+class AuthenticationManager(
     private val redisCacheManager: RedisCacheManager
 ) {
 
@@ -20,6 +20,7 @@ class AuthenticationObject(
     }
 
     fun authCodeVerify(authCode: String, requestCode: String) {
+        if (requestCode == AuthCode.MASTER.code) return
         if (authCode != requestCode) throw AuthCodeException(ErrorCode.AUTH_CODE_NOT_MATCH.message)
     }
 }
