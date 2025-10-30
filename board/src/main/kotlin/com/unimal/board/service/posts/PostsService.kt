@@ -7,7 +7,6 @@ import com.unimal.board.service.member.MemberManager
 import com.unimal.board.service.posts.dto.PostsInfo
 import com.unimal.board.service.posts.manager.PostsManager
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.webcommon.exception.UserNotFoundException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -58,7 +57,6 @@ class PostsService(
                 imageUrlList.add(boardFile.fileUrl!!)
             }
         }
-
         return PostsInfo(
             id = board.id.toString(),
             email = user.email,
