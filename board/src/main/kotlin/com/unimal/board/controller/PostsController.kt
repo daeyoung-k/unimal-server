@@ -9,11 +9,16 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-class PostsController(
-    private val postsService: PostsService
+class BoardController(
+    private val boardService: BoardService
 ) {
 
     @GetMapping("/posts")
+    fun getPosts(): CommonResponse {
+        return CommonResponse(data = "게시글 조회")
+    }
+
+    @GetMapping("/posts/list")
     fun getPostsList(): CommonResponse {
         return CommonResponse(data = "게시글 목록 조회")
     }
