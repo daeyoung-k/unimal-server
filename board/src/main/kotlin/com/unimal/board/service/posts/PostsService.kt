@@ -7,6 +7,7 @@ import com.unimal.board.service.member.MemberManager
 import com.unimal.board.service.posts.dto.PostsInfo
 import com.unimal.board.service.posts.manager.PostsManager
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.webcommon.exception.UserNotFoundException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -58,13 +59,14 @@ class PostsService(
             }
         }
         return PostsInfo(
-            id = board.id.toString(),
+            boardId = board.id.toString(),
             email = user.email,
             profileImage = user.profileImage,
             nickname = user.nickname ?: "",
             title = board.title ?: "",
             content = board.content,
             streetName = board.streetName!!,
+            public = board.public,
             createdAt = board.createdAt,
             imageUrlList = imageUrlList
         )

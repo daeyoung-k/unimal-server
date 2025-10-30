@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @RestController
 class BoardController(
-    private val boardService: BoardService
+    private val postsService: PostsService
 ) {
 
     @GetMapping("/posts")
