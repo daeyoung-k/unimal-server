@@ -13,8 +13,11 @@ class BoardController(
     private val postsService: PostsService
 ) {
 
-    @GetMapping("/posts")
-    fun getPosts(): CommonResponse {
+    @GetMapping("/post/{boardId}")
+    fun getPosts(
+        @PathVariable("boardId") boardId: String,
+    ): CommonResponse {
+        postsService.getPost(boardId)
         return CommonResponse(data = "게시글 조회")
     }
 
