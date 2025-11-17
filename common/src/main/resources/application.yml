@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: common
+
+hashids:
+  salt: ${HASHIDS_SALT}
+  min-length: ${HASHIDS_MIN_LENGTH}
