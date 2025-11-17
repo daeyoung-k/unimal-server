@@ -33,4 +33,6 @@ enum class ErrorCode(
     MULTIFILE_UPLOAD_ERROR(2011, "다중 파일 업로드에 실패했습니다."),
 
     API_CALL_ERROR(3001, "API 호출에 실패했습니다."),
+    HASHIDS_ENCODE_ERROR(3002, "Hashids encode 오류입니다."),
+    HASHIDS_DECODE_ERROR(3003, "Hashids decode 오류입니다.")
 }
