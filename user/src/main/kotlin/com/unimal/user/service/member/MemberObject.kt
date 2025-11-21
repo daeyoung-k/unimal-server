@@ -121,7 +121,7 @@ class MemberObject(
     }
 
     fun nicknameSlangCheck(nickname: String): Boolean {
-        val cacheProfanity = redisCacheManager.getCacheSet(SlangType.PROFANITY.name)
+        val cacheProfanity = redisCacheManager.getStringCacheSet(SlangType.PROFANITY.name)
         val hasSlang = cacheProfanity.any { slang -> nickname.contains(slang) }
         return hasSlang
     }

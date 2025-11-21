@@ -1,4 +1,4 @@
-package com.unimal.user.utils
+package com.unimal.board.utils
 
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.StringRedisTemplate
