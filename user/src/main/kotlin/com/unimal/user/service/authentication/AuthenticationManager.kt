@@ -19,7 +19,7 @@ class AuthenticationManager(
     }
 
     fun setAuthCodeSuccess(key: String) {
-        redisCacheManager.setCacheMinutes(key, "SUCCESS", 10)
+        redisCacheManager.setStringCacheMinutes(key, "SUCCESS", 10)
     }
 
     fun authCodeVerify(authCode: String, requestCode: String) {

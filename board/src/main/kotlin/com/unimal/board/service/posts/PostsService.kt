@@ -61,6 +61,8 @@ class PostsService(
             }
         }
 
+        postsManager.createCachePostLikeAndReplyCount(board.id!!.toString())
+
         return PostsInfo(
             boardId = hashidsUtil.encode(board.id!!),
             email = user.email,
