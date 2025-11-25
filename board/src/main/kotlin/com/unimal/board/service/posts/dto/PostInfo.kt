@@ -13,7 +13,7 @@ data class PostInfo(
     val public: Boolean? = false,
     val createdAt: LocalDateTime,
     val imageUrlList: List<String>,
-    val likeCount: Int,
+    val likeCount: Long,
     val replyCount: Int,
     val reply: List<PostReply>
 )

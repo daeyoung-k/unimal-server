@@ -53,9 +53,12 @@ class BoardController(
         return CommonResponse(data = "게시글 삭제")
     }
 
-    @GetMapping("/posts/like")
-    fun likePost(): CommonResponse {
-        return CommonResponse(data = "게시글 좋아요")
+    @GetMapping("/posts/like/{boardId}")
+    fun likePost(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+        @PathVariable("boardId") boardId: String,
+    ): CommonResponse {
+        return CommonResponse(data = postsService.postLike(userInfo, boardId))
     }
 
 
