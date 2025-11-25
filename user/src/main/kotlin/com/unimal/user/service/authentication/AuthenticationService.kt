@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 @Service
 class AuthenticationService(
     private val authCodeGrpcRequest: AuthCodeGrpcRequest,
-    private val authenticationObject: AuthenticationObject
+    private val authenticationManager: AuthenticationManager
 ) {
 
     fun sendMailAuthCodeRequest(emailRequest: EmailRequest) {
@@ -17,10 +17,10 @@ class AuthenticationService(
 
     fun emailAuthCodeVerify(emailAuthCodeVerifyRequest: EmailAuthCodeVerifyRequest) {
         val key = "${emailAuthCodeVerifyRequest.email}:auth-code"
-        val authCode = authenticationObject.getAuthCode(key)
+        val authCode = authenticationManager.getAuthCode(key)
 
-        authenticationObject.authCodeVerify(authCode, emailAuthCodeVerifyRequest.code)
-        authenticationObject.setAuthCodeSuccess(key)
+        authenticationManager.authCodeVerify(authCode, emailAuthCodeVerifyRequest.code)
+        authenticationManager.setAuthCodeSuccess(key)
     }
 
     fun sendTelAuthCodeRequest(telRequest: TelRequest) {
@@ -30,10 +30,10 @@ class AuthenticationService(
 
     fun telAuthCodeVerify(telAuthCodeVerifyRequest: TelAuthCodeVerifyRequest) {
         val key = "${telAuthCodeVerifyRequest.tel}:auth-code"
-        val authCode = authenticationObject.getAuthCode(key)
+        val authCode = authenticationManager.getAuthCode(key)
 
-        authenticationObject.authCodeVerify(authCode, telAuthCodeVerifyRequest.code)
-        authenticationObject.setAuthCodeSuccess(key)
+        authenticationManager.authCodeVerify(authCode, telAuthCodeVerifyRequest.code)
+        authenticationManager.setAuthCodeSuccess(key)
     }
 
     fun sendEmailTelAuthCodeRequest(emailTelAuthCodeRequest: EmailTelAuthCodeRequest) {
@@ -43,10 +43,10 @@ class AuthenticationService(
 
     fun emailTelAuthCodeVerify(emailTelAuthCodeVerifyRequest: EmailTelAuthCodeVerifyRequest) {
         val key = "${emailTelAuthCodeVerifyRequest.email}:${emailTelAuthCodeVerifyRequest.tel}:auth-code"
-        val authCode = authenticationObject.getAuthCode(key)
+        val authCode = authenticationManager.getAuthCode(key)
 
-        authenticationObject.authCodeVerify(authCode, emailTelAuthCodeVerifyRequest.code)
-        authenticationObject.setAuthCodeSuccess(key)
+        authenticationManager.authCodeVerify(authCode, emailTelAuthCodeVerifyRequest.code)
+        authenticationManager.setAuthCodeSuccess(key)
     }
 
 }

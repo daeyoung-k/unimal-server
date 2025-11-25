@@ -33,6 +33,7 @@ open class Board(
     val guGun: String? = null,
     val dong: String? = null,
     val public: Boolean? = false,
+    val del: Boolean? = false,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime? = null,
 

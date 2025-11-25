@@ -107,6 +107,12 @@ class UserNotFoundException(
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
 
+class BoardNotFoundException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
+
 class ApiCallException(
     message: String?,
     code: Int? = null,
@@ -143,3 +149,16 @@ class FileException(
     code: Int? = null,
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
+
+class HashidsException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
+
+class AlreadyBeenProcessedException(
+    message: String = "이미 처리되었습니다.",
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
+
