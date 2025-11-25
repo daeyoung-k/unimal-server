@@ -46,6 +46,10 @@ class PostsManager(
         redisCacheManager.setAnyCache(replyKey, 0)
     }
 
+    fun getBoard(id: Long) = boardRepository.findBoardById(id)
+
+    fun getBoardFilesUrls(board: Board) = boardFileRepository.findFileUrlsByBoardOrderByMainDescIdAsc(board)
+
     fun getPostLike(
         boardId: String
     ): Int {
