@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
 
 @Configuration
@@ -29,10 +30,15 @@ class RedisConfig(
     @Bean
     fun redisTemplate(redisConnectionFactory: RedisConnectionFactory): RedisTemplate<String, Any> {
         return RedisTemplate<String, Any>().apply {
+            // 직렬화 설정
+            val stringSerializer = StringRedisSerializer()
+            val jsonSerializer = GenericJackson2JsonRedisSerializer()
+
             this.connectionFactory = redisConnectionFactory
-            this.keySerializer = StringRedisSerializer()
-            // 다른 Serializer (예: Jackson2JsonRedisSerializer)도 고려할 수 있습니다.
-            this.valueSerializer = StringRedisSerializer()
+            this.keySerializer = stringSerializer
+            this.hashKeySerializer = stringSerializer
+            this.valueSerializer = jsonSerializer
+            this.hashValueSerializer = jsonSerializer
         }
     }
 }

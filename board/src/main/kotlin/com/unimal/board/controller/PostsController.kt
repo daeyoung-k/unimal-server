@@ -2,6 +2,7 @@ package com.unimal.board.controller
 
 import com.unimal.board.controller.request.PostsCreateRequest
 import com.unimal.board.service.posts.PostsService
+import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
@@ -10,15 +11,22 @@ import org.springframework.web.multipart.MultipartFile
 
 @RestController
 class BoardController(
-    private val postsService: PostsService
+    private val postsService: PostsService,
+    private val hashidsUtil: HashidsUtil,
 ) {
+
+    @GetMapping("/hashids")
+    fun hashidsValue(
+        @RequestParam("value") value: Long
+    ): CommonResponse {
+        return CommonResponse(data = hashidsUtil.encode(value))
+    }
 
     @GetMapping("/post/{boardId}")
     fun getPosts(
         @PathVariable("boardId") boardId: String,
     ): CommonResponse {
-        postsService.getPost(boardId)
-        return CommonResponse(data = "게시글 조회")
+        return CommonResponse(data = postsService.getPost(boardId))
     }
 
     @GetMapping("/posts/list")
@@ -44,4 +52,11 @@ class BoardController(
     fun deletePost(): CommonResponse {
         return CommonResponse(data = "게시글 삭제")
     }
+
+    @GetMapping("/posts/like")
+    fun likePost(): CommonResponse {
+        return CommonResponse(data = "게시글 좋아요")
+    }
+
+
 }

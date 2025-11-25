@@ -107,6 +107,12 @@ class UserNotFoundException(
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
 
+class BoardNotFoundException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
+
 class ApiCallException(
     message: String?,
     code: Int? = null,
