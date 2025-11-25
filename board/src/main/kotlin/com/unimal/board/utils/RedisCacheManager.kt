@@ -1,4 +1,4 @@
-package com.unimal.user.utils
+package com.unimal.board.utils
 
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -24,9 +24,9 @@ class RedisCacheManager(
         stringRedisTemplate.opsForValue().set(key, value)
     }
 
-    fun setAnyCache(key: String, value: Any) =
+    fun setAnyCache(key: String, value: Any) {
         redisTemplate.opsForValue().set(key, value)
-
+    }
 
     fun setStringCacheSeconds(key: String, value: String, duration: Long) =
         stringRedisTemplate.opsForValue().set(key, value, Duration.ofSeconds(duration))

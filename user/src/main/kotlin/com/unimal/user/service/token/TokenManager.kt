@@ -25,7 +25,7 @@ class TokenManager(
         email: String,
         token: String,
     ) {
-        redisCacheManager.setCacheMinutes("$email:access-token", token,60)
+        redisCacheManager.setStringCacheMinutes("$email:access-token", token,60)
     }
 
     fun upsertDbToken(

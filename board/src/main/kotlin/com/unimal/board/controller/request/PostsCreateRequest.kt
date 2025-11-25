@@ -14,7 +14,7 @@ data class PostsCreateRequest(
     val dong: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null,
-    val public: Boolean = false,
+    val isPublic: Boolean = false,
 ) {
     fun toBoardCreateDto(
         user: BoardMember,
@@ -30,7 +30,7 @@ data class PostsCreateRequest(
             guGun = guGun,
             dong = dong,
             location = location,
-            public = public,
+            public = isPublic,
         )
     }
 }
