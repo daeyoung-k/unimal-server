@@ -31,8 +31,8 @@ class SlangService(
 
         val slangProfanityList = slangObject.getProfanityList()
 
-        redisCacheManager.addCache(SlangType.PROFANITY.name, slangProfanityList)
-        val cacheProfanity = redisCacheManager.getCacheSet(SlangType.PROFANITY.name)
+        redisCacheManager.addStringCache(SlangType.PROFANITY.name, slangProfanityList)
+        val cacheProfanity = redisCacheManager.getStringCacheSet(SlangType.PROFANITY.name)
         logger.info {
             "비속어 캐시 업데이트 완료: ${cacheProfanity.size}개의 비속어가 캐시에 저장되었습니다."
         }
