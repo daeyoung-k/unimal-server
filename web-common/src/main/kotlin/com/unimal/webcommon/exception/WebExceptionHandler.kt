@@ -156,3 +156,9 @@ class HashidsException(
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
 
+class AlreadyBeenProcessedException(
+    message: String = "이미 처리되었습니다.",
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
+
