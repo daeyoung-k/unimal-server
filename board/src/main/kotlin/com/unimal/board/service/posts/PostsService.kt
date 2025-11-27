@@ -1,6 +1,7 @@
 package com.unimal.board.service.posts
 
 import com.unimal.board.controller.request.PostsCreateRequest
+import com.unimal.board.controller.request.PostsListRequest
 import com.unimal.board.domain.board.BoardFile
 import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.service.files.FilesManager
@@ -98,6 +99,12 @@ class PostsService(
             replyCount = postsManager.getPostReply(board.id!!.toString()),
             reply = emptyList()
         )
+    }
+
+    fun getPostList(
+        postsListRequest: PostsListRequest
+    ) {
+
     }
 
     @Transactional

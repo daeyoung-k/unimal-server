@@ -1,6 +1,7 @@
 package com.unimal.board.controller
 
 import com.unimal.board.controller.request.PostsCreateRequest
+import com.unimal.board.controller.request.PostsListRequest
 import com.unimal.board.service.posts.PostsService
 import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.annotation.user.UserInfoAnnotation
@@ -30,8 +31,10 @@ class BoardController(
     }
 
     @GetMapping("/posts/list")
-    fun getPostsList(): CommonResponse {
-        return CommonResponse(data = "게시글 목록 조회")
+    fun getPostsList(
+        @ModelAttribute postsListRequest: PostsListRequest
+    ): CommonResponse {
+        return CommonResponse(data = postsService.getPostList(postsListRequest))
     }
 
     @PostMapping("/posts", consumes = ["multipart/form-data"])
