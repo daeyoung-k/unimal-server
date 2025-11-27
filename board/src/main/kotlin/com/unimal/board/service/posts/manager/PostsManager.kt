@@ -4,8 +4,6 @@ import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.board.BoardFile
 import com.unimal.board.domain.board.BoardFileRepository
 import com.unimal.board.domain.board.BoardRepository
-import com.unimal.board.domain.board.like.BoardLike
-import com.unimal.board.domain.board.like.BoardLikeRepository
 import com.unimal.board.utils.RedisCacheManager
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
@@ -16,7 +14,6 @@ import org.springframework.stereotype.Component
 class PostsManager(
     private val boardFileRepository: BoardFileRepository,
     private val boardRepository: BoardRepository,
-    private val boardLikeRepository: BoardLikeRepository,
 
     private val geometryFactory: GeometryFactory,
     private val redisCacheManager: RedisCacheManager,
