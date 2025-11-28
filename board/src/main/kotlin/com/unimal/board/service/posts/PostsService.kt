@@ -82,7 +82,7 @@ class PostsService(
         val board = postsManager.getBoard(id) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
 
         val boardMember = board.email
-        val boardImageUrls = postsManager.getBoardFilesUrls(board)
+        val boardImageUrls = board.images.map { it.fileUrl ?: "" }
 
         return PostInfo(
             boardId = hashidsUtil.encode(board.id!!),
@@ -104,6 +104,7 @@ class PostsService(
     fun getPostList(
         postsListRequest: PostsListRequest
     ) {
+        postsManager.postList()
 
     }
 
