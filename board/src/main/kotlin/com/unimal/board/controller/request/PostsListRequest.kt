@@ -8,7 +8,7 @@ data class PostsListRequest(
     // 내근처
     val latitude: Double? = null,
     val longitude: Double? = null,
-    val distance: Double = 5.0,
+    val distance: Double = 5.0, // 5km
 
     val keyword: String? = null,
     val sortType: PostSortType = PostSortType.LATEST,
