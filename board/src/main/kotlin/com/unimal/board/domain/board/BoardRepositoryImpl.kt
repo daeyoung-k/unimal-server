@@ -3,7 +3,7 @@ package com.unimal.board.domain.board
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.impl.JPAQueryFactory
-import com.unimal.board.domain.board.Board_.location
+import com.unimal.board.controller.request.PostsListRequest
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -14,13 +14,18 @@ class BoardRepositoryImpl(
     private val board = QBoard.board
     private val boardFile = QBoardFile.boardFile
 
-    fun postList() {
+    fun postList(
+        postsListRequest: PostsListRequest
+    ) {
+        val distance = postsListRequest.distance
+        val longitude = postsListRequest.longitude
+        val latitude = postsListRequest.latitude
+
         val boards = queryFactory.selectFrom(board)
             .where(
-                locationDistance(127.086798, 37.541003, 5)
+                locationDistance(longitude, latitude, distance)
             )
 
-        println(boards)
         val result2 = boards.fetch()
         // board 스키마에 postGis 함수들이 없어서 오류가 발생.
 
@@ -30,14 +35,19 @@ class BoardRepositoryImpl(
     private fun locationDistance(
         longitude: Double?,
         latitude: Double?,
-        distance: Int
+        distance: Double
     ): BooleanExpression? {
         if (longitude == null || latitude == null) return null
 
-//        select * from unimal_board.board where ST_DWithin(location, ST_MakePoint(127.086798, 37.541003), 5000)
-
-        return Expressions.booleanTemplate(
-            "ST_DWithin(${board.location}, ST_MakePoint($longitude, $latitude), ${distance * 1000})"
+        // ${}로 직접 끼워 넣지 말고, 템플릿의 파라미터 플레이스홀더 {0}, {1}...를 써야 QueryDSL이 타입 바인딩을 제대로 진행한다.
+        // 경도, 위도 순서
+        val distanceWhere = Expressions.booleanTemplate(
+            "function('ST_DWithin', {0}, function('ST_MakePoint', {1}, {2}), {3}) = true",
+            board.location,
+            longitude,
+            latitude,
+            distance * 1000
         )
+        return distanceWhere
     }
 }

@@ -1,5 +1,6 @@
 package com.unimal.board.service.posts.manager
 
+import com.unimal.board.controller.request.PostsListRequest
 import com.unimal.board.domain.board.*
 import com.unimal.board.utils.RedisCacheManager
 import org.locationtech.jts.geom.Coordinate
@@ -51,8 +52,10 @@ class PostsManager(
 
     fun getBoardFilesUrls(board: Board) = boardFileRepository.findFileUrlsByBoardOrderByMainDescIdAsc(board)
 
-    fun postList() {
-        boardRepositoryImpl.postList()
+    fun postList(
+        postsListRequest: PostsListRequest
+    ) {
+        boardRepositoryImpl.postList(postsListRequest)
     }
 
     fun getPostReply(

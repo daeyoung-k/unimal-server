@@ -104,7 +104,7 @@ class PostsService(
     fun getPostList(
         postsListRequest: PostsListRequest
     ) {
-        postsManager.postList()
+        postsManager.postList(postsListRequest)
 
     }
 
