@@ -103,10 +103,7 @@ class PostsService(
 
     fun getPostList(
         postsListRequest: PostsListRequest
-    ) {
-        postsManager.postList(postsListRequest)
-
-    }
+    ) = postsManager.postList(postsListRequest)
 
     @Transactional
     fun postLike(

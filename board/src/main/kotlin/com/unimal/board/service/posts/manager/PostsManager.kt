@@ -54,9 +54,7 @@ class PostsManager(
 
     fun postList(
         postsListRequest: PostsListRequest
-    ) {
-        boardRepositoryImpl.postList(postsListRequest)
-    }
+    ) = boardRepositoryImpl.postList(postsListRequest)
 
     fun getPostReply(
         boardId: String
