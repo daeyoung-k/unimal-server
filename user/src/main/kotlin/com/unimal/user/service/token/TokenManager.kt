@@ -1,5 +1,6 @@
 package com.unimal.user.service.token
 
+import com.unimal.common.enums.TokenType
 import com.unimal.user.domain.authentication.AuthenticationToken
 import com.unimal.user.domain.authentication.AuthenticationTokenRepository
 import com.unimal.user.service.login.enums.LoginType
@@ -18,14 +19,14 @@ class TokenManager(
     fun getCacheToken(
         email: String,
     ): String? {
-        return redisCacheManager.getCache("$email:access-token")
+        return redisCacheManager.getCache("$email:${TokenType.ACCESS.cacheKey}")
     }
 
     fun saveCacheToken(
         email: String,
         token: String,
     ) {
-        redisCacheManager.setStringCacheMinutes("$email:access-token", token,60)
+        redisCacheManager.setStringCacheMinutes("$email:${TokenType.ACCESS.cacheKey}", token,60)
     }
 
     fun upsertDbToken(
@@ -54,7 +55,7 @@ class TokenManager(
     fun deleteCacheToken(
         email: String,
     ) {
-        redisCacheManager.deleteCache("$email:access-token")
+        redisCacheManager.deleteCache("$email:${TokenType.ACCESS.cacheKey}")
     }
 
     fun revokDbToken(

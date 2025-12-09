@@ -45,7 +45,7 @@ class TokenFilter(
             exchange.request.headers.add(config.addHeaderEmail, userInfo.email)
             exchange.request.headers.add(config.addHeaderRoles, userInfo.roleString)
             exchange.request.headers.add(config.addHeaderProvider, userInfo.provider)
-            exchange.request.headers.add(config.addHeaderTokenType, userInfo.tokenType)
+            exchange.request.headers.add(config.addHeaderTokenType, userInfo.tokenType.name)
             chain.filter(exchange)
         }
     }
