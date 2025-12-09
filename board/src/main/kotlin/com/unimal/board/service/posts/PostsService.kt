@@ -82,7 +82,7 @@ class PostsService(
         val board = postsManager.getBoard(id) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
 
         val boardMember = board.email
-        val boardImageUrls = postsManager.getBoardFilesUrls(board)
+        val boardImageUrls = board.images.map { it.fileUrl ?: "" }
 
         return PostInfo(
             boardId = hashidsUtil.encode(board.id!!),
@@ -103,7 +103,32 @@ class PostsService(
 
     fun getPostList(
         postsListRequest: PostsListRequest
-    ) {
+    ): List<PostInfo> {
+        val boardList = postsManager.getBoardConditionList(postsListRequest)
+        if (boardList.isEmpty()) return emptyList()
+
+        // N+1 방지
+        val idList = boardList.map { it.id!! }
+        val boardFiles = postsManager.getBoardFileInBoardIdList(idList)
+
+        return boardList.map { board ->
+            val boardMember = board.email
+            PostInfo(
+                boardId = hashidsUtil.encode(board.id!!),
+                email = boardMember.email,
+                profileImage = boardMember.profileImage,
+                nickname = boardMember.nickname ?: "",
+                title = board.title ?: "",
+                content = board.content,
+                streetName = board.streetName!!,
+                public = board.public,
+                createdAt = board.createdAt,
+                imageUrlList = boardFiles.mapNotNull { if (it.board == board) it.fileUrl else null },
+                likeCount = likeManager.getPostLike(board.id!!.toString()),
+                replyCount = postsManager.getPostReply(board.id!!.toString()),
+                reply = emptyList()
+            )
+        }
 
     }
 
