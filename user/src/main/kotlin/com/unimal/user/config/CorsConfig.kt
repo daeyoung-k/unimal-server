@@ -2,6 +2,7 @@ package com.unimal.user.config
 
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.common.enums.TokenType
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException
 import com.unimal.webcommon.exception.UserNotFoundException
@@ -65,7 +66,7 @@ class CorsConfig : WebMvcConfigurer {
                 email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException(ErrorCode.EMAIL_NOT_FOUND.message),
                 roles = request.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException(ErrorCode.ROLE_NOT_FOUND.message),
                 provider = request.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException(ErrorCode.PROVIDER_NOT_FOUND.message),
-                tokenType = request.getHeader("X-Unimal-User-token-type") ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED)
+                tokenType = TokenType.from(request.getHeader("X-Unimal-User-token-type")) ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED)
 
             )
         }
