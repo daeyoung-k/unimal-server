@@ -9,30 +9,19 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import com.unimal.board.controller.enums.PostSortType
 import com.unimal.board.controller.request.PostsListRequest
 import com.unimal.board.domain.board.like.QBoardLike
-import com.unimal.board.service.posts.dto.PostInfo
-import com.unimal.board.service.posts.manager.LikeManager
-import com.unimal.board.service.posts.manager.PostsManager
-import com.unimal.board.utils.HashidsUtil
 import org.springframework.stereotype.Repository
 
 @Repository
 class BoardRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
-
-    private val postsManager: PostsManager,
-    private val likeManager: LikeManager,
-
-    private val hashidsUtil: HashidsUtil,
 ) {
-
     private val board = QBoard.board
     private val boardLike = QBoardLike.boardLike
     private val boardFile = QBoardFile.boardFile
 
-    fun postList(
+    fun boardConditionList(
         postsListRequest: PostsListRequest
-    ): List<PostInfo> {
-
+    ): List<Board> {
         val conditions = mutableListOf<BooleanExpression>()
 
         // 내 근처 거리 조건
@@ -85,37 +74,7 @@ class BoardRepositoryImpl(
             .limit(postsListRequest.pageable.pageSize.toLong())
             .fetch()
 
-        val idList = boards.map { it.id }
-
-        // 게시글 파일 조회 N+1 방지
-        val boardFiles = queryFactory
-            .selectFrom(boardFile)
-            .where(
-                boardFile.board.id.`in`(idList)
-            )
-            .fetch()
-
-        val postInfoList = boards.map { board ->
-            val boardMember = board.email
-            PostInfo(
-                boardId = hashidsUtil.encode(board.id!!),
-                email = boardMember.email,
-                profileImage = boardMember.profileImage,
-                nickname = boardMember.nickname ?: "",
-                title = board.title ?: "",
-                content = board.content,
-                streetName = board.streetName!!,
-                public = board.public,
-                createdAt = board.createdAt,
-                imageUrlList = boardFiles.map { if (it.board == board) it.fileUrl ?: "" else "" },
-                likeCount = likeManager.getPostLike(board.id!!.toString()),
-                replyCount = postsManager.getPostReply(board.id!!.toString()),
-                reply = emptyList()
-            )
-        }
-
-        return postInfoList
-
+        return boards ?: emptyList()
     }
 
     private fun locationDistance(
@@ -134,5 +93,16 @@ class BoardRepositoryImpl(
             distance * 1000
         )
         return distanceWhere
+    }
+
+    fun boardFileList(
+        idList: List<Long>
+    ): List<BoardFile> {
+        return queryFactory
+            .selectFrom(boardFile)
+            .where(
+                boardFile.board.id.`in`(idList)
+            )
+            .fetch() ?: emptyList()
     }
 }

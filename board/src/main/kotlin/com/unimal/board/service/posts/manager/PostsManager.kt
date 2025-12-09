@@ -52,9 +52,13 @@ class PostsManager(
 
     fun getBoardFilesUrls(board: Board) = boardFileRepository.findFileUrlsByBoardOrderByMainDescIdAsc(board)
 
-    fun postList(
+    fun getBoardConditionList(
         postsListRequest: PostsListRequest
-    ) = boardRepositoryImpl.postList(postsListRequest)
+    ) = boardRepositoryImpl.boardConditionList(postsListRequest)
+
+    fun getBoardFileInBoardIdList(
+        idList: List<Long>
+    ) = boardRepositoryImpl.boardFileList(idList)
 
     fun getPostReply(
         boardId: String
