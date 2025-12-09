@@ -4,6 +4,7 @@ import com.unimal.board.controller.request.PostsCreateRequest
 import com.unimal.board.controller.request.PostsListRequest
 import com.unimal.board.service.posts.PostsService
 import com.unimal.board.utils.HashidsUtil
+import com.unimal.common.annotation.user.OptionalUserInfoAnnotation
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
@@ -25,16 +26,18 @@ class BoardController(
 
     @GetMapping("/post/{boardId}")
     fun getPosts(
+        @OptionalUserInfoAnnotation optionalUserInfo: CommonUserInfo?,
         @PathVariable("boardId") boardId: String,
     ): CommonResponse {
-        return CommonResponse(data = postsService.getPost(boardId))
+        return CommonResponse(data = postsService.getPost(optionalUserInfo, boardId))
     }
 
     @GetMapping("/posts/list")
     fun getPostsList(
+        @OptionalUserInfoAnnotation optionalUserInfo: CommonUserInfo?,
         @ModelAttribute postsListRequest: PostsListRequest
     ): CommonResponse {
-        return CommonResponse(data = postsService.getPostList(postsListRequest))
+        return CommonResponse(data = postsService.getPostList(optionalUserInfo, postsListRequest))
     }
 
     @PostMapping("/posts", consumes = ["multipart/form-data"])

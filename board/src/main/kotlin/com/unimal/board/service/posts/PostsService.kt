@@ -76,6 +76,7 @@ class PostsService(
     }
 
     fun getPost(
+        optionalUserInfo: CommonUserInfo?,
         boardId: String
     ): PostInfo? {
         val id = hashidsUtil.decode(boardId)
@@ -83,6 +84,12 @@ class PostsService(
 
         val boardMember = board.email
         val boardImageUrls = board.images.map { it.fileUrl ?: "" }
+
+        val isOwner = if (optionalUserInfo != null) {
+            boardMember.email == optionalUserInfo.email
+        } else {
+            false
+        }
 
         return PostInfo(
             boardId = hashidsUtil.encode(board.id!!),
@@ -97,11 +104,13 @@ class PostsService(
             imageUrlList = boardImageUrls,
             likeCount = likeManager.getPostLike(board.id!!.toString()),
             replyCount = postsManager.getPostReply(board.id!!.toString()),
-            reply = emptyList()
+            reply = emptyList(),
+            isOwner = isOwner
         )
     }
 
     fun getPostList(
+        optionalUserInfo: CommonUserInfo?,
         postsListRequest: PostsListRequest
     ): List<PostInfo> {
         val boardList = postsManager.getBoardConditionList(postsListRequest)
@@ -111,8 +120,11 @@ class PostsService(
         val idList = boardList.map { it.id!! }
         val boardFiles = postsManager.getBoardFileInBoardIdList(idList)
 
+        val ownerEmail = optionalUserInfo?.email ?: ""
+
         return boardList.map { board ->
             val boardMember = board.email
+            val isOwner = boardMember.email == ownerEmail
             PostInfo(
                 boardId = hashidsUtil.encode(board.id!!),
                 email = boardMember.email,
@@ -126,7 +138,8 @@ class PostsService(
                 imageUrlList = boardFiles.mapNotNull { if (it.board == board) it.fileUrl else null },
                 likeCount = likeManager.getPostLike(board.id!!.toString()),
                 replyCount = postsManager.getPostReply(board.id!!.toString()),
-                reply = emptyList()
+                reply = emptyList(),
+                isOwner = isOwner
             )
         }
 

@@ -15,5 +15,6 @@ data class PostInfo(
     val imageUrlList: List<String?>,
     val likeCount: Long,
     val replyCount: Int,
-    val reply: List<PostReply>
+    val reply: List<PostReply>,
+    val isOwner: Boolean = false
 )

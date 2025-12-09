@@ -1,5 +1,6 @@
 package com.unimal.user.service.token
 
+import com.unimal.common.enums.TokenType
 import com.unimal.webcommon.exception.TokenException
 import com.unimal.user.service.login.enums.LoginType
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -33,7 +34,7 @@ class JwtProvider {
         return Jwts.builder()
             .expiration(Date(System.currentTimeMillis() + accessExpiration))
             .signWith(key)
-            .claim("type", "access")
+            .claim("type", TokenType.ACCESS.name)
             .claim("provider", provider.name)
             .claim("roles", roles)
             .subject(email)
@@ -48,7 +49,7 @@ class JwtProvider {
         return Jwts.builder()
             .expiration(Date(System.currentTimeMillis() + refreshExpiration))
             .signWith(key)
-            .claim("type", "refresh")
+            .claim("type", TokenType.REFRESH.name)
             .claim("provider", provider.name)
             .claim("roles", roles)
             .subject(email)
