@@ -7,7 +7,7 @@ import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.unimal.board.controller.enums.PostSortType
-import com.unimal.board.controller.request.PostsListRequest
+import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.domain.board.like.QBoardLike
 import com.unimal.board.enums.PostShow
 import org.springframework.stereotype.Repository
@@ -21,28 +21,28 @@ class BoardRepositoryImpl(
     private val boardFile = QBoardFile.boardFile
 
     fun boardConditionList(
-        postsListRequest: PostsListRequest
+        postListRequest: PostListRequest
     ): List<Board> {
         val conditions = mutableListOf<BooleanExpression>(
             board.show.eq(PostShow.PUBLIC)
         )
 
         // 내 근처 거리 조건
-        if (postsListRequest.isLocationSearch) {
+        if (postListRequest.isLocationSearch) {
             locationDistance(
-                postsListRequest.longitude,
-                postsListRequest.latitude,
-                postsListRequest.distance,
+                postListRequest.longitude,
+                postListRequest.latitude,
+                postListRequest.distance,
             ).let { conditions += it }
         }
 
         // 검색어
-        postsListRequest.keyword?.let {
+        postListRequest.keyword?.let {
             conditions += board.title.containsIgnoreCase(it).or( board.content.containsIgnoreCase(it) )
         }
 
         // 정렬 적용
-        val orderBy = when (postsListRequest.sortType) {
+        val orderBy = when (postListRequest.sortType) {
             PostSortType.LIKES -> {
                 OrderSpecifier(
                     Order.DESC,
@@ -73,8 +73,8 @@ class BoardRepositoryImpl(
                 *conditions.toTypedArray()
             )
             .orderBy(orderBy)
-            .offset(postsListRequest.pageable.offset)
-            .limit(postsListRequest.pageable.pageSize.toLong())
+            .offset(postListRequest.pageable.offset)
+            .limit(postListRequest.pageable.pageSize.toLong())
             .fetch()
 
         return boards ?: emptyList()

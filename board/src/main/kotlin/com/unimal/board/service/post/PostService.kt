@@ -1,19 +1,19 @@
-package com.unimal.board.service.posts
+package com.unimal.board.service.post
 
-import com.unimal.board.controller.request.PostUpdateRequest
-import com.unimal.board.controller.request.PostsCreateRequest
-import com.unimal.board.controller.request.PostsListRequest
+import com.unimal.board.controller.request.post.PostUpdateRequest
+import com.unimal.board.controller.request.post.PostCreateRequest
+import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.board.BoardFile
 import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.service.files.FilesManager
 import com.unimal.board.service.member.MemberManager
-import com.unimal.board.service.posts.dto.BoardFileInfo
-import com.unimal.board.service.posts.dto.BoardId
-import com.unimal.board.service.posts.dto.LikeResponse
-import com.unimal.board.service.posts.dto.PostInfo
-import com.unimal.board.service.posts.manager.LikeManager
-import com.unimal.board.service.posts.manager.PostsManager
+import com.unimal.board.service.post.dto.BoardFileInfo
+import com.unimal.board.service.post.dto.BoardId
+import com.unimal.board.service.post.dto.LikeResponse
+import com.unimal.board.service.post.dto.PostInfo
+import com.unimal.board.service.post.manager.LikeManager
+import com.unimal.board.service.post.manager.PostManager
 import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.webcommon.exception.*
@@ -25,9 +25,9 @@ import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
 
 @Service
-class PostsService(
+class PostService(
     private val filesManager: FilesManager,
-    private val postsManager: PostsManager,
+    private val postManager: PostManager,
     private val likeManager: LikeManager,
     private val memberManager: MemberManager,
 
@@ -41,20 +41,20 @@ class PostsService(
     @Transactional
     fun posting(
         userInfo: CommonUserInfo,
-        postsCreateRequest: PostsCreateRequest,
+        postCreateRequest: PostCreateRequest,
         files: List<MultipartFile>?
     ): BoardId {
 
         val user = memberManager.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
-        val location = postsManager.createLocationPointInfo(postsCreateRequest.longitude, postsCreateRequest.latitude)
-        val board = postsManager.saveBoard(
-            postsCreateRequest.toBoardCreateDto(user, location)
+        val location = postManager.createLocationPointInfo(postCreateRequest.longitude, postCreateRequest.latitude)
+        val board = postManager.saveBoard(
+            postCreateRequest.toBoardCreateDto(user, location)
         )
 
         // 파일 업로드 & 게시판 저장
         if (files?.isNotEmpty() == true) fileUpload(board, files)
 
-        postsManager.createCachePostLikeAndReplyCount(board.id!!.toString())
+        postManager.createCachePostLikeAndReplyCount(board.id!!.toString())
 
         return BoardId(boardId = hashidsUtil.encode(board.id!!))
     }
@@ -64,7 +64,7 @@ class PostsService(
         boardId: String
     ): PostInfo? {
         val id = hashidsUtil.decode(boardId)
-        val board = postsManager.getBoard(id) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = postManager.getBoard(id) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
 
         val boardMember = board.email
         val boardFileInfo = board.images.mapNotNull {
@@ -90,7 +90,7 @@ class PostsService(
             createdAt = board.createdAt,
             fileInfoList = boardFileInfo,
             likeCount = likeManager.getPostLike(board.id!!.toString()),
-            replyCount = postsManager.getPostReply(board.id!!.toString()),
+            replyCount = postManager.getPostReply(board.id!!.toString()),
             reply = emptyList(),
             isOwner = isOwner
         )
@@ -98,14 +98,14 @@ class PostsService(
 
     fun getPostList(
         optionalUserInfo: CommonUserInfo?,
-        postsListRequest: PostsListRequest
+        postListRequest: PostListRequest
     ): List<PostInfo> {
-        val boardList = postsManager.getBoardConditionList(postsListRequest)
+        val boardList = postManager.getBoardConditionList(postListRequest)
         if (boardList.isEmpty()) return emptyList()
 
         // N+1 방지
         val idList = boardList.map { it.id!! }
-        val boardFiles = postsManager.getBoardFileInBoardIdList(idList)
+        val boardFiles = postManager.getBoardFileInBoardIdList(idList)
 
 
 
@@ -132,7 +132,7 @@ class PostsService(
                 createdAt = board.createdAt,
                 fileInfoList = fileInfoList,
                 likeCount = likeManager.getPostLike(board.id!!.toString()),
-                replyCount = postsManager.getPostReply(board.id!!.toString()),
+                replyCount = postManager.getPostReply(board.id!!.toString()),
                 reply = emptyList(),
                 isOwner = isOwner
             )
@@ -146,7 +146,7 @@ class PostsService(
         boardId: String
     ): LikeResponse {
         val id = hashidsUtil.decode(boardId)
-        val board = postsManager.getReferenceBoard(id)
+        val board = postManager.getReferenceBoard(id)
 
         try {
             // 좋아요가 있는지 확인
@@ -188,8 +188,8 @@ class PostsService(
         postUpdateRequest: PostUpdateRequest
     ) {
         val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postsManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
-        if (!postsManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
+        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        if (!postManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
 
         if (!postUpdateRequest.title.isNullOrBlank() && board.title?.equals(postUpdateRequest.title) == false) {
             board.title = postUpdateRequest.title
@@ -219,14 +219,14 @@ class PostsService(
         files: List<MultipartFile>
     ): List<BoardFileInfo> {
         val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postsManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
-        if (!postsManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
+        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        if (!postManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
 
         // main 파일이 있으면 true
         val mainCheck = board.images.any { it?.main == true }
         fileUpload(board, files, mainCheck)
 
-        val boardFiles = postsManager.getBoardFileInBoardIdList(listOf(board.id!!.toLong()))
+        val boardFiles = postManager.getBoardFileInBoardIdList(listOf(board.id!!.toLong()))
 
         return boardFiles.map {
             BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
@@ -245,7 +245,7 @@ class PostsService(
             val uploadFileInfo = filesManager.uploadFile(file)
             val fileUrl = fileBaseUrl + "/" + uploadFileInfo.key
 
-            postsManager.saveBoardFile(
+            postManager.saveBoardFile(
                 BoardFile(
                     board = board,
                     main = main,

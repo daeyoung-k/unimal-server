@@ -1,4 +1,4 @@
-package com.unimal.board.controller.request
+package com.unimal.board.controller.request.post
 
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.member.BoardMember
@@ -6,7 +6,7 @@ import com.unimal.board.enums.MapShow
 import com.unimal.board.enums.PostShow
 import org.locationtech.jts.geom.Point
 
-data class PostsCreateRequest(
+data class PostCreateRequest(
     val title: String? = null,
     val content: String,
     val streetName: String? = null,

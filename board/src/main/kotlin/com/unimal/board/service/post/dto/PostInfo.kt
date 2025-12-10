@@ -1,4 +1,4 @@
-package com.unimal.board.service.posts.dto
+package com.unimal.board.service.post.dto
 
 import com.unimal.board.enums.MapShow
 import com.unimal.board.enums.PostShow

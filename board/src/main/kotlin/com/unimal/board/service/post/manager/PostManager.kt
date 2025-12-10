@@ -1,6 +1,6 @@
-package com.unimal.board.service.posts.manager
+package com.unimal.board.service.post.manager
 
-import com.unimal.board.controller.request.PostsListRequest
+import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.domain.board.*
 import com.unimal.board.utils.RedisCacheManager
 import org.locationtech.jts.geom.Coordinate
@@ -9,7 +9,7 @@ import org.locationtech.jts.geom.Point
 import org.springframework.stereotype.Component
 
 @Component
-class PostsManager(
+class PostManager(
     private val boardFileRepository: BoardFileRepository,
     private val boardRepository: BoardRepository,
     private val boardRepositoryImpl: BoardRepositoryImpl,
@@ -53,8 +53,8 @@ class PostsManager(
     fun getBoardFilesUrls(board: Board) = boardFileRepository.findFileUrlsByBoardOrderByMainDescIdAsc(board)
 
     fun getBoardConditionList(
-        postsListRequest: PostsListRequest
-    ) = boardRepositoryImpl.boardConditionList(postsListRequest)
+        postListRequest: PostListRequest
+    ) = boardRepositoryImpl.boardConditionList(postListRequest)
 
     fun getBoardFileInBoardIdList(
         idList: List<Long>
