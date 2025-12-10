@@ -38,7 +38,7 @@ open class Board(
     val updatedAt: LocalDateTime? = null,
 
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
-    val images: MutableList<BoardFile> = mutableListOf()
+    val images: MutableList<BoardFile?> = mutableListOf()
 
 
     ) : BaseIdEntity()
