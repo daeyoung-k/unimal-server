@@ -1,10 +1,10 @@
-package com.unimal.board.controller.request
+package com.unimal.board.controller.request.post
 
 import com.unimal.board.controller.enums.PostSortType
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 
-data class PostsListRequest(
+data class PostListRequest(
     // 내근처
     val latitude: Double? = null,
     val longitude: Double? = null,

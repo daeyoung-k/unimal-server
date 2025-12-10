@@ -1,4 +1,4 @@
-package com.unimal.board.controller.request
+package com.unimal.board.controller.request.post
 
 import com.unimal.board.enums.MapShow
 import com.unimal.board.enums.PostShow

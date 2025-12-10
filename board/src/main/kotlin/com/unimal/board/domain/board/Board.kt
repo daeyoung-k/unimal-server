@@ -37,6 +37,7 @@ open class Board(
     @Enumerated(EnumType.STRING)
     @Column(name = "show", nullable = false, length = 20)
     var show: PostShow = PostShow.PUBLIC,
+
     @Enumerated(EnumType.STRING)
     @Column(name = "map_show", nullable = false, length = 20)
     var mapShow: MapShow = MapShow.SAME,
