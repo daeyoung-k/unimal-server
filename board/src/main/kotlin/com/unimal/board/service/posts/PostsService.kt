@@ -6,6 +6,7 @@ import com.unimal.board.domain.board.BoardFile
 import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.service.files.FilesManager
 import com.unimal.board.service.member.MemberManager
+import com.unimal.board.service.posts.dto.BoardFileInfo
 import com.unimal.board.service.posts.dto.BoardId
 import com.unimal.board.service.posts.dto.LikeResponse
 import com.unimal.board.service.posts.dto.PostInfo
@@ -83,7 +84,9 @@ class PostsService(
         val board = postsManager.getBoard(id) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
 
         val boardMember = board.email
-        val boardImageUrls = board.images.map { it.fileUrl ?: "" }
+        val boardFileInfo = board.images.mapNotNull {
+            if (it?.id == null) null else BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+        }
 
         val isOwner = if (optionalUserInfo != null) {
             boardMember.email == optionalUserInfo.email
@@ -101,7 +104,7 @@ class PostsService(
             streetName = board.streetName!!,
             public = board.public,
             createdAt = board.createdAt,
-            imageUrlList = boardImageUrls,
+            fileInfoList = boardFileInfo,
             likeCount = likeManager.getPostLike(board.id!!.toString()),
             replyCount = postsManager.getPostReply(board.id!!.toString()),
             reply = emptyList(),
@@ -120,10 +123,17 @@ class PostsService(
         val idList = boardList.map { it.id!! }
         val boardFiles = postsManager.getBoardFileInBoardIdList(idList)
 
+
+
         val ownerEmail = optionalUserInfo?.email ?: ""
 
         return boardList.map { board ->
             val boardMember = board.email
+            val fileInfoList = boardFiles.mapNotNull {
+                if (it.board == board) {
+                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+                } else null
+            }
             val isOwner = boardMember.email == ownerEmail
             PostInfo(
                 boardId = hashidsUtil.encode(board.id!!),
@@ -135,7 +145,7 @@ class PostsService(
                 streetName = board.streetName!!,
                 public = board.public,
                 createdAt = board.createdAt,
-                imageUrlList = boardFiles.mapNotNull { if (it.board == board) it.fileUrl else null },
+                fileInfoList = fileInfoList,
                 likeCount = likeManager.getPostLike(board.id!!.toString()),
                 replyCount = postsManager.getPostReply(board.id!!.toString()),
                 reply = emptyList(),
