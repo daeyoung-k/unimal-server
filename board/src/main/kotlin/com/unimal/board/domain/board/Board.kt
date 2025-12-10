@@ -1,13 +1,14 @@
 package com.unimal.board.domain.board
 
 import com.unimal.board.domain.member.BoardMember
+import com.unimal.board.enums.MapShow
+import com.unimal.board.enums.PostShow
 import com.unimal.common.domain.BaseIdEntity
 import jakarta.persistence.*
 import org.locationtech.jts.geom.Point
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.Lob
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.time.LocalDateTime
@@ -32,8 +33,15 @@ open class Board(
     val siDo: String? = null,
     val guGun: String? = null,
     val dong: String? = null,
-    val public: Boolean? = false,
-    val del: Boolean? = false,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "show", nullable = false, columnDefinition = "varchar(20) default 'PUBLIC'")
+    val show: PostShow = PostShow.PUBLIC,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "map_show", nullable = false, columnDefinition = "varchar(20) default 'SAME'")
+    val mapShow: MapShow = MapShow.SAME,
+
+    val del: Boolean = false,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime? = null,
 
