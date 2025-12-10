@@ -1,4 +1,4 @@
-package com.unimal.board.service.posts.manager
+package com.unimal.board.service.post.manager
 
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.board.like.BoardLike

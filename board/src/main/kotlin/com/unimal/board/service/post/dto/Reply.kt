@@ -1,4 +1,4 @@
-package com.unimal.board.service.posts.dto
+package com.unimal.board.service.post.dto
 
 interface ReplyInterface {
     val replyId: String

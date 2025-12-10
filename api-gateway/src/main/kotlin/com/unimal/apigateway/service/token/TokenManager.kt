@@ -3,6 +3,7 @@ package com.unimal.apigateway.service.token
 
 import com.unimal.apigateway.domain.authentication.AuthenticationToken
 import com.unimal.apigateway.domain.authentication.AuthenticationTokenRepository
+import com.unimal.common.enums.TokenType
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 
@@ -16,7 +17,8 @@ class TokenManager(
         email: String,
         token: String
     ): String? {
-        val cacheToken = redisTemplate.opsForValue().get("$email:access-token")
+        val key = "$email:${TokenType.ACCESS.cacheKey}"
+        val cacheToken = redisTemplate.opsForValue().get(key)
         return if (cacheToken == token) cacheToken else null
     }
 

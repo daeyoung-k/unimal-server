@@ -1,10 +1,12 @@
-package com.unimal.board.controller.request
+package com.unimal.board.controller.request.post
 
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.member.BoardMember
+import com.unimal.board.enums.MapShow
+import com.unimal.board.enums.PostShow
 import org.locationtech.jts.geom.Point
 
-data class PostsCreateRequest(
+data class PostCreateRequest(
     val title: String? = null,
     val content: String,
     val streetName: String? = null,
@@ -14,7 +16,8 @@ data class PostsCreateRequest(
     val dong: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null,
-    val isPublic: Boolean = false,
+    val isShow: PostShow = PostShow.PUBLIC,
+    val isMapShow: MapShow = MapShow.SAME,
 ) {
     fun toBoardCreateDto(
         user: BoardMember,
@@ -30,7 +33,8 @@ data class PostsCreateRequest(
             guGun = guGun,
             dong = dong,
             location = location,
-            public = isPublic,
+            show = isShow,
+            mapShow = isMapShow
         )
     }
 }

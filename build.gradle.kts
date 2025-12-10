@@ -97,3 +97,33 @@ configure(listOf(
 
 }
 
+// 1. QClass 생성만 필요한 모듈 (공통)
+configure(listOf(
+    project(":common"),
+    project(":board"), // board도 QClass 생성이 필요하므로 포함
+)) {
+    dependencies {
+        val queryDslVersion = "5.1.0"
+        add("implementation", "com.querydsl:querydsl-core:$queryDslVersion")
+        add("kapt", "org.hibernate.orm:hibernate-jpamodelgen:6.6.8.Final")
+        add("kapt", "com.querydsl:querydsl-apt:$queryDslVersion:jakarta")
+        add("kapt", "jakarta.persistence:jakarta.persistence-api")
+        add("kapt", "jakarta.annotation:jakarta.annotation-api")
+    }
+
+    extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension> {
+        sourceSets.main {
+            kotlin.srcDir("build/generated/source/kapt/main")
+        }
+    }
+}
+
+// 2. QueryDSL 런타임이 필요한 모듈 (실제 사용)
+configure(listOf(
+    project(":board"),
+)) {
+    dependencies {
+        val queryDslVersion = "5.1.0"
+        add("implementation", "com.querydsl:querydsl-jpa:$queryDslVersion:jakarta")
+    }
+}

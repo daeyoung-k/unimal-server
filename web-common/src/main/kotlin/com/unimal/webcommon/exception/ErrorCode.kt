@@ -32,6 +32,7 @@ enum class ErrorCode(
     FILE_UPLOAD_ERROR(2011, "파일 업로드에 실패했습니다."),
     MULTIFILE_UPLOAD_ERROR(2012, "다중 파일 업로드에 실패했습니다."),
     BOARD_NOT_FOUND(2013, "게시판 정보를 찾을 수 없습니다."),
+    BOARD_OWNER_NOT_MATCH(2014, "게시판 작성자가 아닙니다."),
 
     API_CALL_ERROR(3001, "API 호출에 실패했습니다."),
     HASHIDS_ENCODE_ERROR(3002, "Hashids encode 오류입니다."),
