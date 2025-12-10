@@ -106,6 +106,7 @@ class BoardRepositoryImpl(
             .where(
                 boardFile.board.id.`in`(idList)
             )
+            .orderBy(boardFile.main.desc(), boardFile.id.asc())
             .fetch() ?: emptyList()
     }
 }

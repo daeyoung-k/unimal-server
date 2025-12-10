@@ -1,5 +1,6 @@
 package com.unimal.board.controller
 
+import com.unimal.board.controller.request.PostUpdateRequest
 import com.unimal.board.controller.request.PostsCreateRequest
 import com.unimal.board.controller.request.PostsListRequest
 import com.unimal.board.service.posts.PostsService
@@ -8,6 +9,7 @@ import com.unimal.common.annotation.user.OptionalUserInfoAnnotation
 import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
@@ -49,13 +51,47 @@ class BoardController(
         return CommonResponse(data = postsService.posting(userInfo, postsCreateRequest, files))
     }
 
-    @PatchMapping("/posts/update")
-    fun updatePost(): CommonResponse {
-        return CommonResponse(data = "게시글 수정")
+    @PatchMapping("/posts/{boardId}/update")
+    fun updatePost(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+        @PathVariable("boardId") boardId: String,
+        @RequestBody postUpdateRequest: PostUpdateRequest
+    ): CommonResponse {
+        return CommonResponse(data = postsService.postUpdate(userInfo, boardId, postUpdateRequest))
     }
 
-    @DeleteMapping("/posts/delete")
-    fun deletePost(): CommonResponse {
+    @PostMapping("/posts/{boardId}/file/upload", consumes = ["multipart/form-data"])
+    fun uploadPostFile(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+        @PathVariable("boardId") boardId: String,
+        @RequestPart("files", required = false) files: List<MultipartFile>,
+    ): CommonResponse {
+        return CommonResponse(data = postsService.postFileUpload(userInfo, boardId, files))
+    }
+
+    @DeleteMapping("/posts/{boardId}/file/{fileId}/delete")
+    fun deletePostFile(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+        @PathVariable("boardId") boardId: String,
+        @PathVariable("fileId") fileId: String,
+    ): CommonResponse {
+        return CommonResponse(data = "게시글 파일 삭제")
+    }
+
+    @PostMapping("/posts/{boardId}/file/choice-delete")
+    fun choiceDeletePostFile(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+        @PathVariable("boardId") boardId: String,
+        @RequestBody @Valid fileIds: List<String>
+    ): CommonResponse {
+        return CommonResponse(data = "게시글 파일 선택 삭제")
+    }
+
+    @DeleteMapping("/posts/{boardId}/delete")
+    fun deletePost(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+        @PathVariable("boardId") boardId: String,
+    ): CommonResponse {
         return CommonResponse(data = "게시글 삭제")
     }
 

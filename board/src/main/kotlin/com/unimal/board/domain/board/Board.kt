@@ -24,10 +24,10 @@ open class Board(
     @Column(columnDefinition = "geography(Point, 4326)")
     val location: Point? = null,
 
-    val title: String? = null,
+    var title: String? = null,
 
     @Column(columnDefinition = "text", nullable = false)
-    val content: String,
+    var content: String,
     val streetName: String? = null,
     val postalCode: String? = null,
     val siDo: String? = null,
@@ -35,17 +35,18 @@ open class Board(
     val dong: String? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "show", nullable = false, columnDefinition = "varchar(20) default 'PUBLIC'")
-    val show: PostShow = PostShow.PUBLIC,
+    @Column(name = "show", nullable = false, length = 20)
+    var show: PostShow = PostShow.PUBLIC,
     @Enumerated(EnumType.STRING)
-    @Column(name = "map_show", nullable = false, columnDefinition = "varchar(20) default 'SAME'")
-    val mapShow: MapShow = MapShow.SAME,
+    @Column(name = "map_show", nullable = false, length = 20)
+    var mapShow: MapShow = MapShow.SAME,
 
     val del: Boolean = false,
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime? = null,
+    var updatedAt: LocalDateTime? = null,
 
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
+    @OrderBy("main desc, id asc")
     val images: MutableList<BoardFile?> = mutableListOf()
 
 
