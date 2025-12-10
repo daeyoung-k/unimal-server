@@ -1,7 +1,9 @@
 package com.unimal.board.service.posts
 
+import com.unimal.board.controller.request.PostUpdateRequest
 import com.unimal.board.controller.request.PostsCreateRequest
 import com.unimal.board.controller.request.PostsListRequest
+import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.board.BoardFile
 import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.service.files.FilesManager
@@ -14,15 +16,13 @@ import com.unimal.board.service.posts.manager.LikeManager
 import com.unimal.board.service.posts.manager.PostsManager
 import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.webcommon.exception.AlreadyBeenProcessedException
-import com.unimal.webcommon.exception.BoardNotFoundException
-import com.unimal.webcommon.exception.ErrorCode
-import com.unimal.webcommon.exception.UserNotFoundException
+import com.unimal.webcommon.exception.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
 
 @Service
 class PostsService(
@@ -51,23 +51,8 @@ class PostsService(
             postsCreateRequest.toBoardCreateDto(user, location)
         )
 
-        if (files?.isNotEmpty() == true) {
-            files.forEachIndexed { index, file ->
-                val main = index == 0
-                val uploadFileInfo = filesManager.uploadFile(file)
-                val fileUrl = fileBaseUrl + "/" + uploadFileInfo.key
-
-                postsManager.saveBoardFile(
-                    BoardFile(
-                        board = board,
-                        main = main,
-                        fileName = uploadFileInfo.originalFilename,
-                        fileKey = uploadFileInfo.key,
-                        fileUrl = fileUrl
-                    )
-                )
-            }
-        }
+        // 파일 업로드 & 게시판 저장
+        if (files?.isNotEmpty() == true) fileUpload(board, files)
 
         postsManager.createCachePostLikeAndReplyCount(board.id!!.toString())
 
@@ -193,6 +178,82 @@ class PostsService(
             e.printStackTrace()
             logger.error { "좋아요 오류: ${e.message}" }
             throw AlreadyBeenProcessedException()
+        }
+    }
+
+    @Transactional
+    fun postUpdate(
+        userInfo: CommonUserInfo,
+        encryptBoardId: String,
+        postUpdateRequest: PostUpdateRequest
+    ) {
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        val board = postsManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        if (!postsManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
+
+        if (!postUpdateRequest.title.isNullOrBlank() && board.title?.equals(postUpdateRequest.title) == false) {
+            board.title = postUpdateRequest.title
+            board.updatedAt = LocalDateTime.now()
+        }
+
+        if (!postUpdateRequest.content.isNullOrBlank() && board.content != postUpdateRequest.content) {
+            board.content = postUpdateRequest.content
+            board.updatedAt = LocalDateTime.now()
+        }
+
+        if (postUpdateRequest.isShow != null && board.show != postUpdateRequest.isShow) {
+            board.show = postUpdateRequest.isShow
+            board.updatedAt = LocalDateTime.now()
+        }
+
+        if (postUpdateRequest.isMapShow != null && board.mapShow != postUpdateRequest.isMapShow) {
+            board.mapShow = postUpdateRequest.isMapShow
+            board.updatedAt = LocalDateTime.now()
+        }
+    }
+
+    @Transactional
+    fun postFileUpload(
+        userInfo: CommonUserInfo,
+        encryptBoardId: String,
+        files: List<MultipartFile>
+    ): List<BoardFileInfo> {
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        val board = postsManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        if (!postsManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
+
+        // main 파일이 있으면 true
+        val mainCheck = board.images.any { it?.main == true }
+        fileUpload(board, files, mainCheck)
+
+        val boardFiles = postsManager.getBoardFileInBoardIdList(listOf(board.id!!.toLong()))
+
+        return boardFiles.map {
+            BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+        }
+    }
+
+
+    private fun fileUpload(
+        board: Board,
+        files: List<MultipartFile>,
+        mainOption: Boolean = false
+    ) {
+        files.forEachIndexed { index, file ->
+            // 메인파일이 있으면 main 옵션은 모두 false로 설정, 메인파일 정보가 없을때 첫 인덱스만 메인으로 설정한다.
+            val main = if (mainOption) false else (index == 0)
+            val uploadFileInfo = filesManager.uploadFile(file)
+            val fileUrl = fileBaseUrl + "/" + uploadFileInfo.key
+
+            postsManager.saveBoardFile(
+                BoardFile(
+                    board = board,
+                    main = main,
+                    fileName = uploadFileInfo.originalFilename,
+                    fileKey = uploadFileInfo.key,
+                    fileUrl = fileUrl
+                )
+            )
         }
     }
 

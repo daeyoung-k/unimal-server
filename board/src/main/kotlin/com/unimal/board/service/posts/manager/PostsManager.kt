@@ -69,4 +69,9 @@ class PostsManager(
             0
         }
     }
+
+    fun postOwnerCheck(
+        userEmail: String,
+        boardEmail: String
+    ) = userEmail.trim().equals(boardEmail.trim(), ignoreCase = true)
 }
