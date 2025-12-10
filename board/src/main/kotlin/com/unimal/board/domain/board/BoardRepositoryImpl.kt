@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import com.unimal.board.controller.enums.PostSortType
 import com.unimal.board.controller.request.PostsListRequest
 import com.unimal.board.domain.board.like.QBoardLike
+import com.unimal.board.enums.PostShow
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -22,7 +23,9 @@ class BoardRepositoryImpl(
     fun boardConditionList(
         postsListRequest: PostsListRequest
     ): List<Board> {
-        val conditions = mutableListOf<BooleanExpression>()
+        val conditions = mutableListOf<BooleanExpression>(
+            board.show.eq(PostShow.PUBLIC)
+        )
 
         // 내 근처 거리 조건
         if (postsListRequest.isLocationSearch) {

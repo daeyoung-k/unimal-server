@@ -46,8 +46,6 @@ class PostsService(
     ): BoardId {
 
         val user = memberManager.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
-//        val user = memberManager.findByEmail(userInfo.email) ?: BoardMember(email = userInfo.email, name = "Temp User")
-
         val location = postsManager.createLocationPointInfo(postsCreateRequest.longitude, postsCreateRequest.latitude)
         val board = postsManager.saveBoard(
             postsCreateRequest.toBoardCreateDto(user, location)
@@ -102,7 +100,8 @@ class PostsService(
             title = board.title ?: "",
             content = board.content,
             streetName = board.streetName!!,
-            public = board.public,
+            show = board.show,
+            mapShow = board.mapShow,
             createdAt = board.createdAt,
             fileInfoList = boardFileInfo,
             likeCount = likeManager.getPostLike(board.id!!.toString()),
@@ -143,7 +142,8 @@ class PostsService(
                 title = board.title ?: "",
                 content = board.content,
                 streetName = board.streetName!!,
-                public = board.public,
+                show = board.show,
+                mapShow = board.mapShow,
                 createdAt = board.createdAt,
                 fileInfoList = fileInfoList,
                 likeCount = likeManager.getPostLike(board.id!!.toString()),
