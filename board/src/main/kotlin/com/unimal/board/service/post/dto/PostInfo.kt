@@ -1,5 +1,7 @@
-package com.unimal.board.service.posts.dto
+package com.unimal.board.service.post.dto
 
+import com.unimal.board.enums.MapShow
+import com.unimal.board.enums.PostShow
 import java.time.LocalDateTime
 
 data class PostInfo(
@@ -10,10 +12,12 @@ data class PostInfo(
     val title: String? = "",
     val content: String,
     val streetName: String,
-    val public: Boolean? = false,
+    val show: PostShow,
+    val mapShow: MapShow,
     val createdAt: LocalDateTime,
-    val imageUrlList: List<String>,
+    val fileInfoList: List<BoardFileInfo?>,
     val likeCount: Long,
     val replyCount: Int,
-    val reply: List<PostReply>
+    val reply: List<PostReply>,
+    val isOwner: Boolean = false
 )

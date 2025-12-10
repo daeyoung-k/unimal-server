@@ -1,11 +1,7 @@
-package com.unimal.board.service.posts.manager
+package com.unimal.board.service.post.manager
 
-import com.unimal.board.domain.board.Board
-import com.unimal.board.domain.board.BoardFile
-import com.unimal.board.domain.board.BoardFileRepository
-import com.unimal.board.domain.board.BoardRepository
-import com.unimal.board.domain.board.like.BoardLike
-import com.unimal.board.domain.board.like.BoardLikeRepository
+import com.unimal.board.controller.request.post.PostListRequest
+import com.unimal.board.domain.board.*
 import com.unimal.board.utils.RedisCacheManager
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
@@ -13,10 +9,10 @@ import org.locationtech.jts.geom.Point
 import org.springframework.stereotype.Component
 
 @Component
-class PostsManager(
+class PostManager(
     private val boardFileRepository: BoardFileRepository,
     private val boardRepository: BoardRepository,
-    private val boardLikeRepository: BoardLikeRepository,
+    private val boardRepositoryImpl: BoardRepositoryImpl,
 
     private val geometryFactory: GeometryFactory,
     private val redisCacheManager: RedisCacheManager,
@@ -56,6 +52,14 @@ class PostsManager(
 
     fun getBoardFilesUrls(board: Board) = boardFileRepository.findFileUrlsByBoardOrderByMainDescIdAsc(board)
 
+    fun getBoardConditionList(
+        postListRequest: PostListRequest
+    ) = boardRepositoryImpl.boardConditionList(postListRequest)
+
+    fun getBoardFileInBoardIdList(
+        idList: List<Long>
+    ) = boardRepositoryImpl.boardFileList(idList)
+
     fun getPostReply(
         boardId: String
     ): Int {
@@ -65,4 +69,9 @@ class PostsManager(
             0
         }
     }
+
+    fun postOwnerCheck(
+        userEmail: String,
+        boardEmail: String
+    ) = userEmail.trim().equals(boardEmail.trim(), ignoreCase = true)
 }

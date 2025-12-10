@@ -1,6 +1,7 @@
 package com.unimal.user.service.token
 
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.common.enums.TokenType
 import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.token.dto.JwtTokenDTO
@@ -20,7 +21,7 @@ class TokenService(
     @Transactional
     fun accessTokenCreate(commonUserInfo: CommonUserInfo): JwtTokenDTO {
 
-        if (commonUserInfo.tokenType != "refresh") {
+        if (commonUserInfo.tokenType != TokenType.REFRESH) {
             throw CustomException(
                 message = "잘못된 토큰 타입입니다.",
                 code = HttpStatus.UNAUTHORIZED.value(),
