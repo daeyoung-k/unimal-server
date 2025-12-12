@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.*
 import software.amazon.awssdk.transfer.s3.S3TransferManager
 import software.amazon.awssdk.transfer.s3.model.FileUpload
 import software.amazon.awssdk.transfer.s3.model.UploadFileRequest
@@ -78,6 +78,40 @@ class S3Manager(
             type = sp.first().lowercase(),
             subType = sp.last().lowercase()
         )
+    }
+
+    fun deleteFile(
+        key: String
+    ) {
+        val deleteRequest = DeleteObjectRequest.builder()
+            .bucket(s3Bucket)
+            .key(key)
+            .build()
+
+        s3Client.deleteObject(deleteRequest)
+    }
+
+    fun multipleDeleteFile(
+        keys: List<String>
+    ) {
+        if (keys.isEmpty()) return
+
+        val objects = keys.map {
+            ObjectIdentifier.builder()
+                .key(it)
+                .build()
+        }
+
+        val request = DeleteObjectsRequest.builder()
+            .bucket(s3Bucket)
+            .delete(
+                Delete.builder()
+                    .objects(objects)
+                    .build()
+            )
+            .build()
+
+        s3Client.deleteObjects(request)
     }
 
 }

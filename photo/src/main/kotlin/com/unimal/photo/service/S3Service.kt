@@ -63,4 +63,16 @@ class S3Service(
 
         return s3Manager.multiUploadFile(multipleTmpFiles)
     }
+
+    fun deleteFile(
+        keys: List<String>
+    ) {
+        if (keys.isEmpty()) return
+
+        if (keys.size == 1) {
+            s3Manager.deleteFile(keys.first())
+        } else {
+            s3Manager.multipleDeleteFile(keys)
+        }
+    }
 }

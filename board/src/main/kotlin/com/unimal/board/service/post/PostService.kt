@@ -52,7 +52,7 @@ class PostService(
         )
 
         // 파일 업로드 & 게시판 저장
-        if (files?.isNotEmpty() == true) fileUpload(board, files)
+        if (files?.isNotEmpty() == true) filesManager.uploadFile(board, files)
 
         postManager.createCachePostLikeAndReplyCount(board.id!!.toString())
 
@@ -224,36 +224,12 @@ class PostService(
 
         // main 파일이 있으면 true
         val mainCheck = board.images.any { it?.main == true }
-        fileUpload(board, files, mainCheck)
+        filesManager.uploadFile(board, files, mainCheck)
 
         val boardFiles = postManager.getBoardFileInBoardIdList(listOf(board.id!!.toLong()))
 
         return boardFiles.map {
             BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
-        }
-    }
-
-
-    private fun fileUpload(
-        board: Board,
-        files: List<MultipartFile>,
-        mainOption: Boolean = false
-    ) {
-        files.forEachIndexed { index, file ->
-            // 메인파일이 있으면 main 옵션은 모두 false로 설정, 메인파일 정보가 없을때 첫 인덱스만 메인으로 설정한다.
-            val main = if (mainOption) false else (index == 0)
-            val uploadFileInfo = filesManager.uploadFile(file)
-            val fileUrl = fileBaseUrl + "/" + uploadFileInfo.key
-
-            postManager.saveBoardFile(
-                BoardFile(
-                    board = board,
-                    main = main,
-                    fileName = uploadFileInfo.originalFilename,
-                    fileKey = uploadFileInfo.key,
-                    fileUrl = fileUrl
-                )
-            )
         }
     }
 
