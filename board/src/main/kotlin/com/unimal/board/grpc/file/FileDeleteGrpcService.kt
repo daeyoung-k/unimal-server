@@ -6,14 +6,11 @@ import net.devh.boot.grpc.client.inject.GrpcClient
 import org.springframework.stereotype.Component
 
 @Component
-class FileDeleteGrpcRequest {
+class FileDeleteGrpcService {
     @GrpcClient("photo-grpc")
     lateinit var fileDeleteServiceGrpc: FileDeleteServiceGrpc.FileDeleteServiceBlockingStub
 
     fun deleteFile(keys: List<String>) {
-
-
-
         val request = FileDeleteRequest.newBuilder()
             .addAllKeys(keys)
             .build()

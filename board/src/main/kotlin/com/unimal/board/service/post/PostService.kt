@@ -2,10 +2,10 @@ package com.unimal.board.service.post
 
 import com.unimal.board.controller.request.post.PostUpdateRequest
 import com.unimal.board.controller.request.post.PostCreateRequest
+import com.unimal.board.controller.request.post.PostFileDeleteRequest
 import com.unimal.board.controller.request.post.PostListRequest
-import com.unimal.board.domain.board.Board
-import com.unimal.board.domain.board.BoardFile
 import com.unimal.board.domain.board.like.BoardLike
+import com.unimal.board.grpc.file.FileDeleteGrpcService
 import com.unimal.board.service.files.FilesManager
 import com.unimal.board.service.member.MemberManager
 import com.unimal.board.service.post.dto.BoardFileInfo
@@ -18,7 +18,6 @@ import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.webcommon.exception.*
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -31,10 +30,10 @@ class PostService(
     private val likeManager: LikeManager,
     private val memberManager: MemberManager,
 
-    @Value("\${etc.files.base-url}")
-    private val fileBaseUrl: String,
     private val hashidsUtil: HashidsUtil,
-) {
+    private val fileDeleteGrpcService: FileDeleteGrpcService,
+
+    ) {
 
     val logger = KotlinLogging.logger {}
 
@@ -226,10 +225,34 @@ class PostService(
         val mainCheck = board.images.any { it?.main == true }
         filesManager.uploadFile(board, files, mainCheck)
 
-        val boardFiles = postManager.getBoardFileInBoardIdList(listOf(board.id!!.toLong()))
+        val boardFiles = postManager.getBoardFileInBoardIdList(listOf(board.id!!))
 
         return boardFiles.map {
             BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+        }
+    }
+
+    @Transactional
+    fun postFileDelete(
+        userInfo: CommonUserInfo,
+        encryptBoardId: String,
+        postFileDeleteRequest: PostFileDeleteRequest
+    ) {
+        if (postFileDeleteRequest.fileIds.isEmpty()) return
+
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        if (!postManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
+
+        val fileIdList = postFileDeleteRequest.fileIds.map { hashidsUtil.decode(it) }
+
+        val boardFileList = postManager.getBoardFileInFileIdList(board, fileIdList)
+
+        if (boardFileList.isNotEmpty()) {
+            val fileKeys = boardFileList.mapNotNull { it.fileKey }
+            fileDeleteGrpcService.deleteFile(fileKeys)
+
+            postManager.deleteAllBoardFiles(boardFileList)
         }
     }
 

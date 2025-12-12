@@ -3,6 +3,7 @@ package com.unimal.board.controller
 import com.unimal.board.controller.request.post.PostReplyRequest
 import com.unimal.board.controller.request.post.PostUpdateRequest
 import com.unimal.board.controller.request.post.PostCreateRequest
+import com.unimal.board.controller.request.post.PostFileDeleteRequest
 import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.service.post.PostService
 import com.unimal.common.annotation.user.OptionalUserInfoAnnotation
@@ -61,22 +62,13 @@ class PostController(
         return CommonResponse(data = postService.postFileUpload(userInfo, boardId, files))
     }
 
-    @DeleteMapping("/post/{boardId}/file/{fileId}/delete")
+    @PostMapping("/post/{boardId}/file/delete")
     fun deletePostFile(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable("boardId") boardId: String,
-        @PathVariable("fileId") fileId: String,
+        @RequestBody postFileDeleteRequest: PostFileDeleteRequest
     ): CommonResponse {
-        return CommonResponse(data = "게시글 파일 삭제")
-    }
-
-    @PostMapping("/post/{boardId}/file/multiple-delete")
-    fun multipleDeletePostFile(
-        @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
-        @RequestBody @Valid fileIds: List<String>
-    ): CommonResponse {
-        return CommonResponse(data = "게시글 파일 선택 삭제")
+        return CommonResponse(data = postService.postFileDelete(userInfo, boardId, postFileDeleteRequest))
     }
 
     @DeleteMapping("/post/{boardId}/delete")
