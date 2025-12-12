@@ -74,4 +74,13 @@ class PostManager(
         userEmail: String,
         boardEmail: String
     ) = userEmail.trim().equals(boardEmail.trim(), ignoreCase = true)
+
+    fun getBoardFileInFileIdList(
+        board: Board,
+        fileIdList: List<Long>
+    ) = boardFileRepository.findBoardFileInFileIdList(board, fileIdList)
+
+    fun deleteAllBoardFiles(
+        boardFileList: List<BoardFile>
+    ) = boardFileRepository.deleteAll(boardFileList)
 }
