@@ -18,6 +18,6 @@ data class PostInfo(
     val fileInfoList: List<BoardFileInfo?>,
     val likeCount: Long,
     val replyCount: Int,
-    val reply: List<PostReply>,
+    val reply: List<Reply>,
     val isOwner: Boolean = false
 )

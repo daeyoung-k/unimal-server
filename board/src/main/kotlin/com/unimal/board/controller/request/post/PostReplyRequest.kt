@@ -4,5 +4,5 @@ import jakarta.validation.constraints.NotBlank
 
 data class PostReplyRequest(
     @field:NotBlank
-    val content: String
+    val comment: String
 )

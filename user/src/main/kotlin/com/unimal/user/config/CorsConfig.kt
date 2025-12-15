@@ -64,10 +64,10 @@ class CorsConfig : WebMvcConfigurer {
             val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
             return CommonUserInfo(
                 email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException(ErrorCode.EMAIL_NOT_FOUND.message),
+                nickname = request.getHeader("X-Unimal-User-nickname") ?: throw UserNotFoundException(ErrorCode.NICKNAME_NOT_FOUND.message),
                 roles = request.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException(ErrorCode.ROLE_NOT_FOUND.message),
                 provider = request.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException(ErrorCode.PROVIDER_NOT_FOUND.message),
                 tokenType = TokenType.from(request.getHeader("X-Unimal-User-token-type")) ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED)
-
             )
         }
     }
