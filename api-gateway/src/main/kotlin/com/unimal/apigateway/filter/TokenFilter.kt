@@ -18,6 +18,7 @@ class TokenFilter(
     class Config {
         val tokenHeaderName = "Authorization"
         val addHeaderEmail = "X-Unimal-User-email"
+        val addHeaderNickname = "X-Unimal-User-nickname"
         val addHeaderRoles = "X-Unimal-User-roles"
         val addHeaderProvider = "X-Unimal-User-provider"
         val addHeaderTokenType = "X-Unimal-User-token-type"
@@ -43,6 +44,7 @@ class TokenFilter(
             val tokenClaims = jwtProvider.tokenValidation(token)
             val userInfo = tokenService.getUserInfo(tokenClaims, token)
             exchange.request.headers.add(config.addHeaderEmail, userInfo.email)
+            exchange.request.headers.add(config.addHeaderNickname, userInfo.nickname)
             exchange.request.headers.add(config.addHeaderRoles, userInfo.roleString)
             exchange.request.headers.add(config.addHeaderProvider, userInfo.provider)
             exchange.request.headers.add(config.addHeaderTokenType, userInfo.tokenType.name)

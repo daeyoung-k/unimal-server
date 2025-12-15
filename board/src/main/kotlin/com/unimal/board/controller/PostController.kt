@@ -93,7 +93,7 @@ class PostController(
         @PathVariable boardId: String,
         @RequestBody @Valid postReplyRequest: PostReplyRequest
     ): CommonResponse {
-        return CommonResponse(data = "댓글 달기")
+        return CommonResponse(data = postService.reply(userInfo, boardId, postReplyRequest.comment))
     }
 
     @PatchMapping("/post/{boardId}/reply/{replyId}/update")

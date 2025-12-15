@@ -21,7 +21,7 @@ open class BoardReply(
     val email: String,
 
     @Column(columnDefinition = "text", nullable = false)
-    var content: String,
+    var comment: String,
 
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime? = null,

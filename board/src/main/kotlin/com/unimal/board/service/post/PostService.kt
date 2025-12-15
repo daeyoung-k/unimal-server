@@ -5,6 +5,7 @@ import com.unimal.board.controller.request.post.PostCreateRequest
 import com.unimal.board.controller.request.post.PostFileDeleteRequest
 import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.domain.board.like.BoardLike
+import com.unimal.board.domain.board.reply.BoardReply
 import com.unimal.board.grpc.file.FileDeleteGrpcService
 import com.unimal.board.service.files.FilesManager
 import com.unimal.board.service.member.MemberManager
@@ -12,12 +13,15 @@ import com.unimal.board.service.post.dto.BoardFileInfo
 import com.unimal.board.service.post.dto.BoardId
 import com.unimal.board.service.post.dto.LikeResponse
 import com.unimal.board.service.post.dto.PostInfo
+import com.unimal.board.service.post.dto.ReplyResponse
 import com.unimal.board.service.post.manager.LikeManager
 import com.unimal.board.service.post.manager.PostManager
+import com.unimal.board.service.post.manager.ReplyManager
 import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.webcommon.exception.*
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.lettuce.core.KillArgs.Builder.user
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -29,6 +33,7 @@ class PostService(
     private val postManager: PostManager,
     private val likeManager: LikeManager,
     private val memberManager: MemberManager,
+    private val replyManager: ReplyManager,
 
     private val hashidsUtil: HashidsUtil,
     private val fileDeleteGrpcService: FileDeleteGrpcService,
@@ -254,6 +259,34 @@ class PostService(
 
             postManager.deleteAllBoardFiles(boardFileList)
         }
+    }
+
+    @Transactional
+    fun reply(
+        userInfo: CommonUserInfo,
+        encryptBoardId: String,
+        comment: String,
+    ): ReplyResponse {
+
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+
+        val reply = replyManager.saveReply(
+            BoardReply(
+                board = board,
+                email = userInfo.email,
+                comment = comment,
+            )
+        )
+
+        return ReplyResponse(
+            boardId = hashidsUtil.encode(board.id!!),
+            replyId = hashidsUtil.encode(reply.id!!),
+            email = userInfo.email,
+            nickname = userInfo.nickname,
+            comment = comment,
+            createdAt = reply.createdAt.toString(),
+        )
     }
 
 
