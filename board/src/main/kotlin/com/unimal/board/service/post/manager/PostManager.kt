@@ -60,16 +60,6 @@ class PostManager(
         idList: List<Long>
     ) = boardRepositoryImpl.boardFileList(idList)
 
-    fun getPostReply(
-        boardId: String
-    ): Int {
-        val key = "board_reply:$boardId"
-        return redisCacheManager.getCache(key)?.toInt() ?: run {
-            redisCacheManager.setAnyCache(key, 0)
-            0
-        }
-    }
-
     fun postOwnerCheck(
         userEmail: String,
         boardEmail: String

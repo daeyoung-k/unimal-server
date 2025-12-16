@@ -12,7 +12,7 @@ class LikeManager(
     private val redisCacheManager: RedisCacheManager,
 ) {
 
-    fun getPostLike(
+    fun getCachePostLikeCount(
         boardId: String
     ): Long {
         val key = "board_like:$boardId"
@@ -31,13 +31,11 @@ class LikeManager(
 
     fun saveBoardLike(boardLike: BoardLike) = boardLikeRepository.save(boardLike)
 
-    fun getBoardLikeCount(board: Board) = boardLikeRepository.countByBoard(board)
-
     fun saveCachePostLikeGetCount(
         board: Board,
     ): Long {
         val key = "board_like:${board.id}"
-        val count = getBoardLikeCount(board)
+        val count = boardLikeRepository.countByBoard(board)
         redisCacheManager.setAnyCache(key, count)
         return redisCacheManager.getCache(key)!!.toLong()
     }

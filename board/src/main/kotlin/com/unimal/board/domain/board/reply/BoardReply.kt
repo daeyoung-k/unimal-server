@@ -17,6 +17,8 @@ open class BoardReply(
     @JoinColumn(name = "board_id", referencedColumnName = "id")
     val board: Board,
 
+    val replyId: Long? = null,
+
     @Column(name = "email", length = 50)
     val email: String,
 
