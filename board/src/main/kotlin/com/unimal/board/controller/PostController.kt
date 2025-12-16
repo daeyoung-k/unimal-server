@@ -88,12 +88,20 @@ class PostController(
     }
 
     @PostMapping("/post/{boardId}/reply")
-    fun reply(
+    fun createReply(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
         @RequestBody @Valid postReplyRequest: PostReplyRequest
     ): CommonResponse {
-        return CommonResponse(data = postService.reply(userInfo, boardId, postReplyRequest.comment))
+        return CommonResponse(data = postService.createReply(userInfo, boardId, postReplyRequest))
+    }
+
+    @GetMapping("/post/{boardId}/reply")
+    fun getReplyList(
+        @OptionalUserInfoAnnotation optionalUserInfo: CommonUserInfo?,
+        @PathVariable boardId: String,
+    ): CommonResponse {
+        return CommonResponse(data = postService.replyList(optionalUserInfo, boardId))
     }
 
     @PatchMapping("/post/{boardId}/reply/{replyId}/update")
@@ -113,16 +121,6 @@ class PostController(
         @PathVariable replyId: String,
     ): CommonResponse {
         return CommonResponse(data = "댓글 삭제")
-    }
-
-    @PostMapping("/post/{boardId}/reply/{replyId}/rereply")
-    fun reReply(
-        @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable boardId: String,
-        @PathVariable replyId: String,
-        @RequestBody @Valid postReplyRequest: PostReplyRequest
-    ): CommonResponse {
-        return CommonResponse(data = "대댓글 달기")
     }
 
     @PatchMapping("/post/{boardId}/reply/{replyId}/rereply/{reReplyId}/update")

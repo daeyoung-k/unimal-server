@@ -4,6 +4,7 @@ import com.unimal.board.controller.request.post.PostUpdateRequest
 import com.unimal.board.controller.request.post.PostCreateRequest
 import com.unimal.board.controller.request.post.PostFileDeleteRequest
 import com.unimal.board.controller.request.post.PostListRequest
+import com.unimal.board.controller.request.post.PostReplyRequest
 import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.domain.board.reply.BoardReply
 import com.unimal.board.grpc.file.FileDeleteGrpcService
@@ -13,7 +14,7 @@ import com.unimal.board.service.post.dto.BoardFileInfo
 import com.unimal.board.service.post.dto.BoardId
 import com.unimal.board.service.post.dto.LikeResponse
 import com.unimal.board.service.post.dto.PostInfo
-import com.unimal.board.service.post.dto.ReplyResponse
+import com.unimal.board.service.post.dto.Reply
 import com.unimal.board.service.post.manager.LikeManager
 import com.unimal.board.service.post.manager.PostManager
 import com.unimal.board.service.post.manager.ReplyManager
@@ -21,7 +22,6 @@ import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.webcommon.exception.*
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.lettuce.core.KillArgs.Builder.user
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -93,8 +93,8 @@ class PostService(
             mapShow = board.mapShow,
             createdAt = board.createdAt,
             fileInfoList = boardFileInfo,
-            likeCount = likeManager.getPostLike(board.id!!.toString()),
-            replyCount = postManager.getPostReply(board.id!!.toString()),
+            likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
+            replyCount = replyManager.getCachePostReplyCount(board.id!!.toString()),
             reply = emptyList(),
             isOwner = isOwner
         )
@@ -110,9 +110,6 @@ class PostService(
         // N+1 방지
         val idList = boardList.map { it.id!! }
         val boardFiles = postManager.getBoardFileInBoardIdList(idList)
-
-
-
         val ownerEmail = optionalUserInfo?.email ?: ""
 
         return boardList.map { board ->
@@ -135,8 +132,8 @@ class PostService(
                 mapShow = board.mapShow,
                 createdAt = board.createdAt,
                 fileInfoList = fileInfoList,
-                likeCount = likeManager.getPostLike(board.id!!.toString()),
-                replyCount = postManager.getPostReply(board.id!!.toString()),
+                likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
+                replyCount = replyManager.getCachePostReplyCount(board.id!!.toString()),
                 reply = emptyList(),
                 isOwner = isOwner
             )
@@ -262,32 +259,54 @@ class PostService(
     }
 
     @Transactional
-    fun reply(
+    fun createReply(
         userInfo: CommonUserInfo,
         encryptBoardId: String,
-        comment: String,
-    ): ReplyResponse {
+        postReplyRequest: PostReplyRequest,
+    ): Reply {
 
         val boardId = hashidsUtil.decode(encryptBoardId)
         val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
 
+        val replyId = if (!postReplyRequest.replyId.isNullOrBlank()) {
+            hashidsUtil.decode(postReplyRequest.replyId)
+        } else {
+            null
+        }
+
         val reply = replyManager.saveReply(
             BoardReply(
                 board = board,
+                replyId = replyId,
                 email = userInfo.email,
-                comment = comment,
+                comment = postReplyRequest.comment,
             )
         )
 
-        return ReplyResponse(
+        val newReplyId = if (reply.replyId == null) null else hashidsUtil.encode(reply.replyId)
+
+        // 댓글수 캐시 업데이트
+        replyManager.saveCachePostReplyCount(board)
+
+        return Reply(
+            id = hashidsUtil.encode(reply.id!!),
             boardId = hashidsUtil.encode(board.id!!),
-            replyId = hashidsUtil.encode(reply.id!!),
+            replyId = newReplyId,
+            reReplyYn = newReplyId != null,
             email = userInfo.email,
             nickname = userInfo.nickname,
-            comment = comment,
+            comment = reply.comment,
             createdAt = reply.createdAt.toString(),
         )
     }
 
+    fun replyList(
+        optionalUserInfo: CommonUserInfo?,
+        encryptBoardId: String,
+    ): List<BoardReply> {
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        return replyManager.getBoardReplyList(board.id!!)
+    }
 
 }
