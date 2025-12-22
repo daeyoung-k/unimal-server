@@ -76,7 +76,7 @@ class PostController(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
     ): CommonResponse {
-        return CommonResponse(data = "게시글 삭제")
+        return CommonResponse(data = postService.postDelete(userInfo, boardId))
     }
 
     @GetMapping("/post/{boardId}/like")
@@ -93,7 +93,7 @@ class PostController(
         @PathVariable boardId: String,
         @RequestBody @Valid postReplyRequest: PostReplyRequest
     ): CommonResponse {
-        return CommonResponse(data = postService.createReply(userInfo, boardId, postReplyRequest))
+        return CommonResponse(data = postService.replyCreate(userInfo, boardId, postReplyRequest))
     }
 
     @GetMapping("/post/{boardId}/reply")
@@ -111,7 +111,7 @@ class PostController(
         @PathVariable replyId: String,
         @RequestBody @Valid postReplyRequest: PostReplyRequest
     ): CommonResponse {
-        return CommonResponse(data = "댓글 수정")
+        return CommonResponse(data = postService.replyUpdate(userInfo, boardId, replyId, postReplyRequest))
     }
 
     @DeleteMapping("/post/{boardId}/reply/{replyId}/delete")
@@ -120,28 +120,7 @@ class PostController(
         @PathVariable boardId: String,
         @PathVariable replyId: String,
     ): CommonResponse {
-        return CommonResponse(data = "댓글 삭제")
-    }
-
-    @PatchMapping("/post/{boardId}/reply/{replyId}/rereply/{reReplyId}/update")
-    fun reReplyUpdate(
-        @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable boardId: String,
-        @PathVariable replyId: String,
-        @PathVariable reReplyId: String,
-        @RequestBody @Valid postReplyRequest: PostReplyRequest
-    ): CommonResponse {
-        return CommonResponse(data = "대댓글 수정")
-    }
-
-    @DeleteMapping("/post/{boardId}/reply/{replyId}/rereply/{reReplyId}/delete")
-    fun reReplyDelete(
-        @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable boardId: String,
-        @PathVariable replyId: String,
-        @PathVariable reReplyId: String
-    ): CommonResponse {
-        return CommonResponse(data = "대댓글 삭제")
+        return CommonResponse(data = postService.replyDelete(userInfo, boardId, replyId))
     }
 
 }

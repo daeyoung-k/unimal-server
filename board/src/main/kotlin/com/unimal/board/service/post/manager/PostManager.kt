@@ -48,6 +48,8 @@ class PostManager(
 
     fun getBoard(id: Long) = boardRepository.findBoardById(id)
 
+    fun getBoardByIdAndEmail(id: Long, email: String) = boardRepository.getBoardByIdAndEmail(id, email)
+
     fun getReferenceBoard(id: Long) = boardRepository.getReferenceById(id)
 
     fun getBoardFilesUrls(board: Board) = boardFileRepository.findFileUrlsByBoardOrderByMainDescIdAsc(board)

@@ -7,6 +7,7 @@ import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.controller.request.post.PostReplyRequest
 import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.domain.board.reply.BoardReply
+import com.unimal.board.domain.board.reply.toDto
 import com.unimal.board.grpc.file.FileDeleteGrpcService
 import com.unimal.board.service.files.FilesManager
 import com.unimal.board.service.member.MemberManager
@@ -65,9 +66,9 @@ class PostService(
 
     fun getPost(
         optionalUserInfo: CommonUserInfo?,
-        boardId: String
+        encryptBoardId: String
     ): PostInfo? {
-        val id = hashidsUtil.decode(boardId)
+        val id = hashidsUtil.decode(encryptBoardId)
         val board = postManager.getBoard(id) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
 
         val boardMember = board.email
@@ -95,7 +96,10 @@ class PostService(
             fileInfoList = boardFileInfo,
             likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
             replyCount = replyManager.getCachePostReplyCount(board.id!!.toString()),
-            reply = emptyList(),
+            reply = replyList(
+                optionalUserInfo,
+                encryptBoardId
+            ),
             isOwner = isOwner
         )
     }
@@ -120,8 +124,9 @@ class PostService(
                 } else null
             }
             val isOwner = boardMember.email == ownerEmail
+            val encryptBoardId = hashidsUtil.encode(board.id!!)
             PostInfo(
-                boardId = hashidsUtil.encode(board.id!!),
+                boardId = encryptBoardId,
                 email = boardMember.email,
                 profileImage = boardMember.profileImage,
                 nickname = boardMember.nickname ?: "",
@@ -134,7 +139,10 @@ class PostService(
                 fileInfoList = fileInfoList,
                 likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
                 replyCount = replyManager.getCachePostReplyCount(board.id!!.toString()),
-                reply = emptyList(),
+                reply = replyList(
+                    optionalUserInfo,
+                    encryptBoardId
+                ),
                 isOwner = isOwner
             )
         }
@@ -214,6 +222,18 @@ class PostService(
     }
 
     @Transactional
+    fun postDelete(
+        userInfo: CommonUserInfo,
+        encryptBoardId: String,
+    ) {
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        val board = postManager.getBoardByIdAndEmail(boardId, userInfo.email) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+
+        board.del = true
+        board.updatedAt = LocalDateTime.now()
+    }
+
+    @Transactional
     fun postFileUpload(
         userInfo: CommonUserInfo,
         encryptBoardId: String,
@@ -259,7 +279,7 @@ class PostService(
     }
 
     @Transactional
-    fun createReply(
+    fun replyCreate(
         userInfo: CommonUserInfo,
         encryptBoardId: String,
         postReplyRequest: PostReplyRequest,
@@ -297,16 +317,79 @@ class PostService(
             nickname = userInfo.nickname,
             comment = reply.comment,
             createdAt = reply.createdAt.toString(),
+            isOwner = true,
+            isDel = reply.del ?: false
         )
     }
 
     fun replyList(
         optionalUserInfo: CommonUserInfo?,
         encryptBoardId: String,
-    ): List<BoardReply> {
+    ): List<Reply> {
         val boardId = hashidsUtil.decode(encryptBoardId)
         val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
-        return replyManager.getBoardReplyList(board.id!!)
+        val boardReplyList = replyManager.getBoardReplyList(board.id!!)
+        return boardReplyList.map {
+            val isOwner = optionalUserInfo?.email == it.email
+            it.toDto(
+                id = hashidsUtil.encode(it.id),
+                boardId = hashidsUtil.encode(it.boardId),
+                replyId = if (it.replyId != null) hashidsUtil.encode(it.replyId!!) else null,
+                isOwner = isOwner,
+            )
+        }
+    }
+
+    @Transactional
+    fun replyUpdate(
+        userInfo: CommonUserInfo,
+        encryptBoardId: String,
+        encryptReplyId: String,
+        postReplyRequest: PostReplyRequest
+    ): Reply {
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val replyId = hashidsUtil.decode(encryptReplyId)
+
+        val boardReply = replyManager.getBoardReplyIdAndBoardAndEmail(replyId, board, userInfo.email)
+            ?: throw ReplyNotFoundException(ErrorCode.REPLY_NOT_FOUND.message)
+
+        boardReply.comment = postReplyRequest.comment
+        boardReply.updatedAt = LocalDateTime.now()
+
+        val newReplyId = if (boardReply.replyId == null) null else hashidsUtil.encode(boardReply.replyId)
+        return Reply(
+            id = hashidsUtil.encode(boardReply.id!!),
+            boardId = hashidsUtil.encode(board.id!!),
+            replyId = newReplyId,
+            reReplyYn = newReplyId != null,
+            email = boardReply.email,
+            nickname = userInfo.nickname,
+            comment = boardReply.comment,
+            createdAt = boardReply.createdAt.toString(),
+            isOwner = true,
+            isDel = boardReply.del ?: false
+        )
+    }
+
+    @Transactional
+    fun replyDelete(
+        userInfo: CommonUserInfo,
+        encryptBoardId: String,
+        encryptReplyId: String,
+    ) {
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val replyId = hashidsUtil.decode(encryptReplyId)
+
+        val boardReply = replyManager.getBoardReplyIdAndBoardAndEmail(replyId, board, userInfo.email)
+            ?: throw ReplyNotFoundException(ErrorCode.REPLY_NOT_FOUND.message)
+
+        boardReply.del = true
+        boardReply.updatedAt = LocalDateTime.now()
+
+        // 댓글수 캐시 업데이트
+        replyManager.saveCachePostReplyCount(board)
     }
 
 }

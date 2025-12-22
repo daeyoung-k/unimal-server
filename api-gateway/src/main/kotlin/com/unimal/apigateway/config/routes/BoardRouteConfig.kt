@@ -34,7 +34,7 @@ class BoardRouteConfig(
     ) {
         route("board-public-posts") {
             path(
-                "/board/posts/list"
+                "/board/post/list"
             )
             uri(baseUri)
         }
@@ -45,7 +45,7 @@ class BoardRouteConfig(
     ) {
         route("board-private-posts") {
             path(
-                "/board/posts"
+                "/board/post"
             )
             .filters { f ->
                 f.filter(tokenFilter.apply(TokenFilter.Config()))

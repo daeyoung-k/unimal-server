@@ -85,16 +85,19 @@ class TokenManager(
 
     fun createJwtToken(
         email: String,
+        nickname: String,
         provider: LoginType,
         role: List<String>,
     ): JwtTokenDTO {
         val accessToken = jwtProvider.createAccessToken(
             email = email,
+            nickname = nickname,
             provider = provider,
             roles = role
         )
         val refreshToken = jwtProvider.createRefreshToken(
             email = email,
+            nickname = nickname,
             provider = provider,
             roles = role
         )
