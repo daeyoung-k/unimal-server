@@ -26,5 +26,7 @@ open class BoardReply(
     var comment: String,
 
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime? = null,
+    var updatedAt: LocalDateTime? = null,
+
+    var del: Boolean? = false,
 ) : BaseIdEntity()

@@ -28,6 +28,7 @@ class JwtProvider {
 
     fun createAccessToken(
         email: String,
+        nickname: String,
         provider: LoginType,
         roles: List<String>
     ): String {
@@ -36,6 +37,7 @@ class JwtProvider {
             .signWith(key)
             .claim("type", TokenType.ACCESS.name)
             .claim("provider", provider.name)
+            .claim("nickname", nickname)
             .claim("roles", roles)
             .subject(email)
             .compact()
@@ -43,6 +45,7 @@ class JwtProvider {
 
     fun createRefreshToken(
         email: String,
+        nickname: String,
         provider: LoginType,
         roles: List<String>
     ): String {
@@ -51,6 +54,7 @@ class JwtProvider {
             .signWith(key)
             .claim("type", TokenType.REFRESH.name)
             .claim("provider", provider.name)
+            .claim("nickname", nickname)
             .claim("roles", roles)
             .subject(email)
             .compact()

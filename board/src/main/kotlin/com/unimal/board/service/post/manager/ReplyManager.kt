@@ -12,6 +12,11 @@ class ReplyManager(
 
     private val redisCacheManager: RedisCacheManager,
 ) {
+    fun getBoardReplyIdAndBoardAndEmail(
+        replyId: Long,
+        board: Board,
+        email: String
+    ) = boardReplyRepository.findByIdAndBoardAndEmail(replyId, board, email)
 
     fun saveReply(
         boardReply: BoardReply
@@ -36,4 +41,5 @@ class ReplyManager(
     }
 
     fun getBoardReplyList(boardId: Long) = boardReplyRepository.getBoardReplyByBoardId(boardId)
+
 }

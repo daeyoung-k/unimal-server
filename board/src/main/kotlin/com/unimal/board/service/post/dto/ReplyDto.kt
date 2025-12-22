@@ -9,5 +9,7 @@ data class Reply(
     val nickname: String,
     val comment: String,
     val createdAt: String,
+    val isOwner: Boolean = false,
+    val isDel: Boolean = false
 )
 

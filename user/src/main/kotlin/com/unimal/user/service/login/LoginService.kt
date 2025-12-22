@@ -65,7 +65,7 @@ class LoginService(
         }
 
         val roles = member.roles.map { it.roleName.name }
-        return tokenManager.createJwtToken(member.email, provider, roles)
+        return tokenManager.createJwtToken(member.email, member.nickname ?: "", provider, roles)
     }
 
     @Transactional
@@ -123,7 +123,7 @@ class LoginService(
 
         val provider = LoginType.from(updateMember.provider)
         val roles = member.roles.map { it.roleName.name }
-        return tokenManager.createJwtToken(updateMember.email, provider, roles)
+        return tokenManager.createJwtToken(updateMember.email, member.nickname ?: "", provider, roles)
     }
 
     @Transactional
