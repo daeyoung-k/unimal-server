@@ -34,7 +34,8 @@ class BoardRouteConfig(
     ) {
         route("board-public-posts") {
             path(
-                "/board/post/list"
+                "/board/post/list",
+                "/board/post/{boardId}"
             )
             uri(baseUri)
         }
