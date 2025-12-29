@@ -114,6 +114,47 @@ unimal-server/
 - **PostgreSQL 13+**
 - **Redis 6+**
 
+## 🚀 프로젝트 시작하기
+
+로컬 환경에서 Unimal 마이크로서비스를 설정하고 실행하는 방법입니다.
+
+### 📋 사전 요구 사항
+
+-   **Java 21**: 백엔드 서비스 실행을 위한 JDK.
+-   **Kotlin 1.9.25**: 프로젝트 개발 언어.
+-   **Docker & Docker Compose**: 모든 마이크로서비스 및 인프라(PostgreSQL, Redis, Kafka, ZooKeeper) 컨테이너화를 위해 필요합니다.
+-   **Gradle**: 빌드 자동화 도구. (Gradle Wrapper가 포함되어 있어 별도 설치는 필요 없습니다.)
+
+### ⚙️ 프로젝트 설정 및 실행
+
+1.  **리포지토리 클론**:
+    ```bash
+    git clone https://github.com/your-username/unimal-server.git
+    cd unimal-server
+    ```
+
+2.  **프로젝트 빌드**:
+    각 마이크로서비스를 빌드하고 Docker 이미지를 생성합니다.
+    ```bash
+    ./gradlew clean build bootBuildImage
+    ```
+    이 명령어는 각 모듈의 `build.gradle.kts` 파일에 정의된 `bootBuildImage` 태스크를 실행하여 Spring Boot 애플리케이션의 Docker 이미지를 생성합니다.
+
+3.  **Docker Compose를 이용한 서비스 실행**:
+    데이터베이스(PostgreSQL), 캐시(Redis), 메시지 브로커(Kafka, ZooKeeper) 및 모든 마이크로서비스를 Docker Compose로 한 번에 실행합니다.
+    ```bash
+    docker-compose -f docker-compose.yml -f docker-compose-kafka.yml up -d
+    ```
+    -   `docker-compose.yml`: 주 마이크로서비스와 기본 인프라를 정의합니다.
+    -   `docker-compose-kafka.yml`: Kafka 및 ZooKeeper와 관련된 서비스를 정의합니다.
+
+4.  **서비스 확인**:
+    모든 컨테이너가 성공적으로 실행되었는지 확인합니다.
+    ```bash
+    docker-compose ps
+    ```
+    API Gateway는 기본적으로 `http://localhost:8080`에서 접근 가능합니다.
+
 ---
 
 <div align="center">
