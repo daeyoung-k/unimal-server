@@ -3,6 +3,7 @@ package com.unimal.board.controller
 import com.unimal.board.controller.request.post.PostReplyRequest
 import com.unimal.board.controller.request.post.PostUpdateRequest
 import com.unimal.board.controller.request.post.PostCreateRequest
+import com.unimal.board.controller.request.post.PostFileDeleteRequest
 import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.service.post.PostService
 import com.unimal.common.annotation.user.OptionalUserInfoAnnotation
@@ -21,7 +22,7 @@ class PostController(
     @GetMapping("/post/{boardId}")
     fun getPost(
         @OptionalUserInfoAnnotation optionalUserInfo: CommonUserInfo?,
-        @PathVariable("boardId") boardId: String,
+        @PathVariable boardId: String,
     ): CommonResponse {
         return CommonResponse(data = postService.getPost(optionalUserInfo, boardId))
     }
@@ -46,7 +47,7 @@ class PostController(
     @PatchMapping("/post/{boardId}/update")
     fun updatePost(
         @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
+        @PathVariable boardId: String,
         @RequestBody postUpdateRequest: PostUpdateRequest
     ): CommonResponse {
         return CommonResponse(data = postService.postUpdate(userInfo, boardId, postUpdateRequest))
@@ -55,103 +56,71 @@ class PostController(
     @PostMapping("/post/{boardId}/file/upload", consumes = ["multipart/form-data"])
     fun uploadPostFile(
         @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
+        @PathVariable boardId: String,
         @RequestPart("files", required = false) files: List<MultipartFile>,
     ): CommonResponse {
         return CommonResponse(data = postService.postFileUpload(userInfo, boardId, files))
     }
 
-    @DeleteMapping("/post/{boardId}/file/{fileId}/delete")
+    @PostMapping("/post/{boardId}/file/delete")
     fun deletePostFile(
         @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
-        @PathVariable("fileId") fileId: String,
+        @PathVariable boardId: String,
+        @RequestBody postFileDeleteRequest: PostFileDeleteRequest
     ): CommonResponse {
-        return CommonResponse(data = "게시글 파일 삭제")
-    }
-
-    @PostMapping("/post/{boardId}/file/multiple-delete")
-    fun multipleDeletePostFile(
-        @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
-        @RequestBody @Valid fileIds: List<String>
-    ): CommonResponse {
-        return CommonResponse(data = "게시글 파일 선택 삭제")
+        return CommonResponse(data = postService.postFileDelete(userInfo, boardId, postFileDeleteRequest))
     }
 
     @DeleteMapping("/post/{boardId}/delete")
     fun deletePost(
         @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
+        @PathVariable boardId: String,
     ): CommonResponse {
-        return CommonResponse(data = "게시글 삭제")
+        return CommonResponse(data = postService.postDelete(userInfo, boardId))
     }
 
     @GetMapping("/post/{boardId}/like")
     fun likePost(
         @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
+        @PathVariable boardId: String,
     ): CommonResponse {
         return CommonResponse(data = postService.postLike(userInfo, boardId))
     }
 
     @PostMapping("/post/{boardId}/reply")
-    fun reply(
+    fun createReply(
         @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
+        @PathVariable boardId: String,
         @RequestBody @Valid postReplyRequest: PostReplyRequest
     ): CommonResponse {
-        return CommonResponse(data = "댓글 달기")
+        return CommonResponse(data = postService.replyCreate(userInfo, boardId, postReplyRequest))
+    }
+
+    @GetMapping("/post/{boardId}/reply")
+    fun getReplyList(
+        @OptionalUserInfoAnnotation optionalUserInfo: CommonUserInfo?,
+        @PathVariable boardId: String,
+    ): CommonResponse {
+        return CommonResponse(data = postService.replyList(optionalUserInfo, boardId))
     }
 
     @PatchMapping("/post/{boardId}/reply/{replyId}/update")
     fun replyUpdate(
         @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
-        @PathVariable("replyId") replyId: String,
+        @PathVariable boardId: String,
+        @PathVariable replyId: String,
         @RequestBody @Valid postReplyRequest: PostReplyRequest
     ): CommonResponse {
-        return CommonResponse(data = "댓글 수정")
+        return CommonResponse(data = postService.replyUpdate(userInfo, boardId, replyId, postReplyRequest))
     }
 
     @DeleteMapping("/post/{boardId}/reply/{replyId}/delete")
     fun replyDelete(
         @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
-        @PathVariable("replyId") replyId: String,
+        @PathVariable boardId: String,
+        @PathVariable replyId: String,
     ): CommonResponse {
-        return CommonResponse(data = "댓글 삭제")
-    }
-
-    @PostMapping("/post/{boardId}/reply/{replyId}/rereply")
-    fun reReply(
-        @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
-        @PathVariable("replyId") replyId: String,
-        @RequestBody @Valid postReplyRequest: PostReplyRequest
-    ): CommonResponse {
-        return CommonResponse(data = "대댓글 달기")
-    }
-
-    @PatchMapping("/post/{boardId}/reply/{replyId}/rereply/{reReplyId}/update")
-    fun reReplyUpdate(
-        @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
-        @PathVariable("replyId") replyId: String,
-        @PathVariable("reReplyId") reReplyId: String,
-        @RequestBody @Valid postReplyRequest: PostReplyRequest
-    ): CommonResponse {
-        return CommonResponse(data = "대댓글 수정")
-    }
-
-    @DeleteMapping("/post/{boardId}/reply/{replyId}/rereply/{reReplyId}/delete")
-    fun reReplyDelete(
-        @UserInfoAnnotation userInfo: CommonUserInfo,
-        @PathVariable("boardId") boardId: String,
-        @PathVariable("replyId") replyId: String,
-        @PathVariable("reReplyId") reReplyId: String
-    ): CommonResponse {
-        return CommonResponse(data = "대댓글 삭제")
+        return CommonResponse(data = postService.replyDelete(userInfo, boardId, replyId))
     }
 
 }

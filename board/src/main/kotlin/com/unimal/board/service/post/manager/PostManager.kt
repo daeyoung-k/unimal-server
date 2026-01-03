@@ -1,7 +1,5 @@
 package com.unimal.board.service.post.manager
 
-import com.unimal.board.controller.request.post.PostListRequest
-import com.unimal.board.domain.board.*
 import com.unimal.board.utils.RedisCacheManager
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
@@ -10,21 +8,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class PostManager(
-    private val boardFileRepository: BoardFileRepository,
-    private val boardRepository: BoardRepository,
-    private val boardRepositoryImpl: BoardRepositoryImpl,
-
     private val geometryFactory: GeometryFactory,
     private val redisCacheManager: RedisCacheManager,
 ) {
-
-    fun saveBoard(
-        board: Board
-    ) = boardRepository.save(board)
-
-    fun saveBoardFile(
-        boardFile: BoardFile
-    ) = boardFileRepository.save(boardFile)
 
     fun createLocationPointInfo(
         longitude: Double?,
@@ -44,30 +30,6 @@ class PostManager(
         val replyKey = "board_reply:$boardId"
         redisCacheManager.setAnyCache(likeKey, 0L)
         redisCacheManager.setAnyCache(replyKey, 0L)
-    }
-
-    fun getBoard(id: Long) = boardRepository.findBoardById(id)
-
-    fun getReferenceBoard(id: Long) = boardRepository.getReferenceById(id)
-
-    fun getBoardFilesUrls(board: Board) = boardFileRepository.findFileUrlsByBoardOrderByMainDescIdAsc(board)
-
-    fun getBoardConditionList(
-        postListRequest: PostListRequest
-    ) = boardRepositoryImpl.boardConditionList(postListRequest)
-
-    fun getBoardFileInBoardIdList(
-        idList: List<Long>
-    ) = boardRepositoryImpl.boardFileList(idList)
-
-    fun getPostReply(
-        boardId: String
-    ): Int {
-        val key = "board_reply:$boardId"
-        return redisCacheManager.getCache(key)?.toInt() ?: run {
-            redisCacheManager.setAnyCache(key, 0)
-            0
-        }
     }
 
     fun postOwnerCheck(

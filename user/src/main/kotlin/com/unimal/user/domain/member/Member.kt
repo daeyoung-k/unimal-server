@@ -16,7 +16,7 @@ open class Member(
 
     val profileImage: String? = null,
 
-    @Column(length = 30, unique = true)
+    @Column(length = 100, unique = true)
     var nickname: String? = null,
 
     @Column(length = 50, unique = true, nullable = false)
@@ -43,6 +43,7 @@ open class Member(
     val createdAt: LocalDateTime? = LocalDateTime.now(),
 
     var updatedAt: LocalDateTime? = null,
+    var nicknameUpdatedAt: LocalDateTime? = null,
     var withdrawalAt: LocalDateTime? = null,
 
     ): BaseIdEntity() {

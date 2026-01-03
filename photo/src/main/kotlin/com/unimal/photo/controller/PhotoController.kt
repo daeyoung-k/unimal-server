@@ -1,6 +1,7 @@
 package com.unimal.photo.controller
 
 import com.unimal.common.dto.CommonResponse
+import com.unimal.photo.controller.request.DeleteRequest
 import com.unimal.photo.service.S3Service
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -22,5 +23,13 @@ class PhotoController(
         @RequestPart files: List<MultipartFile>
     ): CommonResponse {
         return CommonResponse(data = s3Service.multiUploadFile(files))
+    }
+
+    @PostMapping("/delete")
+    fun delete(
+        @RequestBody deleteRequest: DeleteRequest
+    ): CommonResponse {
+        s3Service.deleteFile(deleteRequest.keys)
+        return CommonResponse()
     }
 }

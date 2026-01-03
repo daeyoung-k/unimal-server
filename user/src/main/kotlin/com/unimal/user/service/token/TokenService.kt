@@ -44,6 +44,7 @@ class TokenService(
 
         val accessToken = jwtProvider.createAccessToken(
             email = member.email,
+            nickname = member.nickname ?: "",
             provider = provider,
             roles = roles
         )
@@ -51,6 +52,7 @@ class TokenService(
 
         val refreshToken = jwtProvider.createRefreshToken(
             email = member.email,
+            nickname = member.nickname ?: "",
             provider = provider,
             roles = roles
         )

@@ -67,11 +67,11 @@ spring:
 
 grpc:
   client:
-    photo-grpc:
-      address: static://localhost:50084
-      negotiation-type: plaintext
     map-grpc:
       address: static://localhost:50082
+      negotiation-type: plaintext
+    photo-grpc:
+      address: static://localhost:50084
       negotiation-type: plaintext
 
 

@@ -17,7 +17,8 @@ data class PostInfo(
     val createdAt: LocalDateTime,
     val fileInfoList: List<BoardFileInfo?>,
     val likeCount: Long,
-    val replyCount: Int,
-    val reply: List<PostReply>,
+    val replyCount: Long,
+    val reply: List<Reply>,
+    val isLike: Boolean = false,
     val isOwner: Boolean = false
 )

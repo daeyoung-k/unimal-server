@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.unimal.proto.photo";
+option java_outer_classname = "DeleteFileProto";
+
+service FileDeleteService {
+  rpc deleteFile (FileDeleteRequest) returns (FileDeleteResponse);
+}
+
+message FileDeleteRequest {
+  repeated string keys = 1;
+}
+
+message FileDeleteResponse {
+}

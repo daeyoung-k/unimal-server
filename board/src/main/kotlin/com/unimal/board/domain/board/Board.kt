@@ -42,7 +42,7 @@ open class Board(
     @Column(name = "map_show", nullable = false, length = 20)
     var mapShow: MapShow = MapShow.SAME,
 
-    val del: Boolean = false,
+    var del: Boolean = false,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     var updatedAt: LocalDateTime? = null,
 
