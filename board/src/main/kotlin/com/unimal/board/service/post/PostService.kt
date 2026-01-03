@@ -5,7 +5,12 @@ import com.unimal.board.controller.request.post.PostCreateRequest
 import com.unimal.board.controller.request.post.PostFileDeleteRequest
 import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.controller.request.post.PostReplyRequest
+import com.unimal.board.domain.board.Board
+import com.unimal.board.domain.board.BoardFileRepository
+import com.unimal.board.domain.board.BoardRepository
+import com.unimal.board.domain.board.BoardRepositoryImpl
 import com.unimal.board.domain.board.like.BoardLike
+import com.unimal.board.domain.board.like.BoardLikeRepository
 import com.unimal.board.domain.board.reply.BoardReply
 import com.unimal.board.domain.board.reply.toDto
 import com.unimal.board.grpc.file.FileDeleteGrpcService
@@ -30,6 +35,11 @@ import java.time.LocalDateTime
 
 @Service
 class PostService(
+    private val boardRepositoryImpl: BoardRepositoryImpl,
+    private val boardRepository: BoardRepository,
+    private val boardLikeRepository: BoardLikeRepository,
+    private val boardFileRepository: BoardFileRepository,
+
     private val filesManager: FilesManager,
     private val postManager: PostManager,
     private val likeManager: LikeManager,
@@ -52,9 +62,7 @@ class PostService(
 
         val user = memberManager.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         val location = postManager.createLocationPointInfo(postCreateRequest.longitude, postCreateRequest.latitude)
-        val board = postManager.saveBoard(
-            postCreateRequest.toBoardCreateDto(user, location)
-        )
+        val board = boardRepository.save(postCreateRequest.toBoardCreateDto(user, location))
 
         // 파일 업로드 & 게시판 저장
         if (files?.isNotEmpty() == true) filesManager.uploadFile(board, files)
@@ -68,18 +76,21 @@ class PostService(
         optionalUserInfo: CommonUserInfo?,
         encryptBoardId: String
     ): PostInfo? {
-        val id = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoard(id) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
 
         val boardMember = board.email
         val boardFileInfo = board.images.mapNotNull {
             if (it?.id == null) null else BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
         }
 
-        val isOwner = if (optionalUserInfo != null) {
-            boardMember.email == optionalUserInfo.email
+        val isLike: Boolean
+        val isOwner: Boolean
+        if (optionalUserInfo != null) {
+            isLike = boardLikeRepository.findByBoardAndEmail(board, optionalUserInfo.email) != null
+            isOwner = boardMember.email == optionalUserInfo.email
         } else {
-            false
+            isLike = false
+            isOwner = false
         }
 
         return PostInfo(
@@ -100,6 +111,7 @@ class PostService(
                 optionalUserInfo,
                 encryptBoardId
             ),
+            isLike = isLike,
             isOwner = isOwner
         )
     }
@@ -108,12 +120,14 @@ class PostService(
         optionalUserInfo: CommonUserInfo?,
         postListRequest: PostListRequest
     ): List<PostInfo> {
-        val boardList = postManager.getBoardConditionList(postListRequest)
+        val boardList = boardRepositoryImpl.boardConditionList(postListRequest)
         if (boardList.isEmpty()) return emptyList()
 
         // N+1 방지
         val idList = boardList.map { it.id!! }
-        val boardFiles = postManager.getBoardFileInBoardIdList(idList)
+        val boardFiles = boardRepositoryImpl.boardFileList(idList)
+        val likeList = boardLikeRepository.findBoardLikeByBoardList(boardList)
+
         val ownerEmail = optionalUserInfo?.email ?: ""
 
         return boardList.map { board ->
@@ -123,6 +137,8 @@ class PostService(
                     BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
                 } else null
             }
+            val isLike = likeList.any { it.board == board && it.email == ownerEmail }
+
             val isOwner = boardMember.email == ownerEmail
             val encryptBoardId = hashidsUtil.encode(board.id!!)
             PostInfo(
@@ -139,10 +155,8 @@ class PostService(
                 fileInfoList = fileInfoList,
                 likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
                 replyCount = replyManager.getCachePostReplyCount(board.id!!.toString()),
-                reply = replyList(
-                    optionalUserInfo,
-                    encryptBoardId
-                ),
+                reply = emptyList(), // 리스트에선 댓글 목록을 조회하지 않는다.
+                isLike = isLike,
                 isOwner = isOwner
             )
         }
@@ -155,18 +169,18 @@ class PostService(
         boardId: String
     ): LikeResponse {
         val id = hashidsUtil.decode(boardId)
-        val board = postManager.getReferenceBoard(id)
+        val board = boardRepository.getReferenceById(id)
 
         try {
             // 좋아요가 있는지 확인
-            val existingLike = likeManager.existingLike(board, userInfo.email)
+            val existingLike = boardLikeRepository.findByBoardAndEmail(board, userInfo.email)
             val isLiked = if (existingLike != null) {
                 // 좋아요 삭제
-                likeManager.deleteBoardLike(existingLike)
+                boardLikeRepository.delete(existingLike)
                 false
             } else {
                 // 좋아요 저장
-                likeManager.saveBoardLike(
+                boardLikeRepository.save(
                     BoardLike(
                         board = board,
                         email = userInfo.email,
@@ -176,7 +190,8 @@ class PostService(
             }
 
             // 좋아요 캐시 업데이트
-            val likeCount = likeManager.saveCachePostLikeGetCount(board = board)
+            val count = boardLikeRepository.countByBoard(board)
+            val likeCount = likeManager.saveCachePostLikeGetCount(board = board, count = count)
 
             return LikeResponse(
                 isLiked = isLiked,
@@ -196,8 +211,7 @@ class PostService(
         encryptBoardId: String,
         postUpdateRequest: PostUpdateRequest
     ) {
-        val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
         if (!postManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
 
         if (!postUpdateRequest.title.isNullOrBlank() && board.title?.equals(postUpdateRequest.title) == false) {
@@ -226,11 +240,14 @@ class PostService(
         userInfo: CommonUserInfo,
         encryptBoardId: String,
     ) {
-        val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoardByIdAndEmail(boardId, userInfo.email) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
 
-        board.del = true
-        board.updatedAt = LocalDateTime.now()
+        if (userInfo.email.trim() == board.email.email.trim()) {
+            board.del = true
+            board.updatedAt = LocalDateTime.now()
+        } else {
+            throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
+        }
     }
 
     @Transactional
@@ -239,15 +256,14 @@ class PostService(
         encryptBoardId: String,
         files: List<MultipartFile>
     ): List<BoardFileInfo> {
-        val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
         if (!postManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
 
         // main 파일이 있으면 true
         val mainCheck = board.images.any { it?.main == true }
         filesManager.uploadFile(board, files, mainCheck)
 
-        val boardFiles = postManager.getBoardFileInBoardIdList(listOf(board.id!!))
+        val boardFiles = boardRepositoryImpl.boardFileList(listOf(board.id!!))
 
         return boardFiles.map {
             BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
@@ -262,19 +278,18 @@ class PostService(
     ) {
         if (postFileDeleteRequest.fileIds.isEmpty()) return
 
-        val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
         if (!postManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
 
         val fileIdList = postFileDeleteRequest.fileIds.map { hashidsUtil.decode(it) }
 
-        val boardFileList = postManager.getBoardFileInFileIdList(board, fileIdList)
+        val boardFileList = boardFileRepository.findBoardFileInFileIdList(board, fileIdList)
 
         if (boardFileList.isNotEmpty()) {
             val fileKeys = boardFileList.mapNotNull { it.fileKey }
             fileDeleteGrpcService.deleteFile(fileKeys)
 
-            postManager.deleteAllBoardFiles(boardFileList)
+            boardFileRepository.deleteAll(boardFileList)
         }
     }
 
@@ -284,9 +299,7 @@ class PostService(
         encryptBoardId: String,
         postReplyRequest: PostReplyRequest,
     ): Reply {
-
-        val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
 
         val replyId = if (!postReplyRequest.replyId.isNullOrBlank()) {
             hashidsUtil.decode(postReplyRequest.replyId)
@@ -326,8 +339,7 @@ class PostService(
         optionalUserInfo: CommonUserInfo?,
         encryptBoardId: String,
     ): List<Reply> {
-        val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
         val boardReplyList = replyManager.getBoardReplyList(board.id!!)
         return boardReplyList.map {
             val isOwner = optionalUserInfo?.email == it.email
@@ -347,8 +359,7 @@ class PostService(
         encryptReplyId: String,
         postReplyRequest: PostReplyRequest
     ): Reply {
-        val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
         val replyId = hashidsUtil.decode(encryptReplyId)
 
         val boardReply = replyManager.getBoardReplyIdAndBoardAndEmail(replyId, board, userInfo.email)
@@ -378,8 +389,7 @@ class PostService(
         encryptBoardId: String,
         encryptReplyId: String,
     ) {
-        val boardId = hashidsUtil.decode(encryptBoardId)
-        val board = postManager.getBoard(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
+        val board = getBoard(encryptBoardId)
         val replyId = hashidsUtil.decode(encryptReplyId)
 
         val boardReply = replyManager.getBoardReplyIdAndBoardAndEmail(replyId, board, userInfo.email)
@@ -390,6 +400,13 @@ class PostService(
 
         // 댓글수 캐시 업데이트
         replyManager.saveCachePostReplyCount(board)
+    }
+
+    private fun getBoard(
+        encryptBoardId: String
+    ): Board {
+        val boardId = hashidsUtil.decode(encryptBoardId)
+        return boardRepository.findBoardById(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
     }
 
 }

@@ -19,5 +19,6 @@ data class PostInfo(
     val likeCount: Long,
     val replyCount: Long,
     val reply: List<Reply>,
+    val isLike: Boolean = false,
     val isOwner: Boolean = false
 )
