@@ -119,6 +119,12 @@ class BoardOwnerException(
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
 
+class ReplyNotFoundException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)
+
 class ApiCallException(
     message: String?,
     code: Int? = null,

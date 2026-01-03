@@ -12,4 +12,9 @@ interface BoardLikeRepository: JpaRepository<BoardLike, Long> {
         select count(bl) from BoardLike bl where bl.board = :board
     """)
     fun countByBoard(board: Board): Int
+
+    @Query("""
+        select bl from BoardLike bl where bl.board in :boardList
+    """)
+    fun findBoardLikeByBoardList(boardList: List<Board>): List<BoardLike>
 }

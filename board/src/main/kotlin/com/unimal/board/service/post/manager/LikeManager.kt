@@ -1,18 +1,15 @@
 package com.unimal.board.service.post.manager
 
 import com.unimal.board.domain.board.Board
-import com.unimal.board.domain.board.like.BoardLike
-import com.unimal.board.domain.board.like.BoardLikeRepository
 import com.unimal.board.utils.RedisCacheManager
 import org.springframework.stereotype.Component
 
 @Component
 class LikeManager(
-    private val boardLikeRepository: BoardLikeRepository,
     private val redisCacheManager: RedisCacheManager,
 ) {
 
-    fun getPostLike(
+    fun getCachePostLikeCount(
         boardId: String
     ): Long {
         val key = "board_like:$boardId"
@@ -22,22 +19,11 @@ class LikeManager(
         }
     }
 
-    fun existingLike(
-        board: Board,
-        email: String
-    ) = boardLikeRepository.findByBoardAndEmail(board, email)
-
-    fun deleteBoardLike(boardLike: BoardLike) = boardLikeRepository.delete(boardLike)
-
-    fun saveBoardLike(boardLike: BoardLike) = boardLikeRepository.save(boardLike)
-
-    fun getBoardLikeCount(board: Board) = boardLikeRepository.countByBoard(board)
-
     fun saveCachePostLikeGetCount(
         board: Board,
+        count: Int
     ): Long {
         val key = "board_like:${board.id}"
-        val count = getBoardLikeCount(board)
         redisCacheManager.setAnyCache(key, count)
         return redisCacheManager.getCache(key)!!.toLong()
     }

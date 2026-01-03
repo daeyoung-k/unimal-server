@@ -11,4 +11,11 @@ interface BoardFileRepository: JpaRepository<BoardFile, Long> {
             order by bf.main desc, bf.id asc
     """)
     fun findFileUrlsByBoardOrderByMainDescIdAsc(board: Board): List<String>
+
+    @Query("""
+        select bf from BoardFile bf
+        where bf.board = :board
+            and bf.id in :fileIdList
+    """)
+    fun findBoardFileInFileIdList(board: Board, fileIdList: List<Long>): List<BoardFile>
 }

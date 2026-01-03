@@ -29,7 +29,8 @@ class TokenService(
                     email = email,
                     roles = claims["roles"] as List<String>,
                     provider = claims["provider"] as String,
-                    tokenType = TokenType.ACCESS
+                    tokenType = TokenType.ACCESS,
+                    nickname = claims["nickname"] as String
                 )
             }
             TokenType.REFRESH -> {
@@ -41,7 +42,8 @@ class TokenService(
                     email = email,
                     roles = claims["roles"] as List<String>,
                     provider = claims["provider"] as String,
-                    tokenType = TokenType.REFRESH
+                    tokenType = TokenType.REFRESH,
+                    nickname = claims["nickname"] as String
                 )
             }
             else -> {

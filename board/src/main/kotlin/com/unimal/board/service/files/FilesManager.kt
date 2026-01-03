@@ -1,6 +1,9 @@
 package com.unimal.board.service.files
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.unimal.board.domain.board.Board
+import com.unimal.board.domain.board.BoardFile
+import com.unimal.board.domain.board.BoardFileRepository
 import com.unimal.board.service.files.dto.UploadFileResult
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.FileException
@@ -17,10 +20,14 @@ import org.springframework.web.multipart.MultipartFile
 class FilesManager(
     @Value("\${etc.base-url}")
     private val baseUrl: String,
+    @Value("\${etc.files.base-url}")
+    private val fileBaseUrl: String,
+
+    private val boardFileRepository: BoardFileRepository,
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun uploadFile(
+    fun uploadFileHttp(
         file: MultipartFile
     ): UploadFileResult {
         val url = "$baseUrl/photo/upload"
@@ -80,6 +87,29 @@ class FilesManager(
         } catch (e: Exception) {
             logger.error(e) { "다중 파일 업로드 오류: $e" }
             throw FileException(ErrorCode.MULTIFILE_UPLOAD_ERROR.message)
+        }
+    }
+
+    fun uploadFile(
+        board: Board,
+        files: List<MultipartFile>,
+        mainOption: Boolean = false
+    ) {
+        files.forEachIndexed { index, file ->
+            // 메인파일이 있으면 main 옵션은 모두 false로 설정, 메인파일 정보가 없을때 첫 인덱스만 메인으로 설정한다.
+            val main = if (mainOption) false else (index == 0)
+            val uploadFileInfo = uploadFileHttp(file)
+            val fileUrl = fileBaseUrl + "/" + uploadFileInfo.key
+
+            boardFileRepository.save(
+                BoardFile(
+                    board = board,
+                    main = main,
+                    fileName = uploadFileInfo.originalFilename,
+                    fileKey = uploadFileInfo.key,
+                    fileUrl = fileUrl
+                )
+            )
         }
     }
 }
