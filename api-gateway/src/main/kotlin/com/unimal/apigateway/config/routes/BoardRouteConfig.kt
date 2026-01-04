@@ -1,5 +1,6 @@
 package com.unimal.apigateway.config.routes
 
+import com.unimal.apigateway.filter.OptionalTokenFilter
 import com.unimal.apigateway.filter.TokenFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.route.RouteLocator
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class BoardRouteConfig(
     private val tokenFilter: TokenFilter,
+    private val optionalTokenFilter: OptionalTokenFilter,
 ) {
 
     @Value("\${custom.route.base-uri}")
@@ -37,6 +39,9 @@ class BoardRouteConfig(
                 "/board/post/list",
                 "/board/post/{boardId}"
             )
+            .filters { f ->
+                f.filter(optionalTokenFilter.apply(OptionalTokenFilter.Config()))
+            }
             uri(baseUri)
         }
     }
