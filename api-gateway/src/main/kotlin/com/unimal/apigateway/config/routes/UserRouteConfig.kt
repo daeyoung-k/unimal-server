@@ -1,5 +1,6 @@
 package com.unimal.apigateway.config.routes
 
+import com.unimal.apigateway.filter.RefreshTokenFilter
 import com.unimal.apigateway.filter.TokenFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.route.RouteLocator
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class UserRouteConfig(
     private val tokenFilter: TokenFilter,
+    private val refreshTokenFilter: RefreshTokenFilter,
 ) {
 
     @Value("\${custom.route.base-uri}")
@@ -61,14 +63,14 @@ class UserRouteConfig(
     private fun RouteLocatorDsl.filterRoutes(
         baseUri: String
     ) {
-        route("user-private-auth") {
+        route("user-only-refresh-token-auth") {
             path(
                 "/user/auth/token-reissue",
                 "/user/auth/logout",
                 "/user/auth/withdrawal",
             )
             .filters { f ->
-                f.filter(tokenFilter.apply(TokenFilter.Config()))
+                f.filter(refreshTokenFilter.apply(RefreshTokenFilter.Config()))
             }
             uri(baseUri)
         }
