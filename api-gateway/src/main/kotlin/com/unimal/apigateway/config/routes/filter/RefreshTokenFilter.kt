@@ -1,20 +1,22 @@
-package com.unimal.apigateway.filter
+package com.unimal.apigateway.config.routes.filter
 
 import com.unimal.apigateway.service.token.JWTProvider
 import com.unimal.apigateway.service.token.TokenService
+import com.unimal.common.enums.TokenType
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import kotlin.text.removePrefix
 
 @Component
 @Order(-2)
-class TokenFilter(
+class RefreshTokenFilter(
     private val jwtProvider: JWTProvider,
     private val tokenService: TokenService,
-) : AbstractGatewayFilterFactory<TokenFilter.Config>(Config::class.java) {
+) : AbstractGatewayFilterFactory<RefreshTokenFilter.Config>(Config::class.java) {
     class Config {
         val tokenHeaderName = "Authorization"
         val addHeaderEmail = "X-Unimal-User-email"
@@ -48,6 +50,19 @@ class TokenFilter(
             exchange.request.headers.add(config.addHeaderRoles, userInfo.roleString)
             exchange.request.headers.add(config.addHeaderProvider, userInfo.provider)
             exchange.request.headers.add(config.addHeaderTokenType, userInfo.tokenType.name)
+
+            if (userInfo.tokenType != TokenType.REFRESH) {
+                val body = """
+                    {
+                        "code": ${HttpStatus.UNAUTHORIZED.value()},
+                        "message": "리프레쉬 토큰만 허용됩니다.",
+                        "data": {}
+                    }
+                    """.trimIndent().toByteArray(Charsets.UTF_8)
+                val buffer = exchange.response.bufferFactory().wrap(body)
+                return@GatewayFilter exchange.response.writeWith(Mono.just(buffer))
+            }
+
             chain.filter(exchange)
         }
     }

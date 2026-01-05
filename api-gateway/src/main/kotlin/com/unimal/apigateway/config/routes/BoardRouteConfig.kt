@@ -1,7 +1,7 @@
 package com.unimal.apigateway.config.routes
 
-import com.unimal.apigateway.filter.OptionalTokenFilter
-import com.unimal.apigateway.filter.TokenFilter
+import com.unimal.apigateway.config.routes.filter.OptionalAccessTokenFilter
+import com.unimal.apigateway.config.routes.filter.AccessTokenFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class BoardRouteConfig(
-    private val tokenFilter: TokenFilter,
-    private val optionalTokenFilter: OptionalTokenFilter,
+    private val accessTokenFilter: AccessTokenFilter,
+    private val optionalAccessTokenFilter: OptionalAccessTokenFilter,
 ) {
 
     @Value("\${custom.route.base-uri}")
@@ -34,27 +34,29 @@ class BoardRouteConfig(
     private fun RouteLocatorDsl.publicRoutes(
         baseUri: String
     ) {
-        route("board-public-posts") {
-            path(
-                "/board/post/list",
-                "/board/post/{boardId}"
-            )
-            .filters { f ->
-                f.filter(optionalTokenFilter.apply(OptionalTokenFilter.Config()))
-            }
-            uri(baseUri)
-        }
+
     }
 
     private fun RouteLocatorDsl.filterRoutes(
         baseUri: String
     ) {
-        route("board-private-posts") {
+        route("boardPostOptionalAccessTokenFilterRoutes") {
+            path(
+                "/board/post/list",
+                "/board/post/{boardId}"
+            )
+                .filters { f ->
+                    f.filter(optionalAccessTokenFilter.apply(OptionalAccessTokenFilter.Config()))
+                }
+            uri(baseUri)
+        }
+
+        route("boardPostAccessTokenFilterRoutes") {
             path(
                 "/board/post"
             )
             .filters { f ->
-                f.filter(tokenFilter.apply(TokenFilter.Config()))
+                f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))
             }
             uri(baseUri)
         }

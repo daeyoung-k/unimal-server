@@ -1,19 +1,22 @@
-package com.unimal.apigateway.filter
+package com.unimal.apigateway.config.routes.filter
 
 import com.unimal.apigateway.service.token.JWTProvider
 import com.unimal.apigateway.service.token.TokenService
+import com.unimal.common.enums.TokenType
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory
 import org.springframework.core.annotation.Order
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 import kotlin.text.removePrefix
 
 @Component
 @Order(-2)
-class OptionalTokenFilter(
+class OptionalAccessTokenFilter(
     private val jwtProvider: JWTProvider,
     private val tokenService: TokenService,
-) : AbstractGatewayFilterFactory<OptionalTokenFilter.Config>(Config::class.java) {
+) : AbstractGatewayFilterFactory<OptionalAccessTokenFilter.Config>(Config::class.java) {
     class Config {
         val tokenHeaderName = "Authorization"
         val addHeaderEmail = "X-Unimal-User-email"
@@ -36,6 +39,19 @@ class OptionalTokenFilter(
                 exchange.request.headers.add(config.addHeaderRoles, userInfo.roleString)
                 exchange.request.headers.add(config.addHeaderProvider, userInfo.provider)
                 exchange.request.headers.add(config.addHeaderTokenType, userInfo.tokenType.name)
+
+                // 토큰이 있을경우 엑세스토큰 검사 (엑세스 토큰으로만 기능 접근이 가능)
+                if (userInfo.tokenType != TokenType.ACCESS) {
+                    val body = """
+                    {
+                        "code": ${HttpStatus.UNAUTHORIZED.value()},
+                        "message": "엑세스 토큰만 허용됩니다.",
+                        "data": {}
+                    }
+                    """.trimIndent().toByteArray(Charsets.UTF_8)
+                    val buffer = exchange.response.bufferFactory().wrap(body)
+                    return@GatewayFilter exchange.response.writeWith(Mono.just(buffer))
+                }
             }
             chain.filter(exchange)
         }

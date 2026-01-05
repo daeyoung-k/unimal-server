@@ -1,6 +1,5 @@
-package com.unimal.apigateway.filter
+package com.unimal.apigateway.config.routes.filter
 
-import com.unimal.apigateway.filter.TokenFilter.Config
 import com.unimal.apigateway.service.token.JWTProvider
 import com.unimal.apigateway.service.token.TokenService
 import com.unimal.common.enums.TokenType
@@ -10,14 +9,13 @@ import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
-import kotlin.text.removePrefix
 
 @Component
 @Order(-2)
-class RefreshTokenFilter(
+class AccessTokenFilter(
     private val jwtProvider: JWTProvider,
     private val tokenService: TokenService,
-) : AbstractGatewayFilterFactory<RefreshTokenFilter.Config>(Config::class.java) {
+) : AbstractGatewayFilterFactory<AccessTokenFilter.Config>(Config::class.java) {
     class Config {
         val tokenHeaderName = "Authorization"
         val addHeaderEmail = "X-Unimal-User-email"
@@ -52,7 +50,7 @@ class RefreshTokenFilter(
             exchange.request.headers.add(config.addHeaderProvider, userInfo.provider)
             exchange.request.headers.add(config.addHeaderTokenType, userInfo.tokenType.name)
 
-            if (userInfo.tokenType != TokenType.REFRESH) {
+            if (userInfo.tokenType != TokenType.ACCESS) {
                 val body = """
                     {
                         "code": ${HttpStatus.UNAUTHORIZED.value()},
@@ -63,6 +61,7 @@ class RefreshTokenFilter(
                 val buffer = exchange.response.bufferFactory().wrap(body)
                 return@GatewayFilter exchange.response.writeWith(Mono.just(buffer))
             }
+
             chain.filter(exchange)
         }
     }
