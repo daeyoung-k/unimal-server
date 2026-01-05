@@ -1,7 +1,7 @@
 package com.unimal.apigateway.config.routes
 
-import com.unimal.apigateway.filter.RefreshTokenFilter
-import com.unimal.apigateway.filter.TokenFilter
+import com.unimal.apigateway.config.routes.filter.RefreshTokenFilter
+import com.unimal.apigateway.config.routes.filter.AccessTokenFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class UserRouteConfig(
-    private val tokenFilter: TokenFilter,
+    private val accessTokenFilter: AccessTokenFilter,
     private val refreshTokenFilter: RefreshTokenFilter,
 ) {
 
@@ -40,7 +40,7 @@ class UserRouteConfig(
     private fun RouteLocatorDsl.publicRoutes(
         baseUri: String
     ) {
-        route("user-public-auth") {
+        route("userAuthPublicRoutes") {
             path(
                 "/user/auth/login/**",
                 "/user/auth/signup/**",
@@ -50,11 +50,11 @@ class UserRouteConfig(
             )
             uri(baseUri)
         }
-        route("user-public-member") {
+        route("userMemberPublicRoutes") {
             path("/user/member/find/**")
             uri(baseUri)
         }
-        route("user-public-slang") {
+        route("userSlangPublicRoutes") {
             path("/user/slang/**")
             uri(baseUri)
         }
@@ -63,7 +63,7 @@ class UserRouteConfig(
     private fun RouteLocatorDsl.filterRoutes(
         baseUri: String
     ) {
-        route("user-only-refresh-token-auth") {
+        route("userAuthRefreshTokenFilterRoutes") {
             path(
                 "/user/auth/token-reissue",
                 "/user/auth/logout",
@@ -74,13 +74,14 @@ class UserRouteConfig(
             }
             uri(baseUri)
         }
-        route("user-private-member") {
+
+        route("userMember-onlyAccessTokenFilterRoutes") {
             path(
                 "/user/member/info/**",
                 "/user/member/change/password",
             )
             .filters { f ->
-                f.filter(tokenFilter.apply(TokenFilter.Config()))
+                f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))
             }
             uri(baseUri)
         }
