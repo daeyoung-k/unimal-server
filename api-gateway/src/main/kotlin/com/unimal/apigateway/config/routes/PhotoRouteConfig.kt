@@ -29,7 +29,7 @@ class PhotoRouteConfig {
     private fun RouteLocatorDsl.publicRoutes(
         baseUri: String
     ) {
-        route("photo-service") {
+        route("photoPublicRoutes") {
             path("/photo/**")
             uri(baseUri)
         }
