@@ -1,17 +1,20 @@
 package com.unimal.apigateway.service.token
 
+import com.unimal.apigateway.domain.authentication.AuthenticationTokenRepository
 import com.unimal.apigateway.exception.CustomException
 import com.unimal.apigateway.exception.TokenNotFoundException
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.enums.TokenType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Claims
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
 class TokenService(
-    private val tokenManager: TokenManager
+    private val redisTemplate: RedisTemplate<String, String>,
+    private val authenticationTokenRepository: AuthenticationTokenRepository
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -24,7 +27,7 @@ class TokenService(
 
         return when (tokenType) {
             TokenType.ACCESS -> {
-                tokenManager.getCacheToken(email, token) ?: throw TokenNotFoundException("토큰이 만료 되었습니다.")
+                getCacheToken(email, token) ?: throw TokenNotFoundException("토큰이 만료 되었습니다.")
                 CommonUserInfo(
                     email = email,
                     roles = claims["roles"] as List<String>,
@@ -34,7 +37,7 @@ class TokenService(
                 )
             }
             TokenType.REFRESH -> {
-                val refreshToken = tokenManager.getDbToken(email, token)
+                val refreshToken = authenticationTokenRepository.findByEmailAndRefreshToken(email, token)
                 if (refreshToken == null || refreshToken.revoked || LocalDateTime.now() > refreshToken.issuedAt.plusDays(180)
                     ) throw TokenNotFoundException("토큰이 만료 되었습니다.")
 
@@ -52,5 +55,14 @@ class TokenService(
             }
         }
 
+    }
+
+    private fun getCacheToken(
+        email: String,
+        token: String
+    ): String? {
+        val key = "$email:${TokenType.ACCESS.cacheKey}"
+        val cacheToken = redisTemplate.opsForValue().get(key)
+        return if (cacheToken == token) cacheToken else null
     }
 }

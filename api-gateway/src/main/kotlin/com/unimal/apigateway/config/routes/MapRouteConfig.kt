@@ -28,7 +28,7 @@ class MapRouteConfig {
     private fun RouteLocatorDsl.publicRoutes(
         baseUri: String
     ) {
-        route("map-service") {
+        route("mapPublicRoutes") {
             path("/map/**")
             uri(baseUri)
         }
