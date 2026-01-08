@@ -43,7 +43,8 @@ class BoardRouteConfig(
         route("boardPostOptionalAccessTokenFilterRoutes") {
             path(
                 "/board/post/list",
-                "/board/post/{boardId}"
+                "/board/post/{boardId}",
+                "/board/post/{boardId}/like"
             )
                 .filters { f ->
                     f.filter(optionalAccessTokenFilter.apply(OptionalAccessTokenFilter.Config()))
