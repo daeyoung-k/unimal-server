@@ -3,7 +3,7 @@ package com.unimal.user.controller.request
 import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
 
-interface LoginRequest {
+sealed interface LoginRequest {
     val provider: LoginType
 }
 
