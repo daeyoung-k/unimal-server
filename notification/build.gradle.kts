@@ -47,5 +47,8 @@ dependencies {
     //kafka
     implementation("org.springframework.kafka:spring-kafka")
 
+    //firebase
+    implementation("com.google.firebase:firebase-admin:9.7.0")
+
     testImplementation("io.mockk:mockk:1.14.2")
 }
