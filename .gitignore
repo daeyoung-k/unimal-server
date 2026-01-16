@@ -43,3 +43,6 @@ out/
 .env*
 
 .DS_Store
+
+### Firebase ###
+**/firebase/*.json

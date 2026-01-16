@@ -57,3 +57,5 @@ custom:
     access-key: ${NAVER_CLOUD_ACCESS_KEY:test-access-key}
     secret-key: ${NAVER_CLOUD_SECRET_KEY:test-secret-key}
     sms-service-id: ${NAVER_CLOUD_SMS_SERVICE_ID:test-sms-service-id}
+  firebase:
+    adminsdk: ${FIREBASE_ADMINSDK}
