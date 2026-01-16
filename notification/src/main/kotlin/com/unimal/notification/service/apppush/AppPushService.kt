@@ -4,24 +4,19 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.Message
 import com.google.firebase.messaging.Notification
 import com.unimal.notification.service.apppush.dto.AppPushSend
+import com.unimal.notification.service.apppush.dto.AppPushMulticastSend
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
 class AppPushService(
     private val firebaseMessaging: FirebaseMessaging
 ) {
-
-//    private val logger = LoggerFactory.getLogger(AppPushService::class.java)
     private val logger = KotlinLogging.logger {  }
 
     /**
      * 단일 기기 푸시 전송
-     * @param token FCM 디바이스 토큰
-     * @param title 알림 제목
-     * @param body 알림 내용
-     * @param data 추가 데이터 (선택)
+     * @param appPushSend 푸시 전송 데이터 (토큰, 제목, 내용, 추가 데이터)
      */
     fun sendPush(
         appPushSend: AppPushSend
@@ -52,26 +47,24 @@ class AppPushService(
 
     /**
      * 다중 기기 푸시 전송 (Multicast)
-     * @param tokens FCM 디바이스 토큰 리스트
-     * @param title 알림 제목
-     * @param body 알림 내용
+     * @param appPushMulticastSend 멀티캐스트 푸시 전송 데이터 (토큰 리스트, 제목, 내용, 추가 데이터)
      */
-    fun sendMulticastPush(tokens: List<String>, title: String, body: String, data: Map<String, String> = emptyMap()) {
-        if (tokens.isEmpty()) return
+    fun sendMulticastPush(appPushMulticastSend: AppPushMulticastSend) {
+        if (appPushMulticastSend.tokens.isEmpty()) return
 
         // FCM MulticastMessage는 한 번에 최대 500개까지만 전송 가능하므로 청크로 분할 처리
-        tokens.chunked(500).forEach { chunkedTokens ->
+        appPushMulticastSend.tokens.chunked(500).forEach { chunkedTokens ->
             try {
                 val notification = Notification.builder()
-                    .setTitle(title)
-                    .setBody(body)
+                    .setTitle(appPushMulticastSend.title)
+                    .setBody(appPushMulticastSend.body)
                     .build()
 
                 val message = com.google.firebase.messaging.MulticastMessage.builder()
                     .addAllTokens(chunkedTokens)
                     .setNotification(notification)
                     .apply {
-                        if (data.isNotEmpty()) putAllData(data)
+                        if (appPushMulticastSend.data.isNotEmpty()) putAllData(appPushMulticastSend.data)
                     }
                     .build()
 
