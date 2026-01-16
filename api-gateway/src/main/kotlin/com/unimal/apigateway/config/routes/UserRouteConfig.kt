@@ -79,6 +79,7 @@ class UserRouteConfig(
             path(
                 "/user/member/info/**",
                 "/user/member/change/password",
+                "/user/member/device/info/update",
             )
             .filters { f ->
                 f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))

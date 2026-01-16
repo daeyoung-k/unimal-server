@@ -5,7 +5,9 @@ import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.controller.request.*
 import com.unimal.user.service.authentication.AuthenticationService
+import com.unimal.user.service.member.MemberDeviceService
 import com.unimal.user.service.member.MemberService
+import com.unimal.user.service.member.dto.MemberDeviceInfo
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -20,7 +22,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/member")
 class MemberController(
     private val memberService: MemberService,
-    private val authenticationService: AuthenticationService
+    private val authenticationService: AuthenticationService,
+    private val memberDeviceService: MemberDeviceService
 ) {
 
     @GetMapping("/info")
@@ -100,6 +103,15 @@ class MemberController(
     ): CommonResponse {
         memberService.getDuplicatedTelCheck(telRequest)
         authenticationService.sendTelAuthCodeRequest(telRequest)
+        return CommonResponse()
+    }
+
+    @PostMapping("/device/info/update")
+    fun deviceInfoUpdate(
+        @UserInfoAnnotation commonUserInfo: CommonUserInfo,
+        @RequestBody @Valid memberDeviceInfo: MemberDeviceInfo
+    ): CommonResponse {
+        memberDeviceService.saveOrUpdate(commonUserInfo.email, memberDeviceInfo)
         return CommonResponse()
     }
 
