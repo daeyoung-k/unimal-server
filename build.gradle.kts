@@ -91,9 +91,10 @@ configure(listOf(
         testImplementation("io.grpc:grpc-testing:${property("grpcVersion")}")
     }
 
-    tasks.withType<Test> {
-        enabled = false
-    }
+    // 테스트 활성화
+    // tasks.withType<Test> {
+    //     enabled = false
+    // }
 
 }
 

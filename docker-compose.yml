@@ -1,13 +1,42 @@
 services:
+  postgis-db:
+    image: postgis/postgis:18-3.6
+    container_name: unimal-postgis
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      TZ: Asia/Seoul
+    volumes:
+      - postgis-data:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    restart: always
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api-gateway-server:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
+    image: eodud4976/unimal-apigateway
+    depends_on:
+      postgis-db:
+        condition: service_healthy
     ports:
       - "8080:8080"
     restart: always
     env_file:
-      - .env.docker
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_HOST: postgis-db
     networks:
       - backend-network
 
@@ -15,14 +44,21 @@ services:
     build:
       context: ./user
       dockerfile: Dockerfile
+    image: eodud4976/unimal-user
     depends_on:
-      - api-gateway-server
+      postgis-db:
+        condition: service_healthy
+      api-gateway-server:
+        condition: service_started
     ports:
       - "8081:8081"
       - "50081:50081"
     restart: always
     env_file:
-      - .env.docker
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_HOST: postgis-db
     networks:
       - backend-network
 
@@ -30,14 +66,21 @@ services:
     build:
       context: ./map
       dockerfile: Dockerfile
+    image: eodud4976/unimal-map
     depends_on:
-      - api-gateway-server
+      postgis-db:
+        condition: service_healthy
+      api-gateway-server:
+        condition: service_started
     ports:
       - "8082:8082"
       - "50082:50082"
     restart: always
     env_file:
-      - .env.docker
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_HOST: postgis-db
     networks:
       - backend-network
 
@@ -45,14 +88,21 @@ services:
     build:
       context: ./board
       dockerfile: Dockerfile
+    image: eodud4976/unimal-board
     depends_on:
-      - api-gateway-server
+      postgis-db:
+        condition: service_healthy
+      api-gateway-server:
+        condition: service_started
     ports:
       - "8083:8083"
       - "50083:50083"
     restart: always
     env_file:
-      - .env.docker
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_HOST: postgis-db
     networks:
       - backend-network
 
@@ -60,12 +110,19 @@ services:
     build:
       context: ./photo
       dockerfile: Dockerfile
+    image: eodud4976/unimal-photo
+    depends_on:
+      postgis-db:
+        condition: service_healthy
     ports:
       - "8084:8084"
       - "50084:50084"
     restart: always
     env_file:
-      - .env.docker
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_HOST: postgis-db
     networks:
       - backend-network
 
@@ -73,15 +130,26 @@ services:
     build:
       context: ./notification
       dockerfile: Dockerfile
+    image: eodud4976/unimal-notification
+    depends_on:
+      postgis-db:
+        condition: service_healthy
     ports:
       - "8085:8085"
       - "50085:50085"
     restart: always
     env_file:
-      - .env.docker
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_HOST: postgis-db
     networks:
       - backend-network
 
 networks:
   backend-network:
     driver: bridge
+
+volumes:
+  postgis-data:
+    driver: local
