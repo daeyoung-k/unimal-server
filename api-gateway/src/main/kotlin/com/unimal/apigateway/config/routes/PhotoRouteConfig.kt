@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class PhotoRouteConfig {
 
-    @Value("\${custom.route.base-uri}")
+    @Value("\${custom.route.photo.uri}")
     private lateinit var photoUri: String
 
     @Value("\${custom.route.photo.port}")

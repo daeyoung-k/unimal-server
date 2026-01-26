@@ -50,7 +50,6 @@ custom:
   jwt:
     secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}
   route:
-    base-uri: ${BASE_URI}
     user:
       uri: ${USER_SERVICE_DOCKER_URI}
       port: ${USER_SERVICE_PORT}
