@@ -44,7 +44,7 @@ spring:
 
 grpc:
   server:
-    port: 50082
+    port: ${MAP_SERVICE_GRPC_PORT}
     enable-keep-alive: true
     keep-alive-time: 60s
     keep-alive-timeout: 30s

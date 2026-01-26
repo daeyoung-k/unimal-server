@@ -48,7 +48,7 @@ spring:
       password: ${REDIS_PASSWORD}
 
   kafka:
-    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
+    bootstrap-servers: ${KAFKA_SERVER_DOCKER_1},${KAFKA_SERVER_DOCKER_2},${KAFKA_SERVER_DOCKER_3}
 
     consumer:
       group-id: unimal-board-group
@@ -68,10 +68,10 @@ spring:
 grpc:
   client:
     photo-grpc:
-      address: static://${PHOTO_SERVICE_URI}:50084
+      address: static://${PHOTO_SERVICE_URI}:${PHOTO_SERVICE_GRPC_PORT}
       negotiation-type: plaintext
     map-grpc:
-      address: static://${MAP_SERVICE_URI}:50082
+      address: static://${MAP_SERVICE_URI}:${MAP_SERVICE_GRPC_PORT}
       negotiation-type: plaintext
 
 

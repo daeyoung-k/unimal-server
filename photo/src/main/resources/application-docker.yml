@@ -48,7 +48,7 @@ spring:
       password: ${REDIS_PASSWORD}
 
   kafka:
-    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
+    bootstrap-servers: ${KAFKA_SERVER_DOCKER_1},${KAFKA_SERVER_DOCKER_2},${KAFKA_SERVER_DOCKER_3}
     consumer:
       group-id: unimal-photo-group
       auto-offset-reset: latest
@@ -73,7 +73,7 @@ aws:
 
 grpc:
   server:
-    port: 50084
+    port: ${PHOTO_SERVICE_GRPC_PORT}
     enable-keep-alive: true
     keep-alive-time: 60s
     keep-alive-timeout: 30s

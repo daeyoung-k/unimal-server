@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class MapRouteConfig {
 
-    @Value("\${custom.route.base-uri}")
+    @Value("\${custom.route.map.uri}")
     private lateinit var mapUri: String
 
     @Value("\${custom.route.map.port}")

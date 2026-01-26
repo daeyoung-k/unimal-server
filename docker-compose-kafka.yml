@@ -1,8 +1,8 @@
 services:
 
-  kafka-1:
+  kafka-1-local:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka-1
+    container_name: kafka-1-local
     ports:
       - "9091:9091"  # 클라이언트 접속용
     environment:
@@ -10,17 +10,19 @@ services:
       KAFKA_NODE_ID: 1
       CLUSTER_ID: unimal-cluster-id
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://kafka-1:29092,CONTROLLER://kafka-1:29093,PLAINTEXT_HOST://kafka-1:9091
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:29092,PLAINTEXT_HOST://localhost:9091
+      KAFKA_LISTENERS: PLAINTEXT://kafka-1-local:29092,CONTROLLER://kafka-1-local:29093,PLAINTEXT_HOST://kafka-1-local:9091
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1-local:29092,PLAINTEXT_HOST://localhost:9091
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1-local:29093,2@kafka-2-local:29093,3@kafka-3-local:29093
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+    networks:
+      - kafka-local-network
 
-  kafka-2:
+  kafka-2-local:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka-2
+    container_name: kafka-2-local
     ports:
       - "9092:9092"  # 클라이언트 접속용
     environment:
@@ -28,17 +30,19 @@ services:
       KAFKA_NODE_ID: 2
       CLUSTER_ID: unimal-cluster-id
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://kafka-2:29092,CONTROLLER://kafka-2:29093,PLAINTEXT_HOST://kafka-2:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://kafka-2-local:29092,CONTROLLER://kafka-2-local:29093,PLAINTEXT_HOST://kafka-2-local:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2-local:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1-local:29093,2@kafka-2-local:29093,3@kafka-3-local:29093
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+    networks:
+      - kafka-local-network
 
-  kafka-3:
+  kafka-3-local:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka-3
+    container_name: kafka-3-local
     ports:
       - "9093:9093"  # 클라이언트 접속용
     environment:
@@ -46,24 +50,33 @@ services:
       KAFKA_NODE_ID: 3
       CLUSTER_ID: unimal-cluster-id
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://kafka-3:29092,CONTROLLER://kafka-3:29093,PLAINTEXT_HOST://kafka-3:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:29092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://kafka-3-local:29092,CONTROLLER://kafka-3-local:29093,PLAINTEXT_HOST://kafka-3-local:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3-local:29092,PLAINTEXT_HOST://localhost:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1-local:29093,2@kafka-2-local:29093,3@kafka-3-local:29093
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+    networks:
+      - kafka-local-network
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
+    container_name: kafka-ui-local
     ports:
       - "9090:9090"
     environment:
       SERVER_PORT: 9090
       KAFKA_CLUSTERS_0_NAME: unimal-kafka-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:29092,kafka-2:29092,kafka-3:29092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1-local:29092,kafka-2-local:29092,kafka-3-local:29092
     depends_on:
-      - kafka-1
-      - kafka-2
-      - kafka-3
+      - kafka-1-local
+      - kafka-2-local
+      - kafka-3-local
+    networks:
+      - kafka-local-network
+
+networks:
+  kafka-local-network:
+    name: kafka-local-network
+    driver: bridge
