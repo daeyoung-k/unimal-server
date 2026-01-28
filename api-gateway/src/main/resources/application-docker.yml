@@ -46,6 +46,16 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
 custom:
   jwt:
     secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}
