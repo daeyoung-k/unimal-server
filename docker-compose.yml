@@ -1,25 +1,20 @@
 services:
-  postgis-db:
-    image: postgis/postgis:18-3.6
-    container_name: unimal-postgis
+  nginx:
+    image: nginx:alpine
+    container_name: unimal-nginx
     ports:
-      - "${DATABASE_PORT:-5432}:5432"
-    environment:
-      POSTGRES_DB: ${DATABASE_NAME}
-      POSTGRES_USER: ${DATABASE_USERNAME}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
-      TZ: Asia/Seoul
+      - "80:80"
+      - "443:443"
+      - "8090:8090"
     volumes:
-      - postgis-data:/var/lib/postgresql
-      - ./docker/postgres/init:/docker-entrypoint-initdb.d
-    restart: always
+      - ./docker/nginx/nginx_local.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api-gateway-server
+      - kafka-ui
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    restart: always
 
   api-gateway-server:
     build:
@@ -146,175 +141,6 @@ services:
     networks:
       - backend-network
 
-  kafka-1:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka-1
-    ports:
-      - "9091:9091"
-    environment:
-      KAFKA_ENABLE_KRAFT: yes
-      KAFKA_NODE_ID: 1
-      CLUSTER_ID: unimal-cluster-id
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://kafka-1:29092,CONTROLLER://kafka-1:29093,PLAINTEXT_HOST://kafka-1:9091
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:29092,PLAINTEXT_HOST://localhost:9091
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-    networks:
-      - backend-network
-    restart: always
-
-  kafka-2:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka-2
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_ENABLE_KRAFT: yes
-      KAFKA_NODE_ID: 2
-      CLUSTER_ID: unimal-cluster-id
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://kafka-2:29092,CONTROLLER://kafka-2:29093,PLAINTEXT_HOST://kafka-2:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-    networks:
-      - backend-network
-    restart: always
-
-  kafka-3:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka-3
-    ports:
-      - "9093:9093"
-    environment:
-      KAFKA_ENABLE_KRAFT: yes
-      KAFKA_NODE_ID: 3
-      CLUSTER_ID: unimal-cluster-id
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://kafka-3:29092,CONTROLLER://kafka-3:29093,PLAINTEXT_HOST://kafka-3:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:29092,PLAINTEXT_HOST://localhost:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-    networks:
-      - backend-network
-    restart: always
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    ports:
-      - "9090:9090"
-    environment:
-      SERVER_PORT: 9090
-      KAFKA_CLUSTERS_0_NAME: unimal-kafka-cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:29092,kafka-2:29092,kafka-3:29092
-    depends_on:
-      - kafka-1
-      - kafka-2
-      - kafka-3
-    networks:
-      - backend-network
-    restart: always
-
-  nginx:
-    image: nginx:alpine
-    container_name: unimal-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8090:8090"
-    volumes:
-      - ./docker/nginx/nginx_local.conf:/etc/nginx/nginx_local.conf:ro
-      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - api-gateway-server
-      - kafka-ui
-    networks:
-      - backend-network
-    restart: always
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: unimal-prometheus
-    ports:
-      - "9094:9090"
-    volumes:
-      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-    networks:
-      - backend-network
-    restart: always
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: unimal-grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-    volumes:
-      - grafana-data:/var/lib/grafana
-    depends_on:
-      - prometheus
-      - loki
-    networks:
-      - backend-network
-    restart: always
-
-  loki:
-    image: grafana/loki:latest
-    container_name: unimal-loki
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./docker/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
-      - loki-data:/loki
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - backend-network
-    restart: always
-
-  promtail:
-    image: grafana/promtail:latest
-    container_name: unimal-promtail
-    volumes:
-      - ./docker/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-    command: -config.file=/etc/promtail/config.yml
-    depends_on:
-      - loki
-    networks:
-      - backend-network
-    restart: always
-
 networks:
   backend-network:
     driver: bridge
-
-volumes:
-  postgis-data:
-    driver: local
-  prometheus-data:
-    driver: local
-  grafana-data:
-    driver: local
-  loki-data:
-    driver: local
