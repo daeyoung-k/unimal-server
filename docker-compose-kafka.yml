@@ -16,7 +16,9 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-1-data:/var/lib/kafka/data
     networks:
       - backend-network
     restart: always
@@ -37,7 +39,9 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-2-data:/var/lib/kafka/data
     networks:
       - backend-network
     restart: always
@@ -58,7 +62,9 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka-3-data:/var/lib/kafka/data
     networks:
       - backend-network
     restart: always
@@ -83,3 +89,23 @@ services:
 networks:
   backend-network:
     driver: bridge
+
+volumes:
+  kafka-1-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/kafka-1
+  kafka-2-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/kafka-2
+  kafka-3-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/kafka-3

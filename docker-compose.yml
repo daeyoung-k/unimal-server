@@ -4,26 +4,16 @@ services:
     container_name: unimal-nginx
     ports:
       - "80:80"
-      - "443:443"
-      - "8090:8090"
     volumes:
-      - ./docker/nginx/nginx_local.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - api-gateway-server
-      - kafka-ui
     networks:
       - backend-network
     restart: always
 
   api-gateway-server:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
     image: eodud4976/unimal-apigateway
-    depends_on:
-      postgis-db:
-        condition: service_healthy
     ports:
       - "8080:8080"
     restart: always
@@ -36,13 +26,8 @@ services:
       - backend-network
 
   user-server:
-    build:
-      context: ./user
-      dockerfile: Dockerfile
     image: eodud4976/unimal-user
     depends_on:
-      postgis-db:
-        condition: service_healthy
       api-gateway-server:
         condition: service_started
     ports:
@@ -58,13 +43,8 @@ services:
       - backend-network
 
   map-server:
-    build:
-      context: ./map
-      dockerfile: Dockerfile
     image: eodud4976/unimal-map
     depends_on:
-      postgis-db:
-        condition: service_healthy
       api-gateway-server:
         condition: service_started
     ports:
@@ -80,13 +60,8 @@ services:
       - backend-network
 
   board-server:
-    build:
-      context: ./board
-      dockerfile: Dockerfile
     image: eodud4976/unimal-board
     depends_on:
-      postgis-db:
-        condition: service_healthy
       api-gateway-server:
         condition: service_started
     ports:
@@ -102,13 +77,7 @@ services:
       - backend-network
 
   photo-server:
-    build:
-      context: ./photo
-      dockerfile: Dockerfile
     image: eodud4976/unimal-photo
-    depends_on:
-      postgis-db:
-        condition: service_healthy
     ports:
       - "8084:8084"
       - "50084:50084"
@@ -122,13 +91,7 @@ services:
       - backend-network
 
   notification-server:
-    build:
-      context: ./notification
-      dockerfile: Dockerfile
     image: eodud4976/unimal-notification
-    depends_on:
-      postgis-db:
-        condition: service_healthy
     ports:
       - "8085:8085"
       - "50085:50085"

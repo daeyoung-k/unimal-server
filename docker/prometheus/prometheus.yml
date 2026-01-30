@@ -3,55 +3,36 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  # API Gateway 모니터링
-  - job_name: 'api-gateway'
-    metrics_path: '/actuator/prometheus'
-    static_configs:
-      - targets: ['api-gateway-server:8080']
-        labels:
-          service: 'api-gateway'
-
-  # User 서비스 모니터링
-  - job_name: 'user-service'
-    metrics_path: '/user/actuator/prometheus'
-    static_configs:
-      - targets: ['user-server:8081']
-        labels:
-          service: 'user'
-
-  # Map 서비스 모니터링
-  - job_name: 'map-service'
-    metrics_path: '/map/actuator/prometheus'
-    static_configs:
-      - targets: ['map-server:8082']
-        labels:
-          service: 'map'
-
-  # Board 서비스 모니터링
-  - job_name: 'board-service'
-    metrics_path: '/board/actuator/prometheus'
-    static_configs:
-      - targets: ['board-server:8083']
-        labels:
-          service: 'board'
-
-  # Photo 서비스 모니터링
-  - job_name: 'photo-service'
-    metrics_path: '/photo/actuator/prometheus'
-    static_configs:
-      - targets: ['photo-server:8084']
-        labels:
-          service: 'photo'
-
-  # Notification 서비스 모니터링
-  - job_name: 'notification-service'
-    metrics_path: '/notification/actuator/prometheus'
-    static_configs:
-      - targets: ['notification-server:8085']
-        labels:
-          service: 'notification'
-
-  # Prometheus 자체 모니터링
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
+
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway-server:8080']
+    metrics_path: '/actuator/prometheus'
+
+  - job_name: 'user-server'
+    static_configs:
+      - targets: ['user-server:8081']
+    metrics_path: '/actuator/prometheus'
+
+  - job_name: 'map-server'
+    static_configs:
+      - targets: ['map-server:8082']
+    metrics_path: '/actuator/prometheus'
+
+  - job_name: 'board-server'
+    static_configs:
+      - targets: ['board-server:8083']
+    metrics_path: '/actuator/prometheus'
+
+  - job_name: 'photo-server'
+    static_configs:
+      - targets: ['photo-server:8084']
+    metrics_path: '/actuator/prometheus'
+
+  - job_name: 'notification-server'
+    static_configs:
+      - targets: ['notification-server:8085']
+    metrics_path: '/actuator/prometheus'
