@@ -68,7 +68,19 @@ networks:
 volumes:
   prometheus-data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/prometheus
   grafana-data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/grafana
   loki-data:
     driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/loki
