@@ -40,9 +40,11 @@ out/
 ### Kotlin ###
 .kotlin
 
-.env*
-
 .DS_Store
 
 ### Firebase ###
 **/firebase/*.json
+
+### Custom ###
+.env*
+docker/
