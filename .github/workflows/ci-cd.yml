@@ -186,12 +186,12 @@ jobs:
       - name: Build common modules
         if: steps.check.outputs.changed == 'true'
         run: |
-          ./gradlew :common:build --no-daemon
+          ./gradlew :common:build -x test --no-daemon
           if [ "${{ matrix.module }}" != "api-gateway" ]; then
-            ./gradlew :proto-common:build --no-daemon
+            ./gradlew :proto-common:build -x test --no-daemon
           fi
           if [ "${{ matrix.module }}" == "user" ] || [ "${{ matrix.module }}" == "map" ] || [ "${{ matrix.module }}" == "board" ] || [ "${{ matrix.module }}" == "notification" ]; then
-            ./gradlew :web-common:build --no-daemon
+            ./gradlew :web-common:build -x test --no-daemon
           fi
 
       - name: Build ${{ matrix.module }}
