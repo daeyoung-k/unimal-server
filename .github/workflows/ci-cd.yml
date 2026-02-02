@@ -183,17 +183,6 @@ jobs:
         if: steps.check.outputs.changed == 'true'
         run: chmod +x gradlew
 
-      - name: Build common modules
-        if: steps.check.outputs.changed == 'true'
-        run: |
-          ./gradlew :common:build -x test --no-daemon
-          if [ "${{ matrix.module }}" != "api-gateway" ]; then
-            ./gradlew :proto-common:build -x test --no-daemon
-          fi
-          if [ "${{ matrix.module }}" == "user" ] || [ "${{ matrix.module }}" == "map" ] || [ "${{ matrix.module }}" == "board" ] || [ "${{ matrix.module }}" == "notification" ]; then
-            ./gradlew :web-common:build -x test --no-daemon
-          fi
-
       - name: Build ${{ matrix.module }}
         if: steps.check.outputs.changed == 'true'
         run: |
@@ -356,7 +345,13 @@ jobs:
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "cd ${{ secrets.SERVER_PATH }} && docker pull ${{ matrix.image }}:latest"
 
-      - name: Deploy service
+      - name: Stop and remove old container
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "cd ${{ secrets.SERVER_PATH }} && docker-compose rm -sf ${{ matrix.service }}"
+
+      - name: Deploy service with new image
         if: steps.check.outputs.changed == 'true'
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
