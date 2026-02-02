@@ -90,16 +90,32 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Test SSH connection
+        if: needs.detect-changes.outputs.docker-compose == 'true'
+        run: |
+          ssh -v -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "echo 'SSH connection successful'"
+
+      - name: Check docker-compose files exist
+        if: needs.detect-changes.outputs.docker-compose == 'true'
+        run: |
+          ls -lh docker-compose*.yml
 
       - name: Sync all docker-compose files to server
         if: needs.detect-changes.outputs.docker-compose == 'true'
         run: |
-          scp -o StrictHostKeyChecking=no \
-            docker-compose.yml \
-            docker-compose-db.yml \
-            docker-compose-kafka.yml \
-            docker-compose-monitoring.yml \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/
+          for file in docker-compose.yml docker-compose-db.yml docker-compose-kafka.yml docker-compose-monitoring.yml; do
+            if [ -f "$file" ]; then
+              echo "Copying $file..."
+              scp -v -o StrictHostKeyChecking=no "$file" \
+                ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/
+            else
+              echo "Warning: $file not found, skipping..."
+            fi
+          done
 
       - name: Verify sync
         if: needs.detect-changes.outputs.docker-compose == 'true'
@@ -323,6 +339,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Pull latest Docker image
         if: steps.check.outputs.changed == 'true'
