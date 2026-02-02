@@ -24,6 +24,12 @@ services:
       DATABASE_HOST: postgis-db
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   user-server:
     image: eodud4976/unimal-user
@@ -41,6 +47,12 @@ services:
       DATABASE_HOST: postgis-db
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   map-server:
     image: eodud4976/unimal-map
@@ -58,6 +70,12 @@ services:
       DATABASE_HOST: postgis-db
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   board-server:
     image: eodud4976/unimal-board
@@ -75,6 +93,12 @@ services:
       DATABASE_HOST: postgis-db
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   photo-server:
     image: eodud4976/unimal-photo
@@ -89,6 +113,12 @@ services:
       DATABASE_HOST: postgis-db
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   notification-server:
     image: eodud4976/unimal-notification
@@ -103,6 +133,12 @@ services:
       DATABASE_HOST: postgis-db
     networks:
       - backend-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
 networks:
   backend-network:
