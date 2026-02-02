@@ -1,0 +1,349 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  detect-changes:
+    name: Detect Changed Modules
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.filter.outputs.changes }}
+      api-gateway: ${{ steps.filter.outputs.api-gateway }}
+      user: ${{ steps.filter.outputs.user }}
+      map: ${{ steps.filter.outputs.map }}
+      board: ${{ steps.filter.outputs.board }}
+      photo: ${{ steps.filter.outputs.photo }}
+      notification: ${{ steps.filter.outputs.notification }}
+      docker-compose: ${{ steps.filter.outputs.docker-compose }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            api-gateway:
+              - 'api-gateway/**'
+              - 'common/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+            user:
+              - 'user/**'
+              - 'common/**'
+              - 'proto-common/**'
+              - 'web-common/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+            map:
+              - 'map/**'
+              - 'common/**'
+              - 'proto-common/**'
+              - 'web-common/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+            board:
+              - 'board/**'
+              - 'common/**'
+              - 'proto-common/**'
+              - 'web-common/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+            photo:
+              - 'photo/**'
+              - 'common/**'
+              - 'proto-common/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+            notification:
+              - 'notification/**'
+              - 'common/**'
+              - 'proto-common/**'
+              - 'web-common/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+            docker-compose:
+              - 'docker-compose.yml'
+              - 'docker-compose-*.yml'
+
+  sync-docker-compose:
+    name: Sync Docker Compose Files
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout code
+        if: needs.detect-changes.outputs.docker-compose == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        if: needs.detect-changes.outputs.docker-compose == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Sync all docker-compose files to server
+        if: needs.detect-changes.outputs.docker-compose == 'true'
+        run: |
+          scp -o StrictHostKeyChecking=no \
+            docker-compose.yml \
+            docker-compose-db.yml \
+            docker-compose-kafka.yml \
+            docker-compose-monitoring.yml \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/
+
+      - name: Verify sync
+        if: needs.detect-changes.outputs.docker-compose == 'true'
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "ls -lh ${{ secrets.SERVER_PATH }}/docker-compose*.yml"
+
+  build:
+    name: Build Module
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    if: |
+      needs.detect-changes.outputs.api-gateway == 'true' ||
+      needs.detect-changes.outputs.user == 'true' ||
+      needs.detect-changes.outputs.map == 'true' ||
+      needs.detect-changes.outputs.board == 'true' ||
+      needs.detect-changes.outputs.photo == 'true' ||
+      needs.detect-changes.outputs.notification == 'true'
+    strategy:
+      matrix:
+        module:
+          - api-gateway
+          - user
+          - map
+          - board
+          - photo
+          - notification
+    steps:
+      - name: Check if module changed
+        id: check
+        run: |
+          if [ "${{ needs.detect-changes.outputs[matrix.module] }}" == "true" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout code
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        if: steps.check.outputs.changed == 'true'
+        uses: gradle/gradle-build-action@v3
+        with:
+          cache-read-only: false
+
+      - name: Grant execute permission for gradlew
+        if: steps.check.outputs.changed == 'true'
+        run: chmod +x gradlew
+
+      - name: Build common modules
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          ./gradlew :common:build --no-daemon
+          if [ "${{ matrix.module }}" != "api-gateway" ]; then
+            ./gradlew :proto-common:build --no-daemon
+          fi
+          if [ "${{ matrix.module }}" == "user" ] || [ "${{ matrix.module }}" == "map" ] || [ "${{ matrix.module }}" == "board" ] || [ "${{ matrix.module }}" == "notification" ]; then
+            ./gradlew :web-common:build --no-daemon
+          fi
+
+      - name: Build ${{ matrix.module }}
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          ./gradlew :${{ matrix.module }}:build -x test --no-daemon
+          ./gradlew :${{ matrix.module }}:bootJar --no-daemon
+
+      - name: Upload build artifact
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.module }}-jar
+          path: ${{ matrix.module }}/build/libs/*.jar
+          retention-days: 1
+
+  docker-build-push:
+    name: Build and Push Docker Image
+    needs: [detect-changes, build]
+    runs-on: ubuntu-latest
+    if: |
+      needs.detect-changes.outputs.api-gateway == 'true' ||
+      needs.detect-changes.outputs.user == 'true' ||
+      needs.detect-changes.outputs.map == 'true' ||
+      needs.detect-changes.outputs.board == 'true' ||
+      needs.detect-changes.outputs.photo == 'true' ||
+      needs.detect-changes.outputs.notification == 'true'
+    strategy:
+      matrix:
+        module:
+          - api-gateway
+          - user
+          - map
+          - board
+          - photo
+          - notification
+        include:
+          - module: api-gateway
+            image: eodud4976/unimal-apigateway
+          - module: user
+            image: eodud4976/unimal-user
+          - module: map
+            image: eodud4976/unimal-map
+          - module: board
+            image: eodud4976/unimal-board
+          - module: photo
+            image: eodud4976/unimal-photo
+          - module: notification
+            image: eodud4976/unimal-notification
+    steps:
+      - name: Check if module changed
+        id: check
+        run: |
+          if [ "${{ needs.detect-changes.outputs[matrix.module] }}" == "true" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout code
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.module }}-jar
+          path: ${{ matrix.module }}/build/libs/
+
+      - name: Set up Docker Buildx
+        if: steps.check.outputs.changed == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        if: steps.check.outputs.changed == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        if: steps.check.outputs.changed == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.module }}
+          file: ./${{ matrix.module }}/Dockerfile
+          push: true
+          tags: ${{ matrix.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Server
+    needs: [detect-changes, docker-build-push, sync-docker-compose]
+    runs-on: ubuntu-latest
+    if: |
+      github.ref == 'refs/heads/master' && (
+        needs.detect-changes.outputs.api-gateway == 'true' ||
+        needs.detect-changes.outputs.user == 'true' ||
+        needs.detect-changes.outputs.map == 'true' ||
+        needs.detect-changes.outputs.board == 'true' ||
+        needs.detect-changes.outputs.photo == 'true' ||
+        needs.detect-changes.outputs.notification == 'true'
+      )
+    strategy:
+      matrix:
+        module:
+          - api-gateway
+          - user
+          - map
+          - board
+          - photo
+          - notification
+        include:
+          - module: api-gateway
+            service: api-gateway-server
+            image: eodud4976/unimal-apigateway
+            port: 8080
+          - module: user
+            service: user-server
+            image: eodud4976/unimal-user
+            port: 8081
+          - module: map
+            service: map-server
+            image: eodud4976/unimal-map
+            port: 8082
+          - module: board
+            service: board-server
+            image: eodud4976/unimal-board
+            port: 8083
+          - module: photo
+            service: photo-server
+            image: eodud4976/unimal-photo
+            port: 8084
+          - module: notification
+            service: notification-server
+            image: eodud4976/unimal-notification
+            port: 8085
+    steps:
+      - name: Check if module changed
+        id: check
+        run: |
+          if [ "${{ needs.detect-changes.outputs[matrix.module] }}" == "true" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up SSH
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Pull latest Docker image
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "cd ${{ secrets.SERVER_PATH }} && docker pull ${{ matrix.image }}:latest"
+
+      - name: Deploy service
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "cd ${{ secrets.SERVER_PATH }} && docker-compose up -d --no-deps ${{ matrix.service }}"
+
+      - name: Wait for service to be ready
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "for i in {1..30}; do if curl -f http://localhost:${{ matrix.port }}/actuator/health 2>/dev/null; then echo 'Service is healthy'; exit 0; fi; echo 'Waiting for service...'; sleep 2; done; echo 'Health check timeout' && exit 1"
+
+      - name: Verify deployment
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "docker ps | grep ${{ matrix.service }}"
