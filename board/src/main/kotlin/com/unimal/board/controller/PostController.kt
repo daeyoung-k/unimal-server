@@ -33,7 +33,7 @@ class PostController(
         @ModelAttribute postListRequest: PostListRequest
     ): CommonResponse {
 //        return CommonResponse(data = postService.getPostList(optionalUserInfo, postListRequest))
-        return CommonResponse(data = "모듈 배포 테스트")
+        return CommonResponse(data = "모듈 배포 테스트1")
     }
 
     @PostMapping("/post", consumes = ["multipart/form-data"])
