@@ -38,6 +38,10 @@ dependencies {
 	//암호화
 	implementation("org.springframework.boot:spring-boot-starter-security")
 
+	//actuator & prometheus
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("io.micrometer:micrometer-registry-prometheus")
+
 	//db
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	runtimeOnly("org.postgresql:postgresql")

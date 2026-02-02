@@ -16,7 +16,7 @@ class UserRouteConfig(
     private val refreshTokenFilter: RefreshTokenFilter,
 ) {
 
-    @Value("\${custom.route.base-uri}")
+    @Value("\${custom.route.user.uri}")
     private lateinit var userUri: String
 
     @Value("\${custom.route.user.port}")

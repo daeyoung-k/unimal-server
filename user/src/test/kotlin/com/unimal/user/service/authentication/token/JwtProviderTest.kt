@@ -28,8 +28,9 @@ class JwtProviderTest {
     @Test
     fun `JWT 액세스 토큰 발급하기`() {
         val email = "test@test.com"
+        val nickname = "테스트"
         val role = listOf("ROLE_USER", "ROLE_ADMIN")
-        provider.createAccessToken(email, LoginType.TEST, role).let {
+        provider.createAccessToken(email, nickname, LoginType.TEST, role).let {
             assertNotNull(it)
             println("Access Token: $it")
         }
@@ -38,8 +39,9 @@ class JwtProviderTest {
     @Test
     fun `JWT 리프레쉬 토큰 발급하기`() {
         val email = "test@test.com"
+        val nickname = "테스트"
         val role = listOf("ROLE_USER", "ROLE_ADMIN")
-        provider.createRefreshToken(email, LoginType.TEST, role).let {
+        provider.createRefreshToken(email, nickname, LoginType.TEST, role).let {
             assertNotNull(it)
             println("Refresh Token: $it")
         }

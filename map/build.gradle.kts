@@ -36,6 +36,10 @@ dependencies {
     //web
     implementation("org.springframework.boot:spring-boot-starter-web")
 
+    //actuator & prometheus
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+
     //db
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("org.postgresql:postgresql")

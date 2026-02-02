@@ -44,6 +44,16 @@ spring:
     listener:
       missing-topics-fatal: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
 grpc:
   server:
     port: 50085
@@ -52,8 +62,10 @@ grpc:
     keep-alive-timeout: 30s
 
 custom:
-  auth-tel-number: ${UNIMAL_AUTH_TEL_NUMBER}
+  auth-tel-number: ${UNIMAL_AUTH_TEL_NUMBER:01012345678}
   naver-cloud:
-    access-key: ${NAVER_CLOUD_ACCESS_KEY}
-    secret-key: ${NAVER_CLOUD_SECRET_KEY}
-    sms-service-id: ${NAVER_CLOUD_SMS_SERVICE_ID}
+    access-key: ${NAVER_CLOUD_ACCESS_KEY:test-access-key}
+    secret-key: ${NAVER_CLOUD_SECRET_KEY:test-secret-key}
+    sms-service-id: ${NAVER_CLOUD_SMS_SERVICE_ID:test-sms-service-id}
+  firebase:
+    adminsdk: ${FIREBASE_ADMINSDK}

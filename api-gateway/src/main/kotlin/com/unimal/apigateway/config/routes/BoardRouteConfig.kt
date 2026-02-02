@@ -16,7 +16,7 @@ class BoardRouteConfig(
     private val optionalAccessTokenFilter: OptionalAccessTokenFilter,
 ) {
 
-    @Value("\${custom.route.base-uri}")
+    @Value("\${custom.route.board.uri}")
     private lateinit var boardUri: String
 
     @Value("\${custom.route.board.port}")
