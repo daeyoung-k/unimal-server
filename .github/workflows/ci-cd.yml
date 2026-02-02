@@ -339,11 +339,17 @@ jobs:
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
+      - name: Remove old Docker image
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "docker rmi -f ${{ matrix.image }}:latest || true"
+
       - name: Pull latest Docker image
         if: steps.check.outputs.changed == 'true'
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "cd ${{ secrets.SERVER_PATH }} && docker pull ${{ matrix.image }}:latest"
+            "docker pull ${{ matrix.image }}:latest"
 
       - name: Stop and remove old container
         if: steps.check.outputs.changed == 'true'
