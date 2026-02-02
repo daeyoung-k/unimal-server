@@ -104,14 +104,23 @@ jobs:
         run: |
           ls -lh docker-compose*.yml
 
+      - name: Ensure target directory exists
+        if: needs.detect-changes.outputs.docker-compose == 'true'
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "mkdir -p ${{ secrets.SERVER_PATH }} && chmod 755 ${{ secrets.SERVER_PATH }}"
+
       - name: Sync all docker-compose files to server
         if: needs.detect-changes.outputs.docker-compose == 'true'
         run: |
           for file in docker-compose.yml docker-compose-db.yml docker-compose-kafka.yml docker-compose-monitoring.yml; do
             if [ -f "$file" ]; then
               echo "Copying $file..."
-              scp -v -o StrictHostKeyChecking=no "$file" \
-                ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/
+              cat "$file" | ssh -o StrictHostKeyChecking=no \
+                ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+                "cat > ${{ secrets.SERVER_PATH }}/$file"
+              echo "✓ $file copied successfully"
             else
               echo "Warning: $file not found, skipping..."
             fi
