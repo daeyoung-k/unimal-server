@@ -47,8 +47,18 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,prometheus
+    metrics:
+      export:
+        prometheus:
+          enabled: true
+
   kafka:
-    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
+    bootstrap-servers: ${KAFKA_SERVER_1},${KAFKA_SERVER_2},${KAFKA_SERVER_3}
     consumer:
       group-id: unimal-photo-group
       auto-offset-reset: latest
@@ -73,7 +83,7 @@ aws:
 
 grpc:
   server:
-    port: 50084
+    port: ${PHOTO_SERVICE_GRPC_PORT}
     enable-keep-alive: true
     keep-alive-time: 60s
     keep-alive-timeout: 30s

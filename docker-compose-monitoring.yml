@@ -1,0 +1,86 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: unimal-prometheus
+    ports:
+      - "9094:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - backend-network
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: unimal-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - backend-network
+    restart: always
+
+  loki:
+    image: grafana/loki:latest
+    container_name: unimal-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./docker/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - backend-network
+    restart: always
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: unimal-promtail
+    volumes:
+      - ./docker/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - backend-network
+    restart: always
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/prometheus
+  grafana-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/grafana
+  loki-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/docker-volumes/loki

@@ -18,6 +18,15 @@ java {
     }
 }
 
+// 루트 프로젝트는 bootJar 비활성화
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.named<Jar>("jar") {
+    enabled = true
+}
+
 allprojects {
     group = "com.unimal"
     version = "0.0.1-SNAPSHOT"
@@ -91,9 +100,10 @@ configure(listOf(
         testImplementation("io.grpc:grpc-testing:${property("grpcVersion")}")
     }
 
-    tasks.withType<Test> {
-        enabled = false
-    }
+    // 테스트 활성화
+    // tasks.withType<Test> {
+    //     enabled = false
+    // }
 
 }
 

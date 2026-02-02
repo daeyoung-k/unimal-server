@@ -11,6 +11,7 @@ import com.unimal.user.kafka.topics.MemberKafkaTopic
 import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.MemberInfo
+import com.unimal.user.utils.RedisCacheManager
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -34,13 +35,15 @@ class MemberObjectTest {
     private val roleRepository: RoleRepository = mockk(relaxed = true)
     private val memberKafkaTopic: MemberKafkaTopic = mockk(relaxed = true)
     private val passwordEncoder: BCryptPasswordEncoder = mockk(relaxed = true)
+    private val redisCacheManager: RedisCacheManager = mockk(relaxed = true)
 
     private val memberObject = MemberObject(
         memberRepository,
         memberRoleRepository,
         roleRepository,
         memberKafkaTopic,
-        passwordEncoder
+        passwordEncoder,
+        redisCacheManager
     )
 
     companion object {

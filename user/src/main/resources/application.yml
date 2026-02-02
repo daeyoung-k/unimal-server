@@ -44,6 +44,16 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,prometheus
+    metrics:
+      export:
+        prometheus:
+          enabled: true
+
   security:
     oauth2:
       client:
@@ -70,7 +80,7 @@ spring:
             user-name-attribute: id
 
   kafka:
-    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
+    bootstrap-servers: ${KAFKA_SERVER_1},${KAFKA_SERVER_2},${KAFKA_SERVER_3}
     consumer:
       group-id: unimal-user-group
       auto-offset-reset: latest
@@ -100,5 +110,5 @@ custom:
 grpc:
   client:
     notification-grpc:
-      address: static://localhost:50085
+      address: static://${NOTIFICATION_SERVICE_URI}:${NOTIFICATION_SERVICE_GRPC_PORT}
       negotiation-type: plaintext

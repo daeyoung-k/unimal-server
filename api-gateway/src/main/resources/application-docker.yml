@@ -1,48 +1,18 @@
 server:
   port: ${API_GATEWAY_SERVICE_PORT}
 
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+
 spring:
+  main:
+    allow-bean-definition-overriding: true
   config:
     activate:
       on-profile: docker
   application:
     name: api-gateway-server
-  cloud:
-    gateway:
-      routes:
-        - id: user-service-public
-          uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
-          predicates:
-            - Path=/user/auth/{segment:login|signup}/**
-
-        - id: user-service-private
-          uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
-          predicates:
-            - Path=/user/auth/{segment:token-reissue|logout|withdrawal}
-          filters:
-            - name: TokenFilter
-
-        - id: user-service-private
-          uri: ${USER_SERVICE_URI}:${USER_SERVICE_PORT}
-          predicates:
-            - Path=/user/member/**
-          filters:
-            - name: TokenFilter
-
-        - id: map-service
-          uri: ${MAP_SERVICE_URI}:${MAP_SERVICE_PORT}
-          predicates:
-            - Path=/map/**
-
-        - id: board-service
-          uri: ${BOARD_SERVICE_URI}:${BOARD_SERVICE_PORT}
-          predicates:
-            - Path=/board/**
-
-        - id: photo-service
-          uri: ${PHOTO_SERVICE_URI}:${PHOTO_SERVICE_PORT}
-          predicates:
-            - Path=/photo/**
 
   jackson:
     time-zone: Asia/Seoul
@@ -76,6 +46,33 @@ spring:
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
 custom:
   jwt:
-    secret-key: ${JWT_SECRET_KEY}
+    secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}
+  route:
+    user:
+      uri: ${USER_SERVICE_DOCKER_URI}
+      port: ${USER_SERVICE_PORT}
+    map:
+      uri: ${MAP_SERVICE_DOCKER_URI}
+      port: ${MAP_SERVICE_PORT}
+    board:
+      uri: ${BOARD_SERVICE_DOCKER_URI}
+      port: ${BOARD_SERVICE_PORT}
+    photo:
+      uri: ${PHOTO_SERVICE_DOCKER_URI}
+      port: ${PHOTO_SERVICE_PORT}
+    notification:
+      uri: ${NOTIFICATION_SERVICE_DOCKER_URI}
+      port: ${NOTIFICATION_SERVICE_PORT}
+
