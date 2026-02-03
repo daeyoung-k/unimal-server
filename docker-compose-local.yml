@@ -13,7 +13,8 @@ services:
     restart: always
 
   api-gateway-server:
-    image: eodud4976/unimal-apigateway:${API_GATEWAY_TAG:-latest}
+    image: eodud4976/unimal-apigateway
+    platform: linux/amd64
     ports:
       - "8080:8080"
     restart: always
@@ -32,7 +33,8 @@ services:
       start_period: 40s
 
   user-server:
-    image: eodud4976/unimal-user:${USER_TAG:-latest}
+    image: eodud4976/unimal-user
+    platform: linux/amd64
     depends_on:
       api-gateway-server:
         condition: service_started
@@ -55,7 +57,8 @@ services:
       start_period: 40s
 
   map-server:
-    image: eodud4976/unimal-map:${MAP_TAG:-latest}
+    image: eodud4976/unimal-map
+    platform: linux/amd64
     depends_on:
       api-gateway-server:
         condition: service_started
@@ -78,7 +81,8 @@ services:
       start_period: 40s
 
   board-server:
-    image: eodud4976/unimal-board:${BOARD_TAG:-latest}
+    image: eodud4976/unimal-board
+    platform: linux/amd64
     depends_on:
       api-gateway-server:
         condition: service_started
@@ -101,7 +105,8 @@ services:
       start_period: 40s
 
   photo-server:
-    image: eodud4976/unimal-photo:${PHOTO_TAG:-latest}
+    image: eodud4976/unimal-photo
+    platform: linux/amd64
     ports:
       - "8084:8084"
       - "50084:50084"
@@ -121,7 +126,8 @@ services:
       start_period: 40s
 
   notification-server:
-    image: eodud4976/unimal-notification:${NOTIFICATION_TAG:-latest}
+    image: eodud4976/unimal-notification
+    platform: linux/amd64
     ports:
       - "8085:8085"
       - "50085:50085"

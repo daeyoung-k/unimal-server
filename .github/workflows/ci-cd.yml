@@ -269,7 +269,9 @@ jobs:
           context: ./${{ matrix.module }}
           file: ./${{ matrix.module }}/Dockerfile
           push: true
-          tags: ${{ matrix.image }}:latest
+          tags: |
+            ${{ matrix.image }}:latest
+            ${{ matrix.image }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -300,26 +302,32 @@ jobs:
             service: api-gateway-server
             image: eodud4976/unimal-apigateway
             port: 8080
+            env_var: API_GATEWAY_TAG
           - module: user
             service: user-server
             image: eodud4976/unimal-user
             port: 8081
+            env_var: USER_TAG
           - module: map
             service: map-server
             image: eodud4976/unimal-map
             port: 8082
+            env_var: MAP_TAG
           - module: board
             service: board-server
             image: eodud4976/unimal-board
             port: 8083
+            env_var: BOARD_TAG
           - module: photo
             service: photo-server
             image: eodud4976/unimal-photo
             port: 8084
+            env_var: PHOTO_TAG
           - module: notification
             service: notification-server
             image: eodud4976/unimal-notification
             port: 8085
+            env_var: NOTIFICATION_TAG
     steps:
       - name: Check if module changed
         id: check
@@ -339,17 +347,11 @@ jobs:
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
-      - name: Remove old Docker image
+      - name: Pull Docker image with SHA tag
         if: steps.check.outputs.changed == 'true'
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "docker rmi -f ${{ matrix.image }}:latest || true"
-
-      - name: Pull latest Docker image
-        if: steps.check.outputs.changed == 'true'
-        run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "docker pull ${{ matrix.image }}:latest"
+            "docker pull ${{ matrix.image }}:${{ github.sha }}"
 
       - name: Stop and remove old container
         if: steps.check.outputs.changed == 'true'
@@ -361,7 +363,7 @@ jobs:
         if: steps.check.outputs.changed == 'true'
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "cd ${{ secrets.SERVER_PATH }} && docker-compose up -d --no-deps ${{ matrix.service }}"
+            "cd ${{ secrets.SERVER_PATH }} && export ${{ matrix.env_var }}=${{ github.sha }} && docker-compose up -d --no-deps ${{ matrix.service }}"
 
       - name: Wait for service to be ready
         if: steps.check.outputs.changed == 'true'
