@@ -114,7 +114,10 @@ jobs:
       - name: Sync all docker-compose files to server
         if: needs.detect-changes.outputs.docker-compose == 'true'
         run: |
-          scp -o StrictHostKeyChecking=no docker-compose*.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/
+          scp -v -o StrictHostKeyChecking=no \
+            -o ConnectTimeout=30 \
+            -o ServerAliveInterval=60 \
+            docker-compose*.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/
 
       - name: Verify sync
         if: needs.detect-changes.outputs.docker-compose == 'true'
