@@ -3,7 +3,7 @@ services:
     image: postgis/postgis:18-3.6
     container_name: unimal-postgis
     ports:
-      - "${DATABASE_PORT:-5432}:5432"
+      - "127.0.0.1:${DATABASE_PORT:-5432}:5432"
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}
@@ -25,7 +25,7 @@ services:
     image: redis:alpine
     container_name: unimal-redis
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis-data:/data

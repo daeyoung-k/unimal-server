@@ -3,7 +3,7 @@ services:
     image: prom/prometheus:latest
     container_name: unimal-prometheus
     ports:
-      - "9094:9090"
+      - "127.0.0.1:9094:9090"
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -20,7 +20,7 @@ services:
     image: grafana/grafana:latest
     container_name: unimal-grafana
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -38,7 +38,7 @@ services:
     image: grafana/loki:latest
     container_name: unimal-loki
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     volumes:
       - ./docker/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
       - loki-data:/loki
