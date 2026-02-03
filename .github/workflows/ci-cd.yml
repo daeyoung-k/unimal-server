@@ -114,17 +114,7 @@ jobs:
       - name: Sync all docker-compose files to server
         if: needs.detect-changes.outputs.docker-compose == 'true'
         run: |
-          for file in docker-compose.yml docker-compose-db.yml docker-compose-kafka.yml docker-compose-monitoring.yml; do
-            if [ -f "$file" ]; then
-              echo "Copying $file..."
-              cat "$file" | ssh -o StrictHostKeyChecking=no \
-                ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-                "cat > ${{ secrets.SERVER_PATH }}/$file"
-              echo "✓ $file copied successfully"
-            else
-              echo "Warning: $file not found, skipping..."
-            fi
-          done
+          scp -o StrictHostKeyChecking=no docker-compose*.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/
 
       - name: Verify sync
         if: needs.detect-changes.outputs.docker-compose == 'true'
