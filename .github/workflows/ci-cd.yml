@@ -89,13 +89,13 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
       - name: Test SSH connection
         if: needs.detect-changes.outputs.docker-compose == 'true'
         run: |
-          ssh -v -o StrictHostKeyChecking=no \
+          ssh -v -p ${{ secrets.SERVER_PORT }} -o StrictHostKeyChecking=no \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "echo 'SSH connection successful'"
 
@@ -107,14 +107,14 @@ jobs:
       - name: Ensure target directory exists
         if: needs.detect-changes.outputs.docker-compose == 'true'
         run: |
-          ssh -o StrictHostKeyChecking=no \
+          ssh -p ${{ secrets.SERVER_PORT }} -o StrictHostKeyChecking=no \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "mkdir -p ${{ secrets.SERVER_PATH }} && chmod 755 ${{ secrets.SERVER_PATH }}"
 
       - name: Sync all docker-compose files to server
         if: needs.detect-changes.outputs.docker-compose == 'true'
         run: |
-          scp -v -o StrictHostKeyChecking=no \
+          scp -v -P ${{ secrets.SERVER_PORT }} -o StrictHostKeyChecking=no \
             -o ConnectTimeout=30 \
             -o ServerAliveInterval=60 \
             docker-compose*.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.SERVER_PATH }}/
@@ -122,7 +122,7 @@ jobs:
       - name: Verify sync
         if: needs.detect-changes.outputs.docker-compose == 'true'
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "ls -lh ${{ secrets.SERVER_PATH }}/docker-compose*.yml"
 
   build:
@@ -337,35 +337,35 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
       - name: Pull Docker image with SHA tag
         if: steps.check.outputs.changed == 'true'
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "docker pull ${{ matrix.image }}:${{ github.sha }}"
 
       - name: Stop and remove old container
         if: steps.check.outputs.changed == 'true'
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "cd ${{ secrets.SERVER_PATH }} && docker-compose rm -sf ${{ matrix.service }}"
 
       - name: Deploy service with new image
         if: steps.check.outputs.changed == 'true'
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "cd ${{ secrets.SERVER_PATH }} && export ${{ matrix.env_var }}=${{ github.sha }} && docker-compose up -d --no-deps ${{ matrix.service }}"
 
       - name: Wait for service to be ready
         if: steps.check.outputs.changed == 'true'
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "for i in {1..30}; do if curl -f http://localhost:${{ matrix.port }}/actuator/health 2>/dev/null; then echo 'Service is healthy'; exit 0; fi; echo 'Waiting for service...'; sleep 2; done; echo 'Health check timeout' && exit 1"
 
       - name: Verify deployment
         if: steps.check.outputs.changed == 'true'
         run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "docker ps | grep ${{ matrix.service }}"
