@@ -21,15 +21,10 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
+      DATABASE_HOST: ${DATABASE_DOCKER_HOST}
+      REDIS_HOST: ${REDIS_DOCKER_HOST}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   user-server:
     image: eodud4976/unimal-user:${USER_TAG:-latest}
@@ -44,15 +39,10 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
+      DATABASE_HOST: ${DATABASE_DOCKER_HOST}
+      REDIS_HOST: ${REDIS_DOCKER_HOST}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   map-server:
     image: eodud4976/unimal-map:${MAP_TAG:-latest}
@@ -67,15 +57,10 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
+      DATABASE_HOST: ${DATABASE_DOCKER_HOST}
+      REDIS_HOST: ${REDIS_DOCKER_HOST}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   board-server:
     image: eodud4976/unimal-board:${BOARD_TAG:-latest}
@@ -90,15 +75,10 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
+      DATABASE_HOST: ${DATABASE_DOCKER_HOST}
+      REDIS_HOST: ${REDIS_DOCKER_HOST}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   photo-server:
     image: eodud4976/unimal-photo:${PHOTO_TAG:-latest}
@@ -110,15 +90,10 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
+      DATABASE_HOST: ${DATABASE_DOCKER_HOST}
+      REDIS_HOST: ${REDIS_DOCKER_HOST}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   notification-server:
     image: eodud4976/unimal-notification:${NOTIFICATION_TAG:-latest}
@@ -130,19 +105,11 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
+      DATABASE_HOST: ${DATABASE_DOCKER_HOST}
+      REDIS_HOST: ${REDIS_DOCKER_HOST}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
 networks:
   backend-network:
     driver: bridge
-
-
-#file 적용 테스트21212zxczxczxczxc

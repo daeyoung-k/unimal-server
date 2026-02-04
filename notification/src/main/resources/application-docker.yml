@@ -14,7 +14,7 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: ${REDIS_DOCKER_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
@@ -28,7 +28,7 @@ spring:
       mail.smtp.starttls.enable: true
 
   kafka:
-    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
+    bootstrap-servers: ${KAFKA_SERVER_DOCKER_1},${KAFKA_SERVER_DOCKER_2},${KAFKA_SERVER_DOCKER_3}
     consumer:
       group-id: unimal-notification-group
       auto-offset-reset: latest
@@ -56,7 +56,7 @@ management:
 
 grpc:
   server:
-    port: 50085
+    port: ${NOTIFICATION_SERVICE_GRPC_PORT}
     enable-keep-alive: true
     keep-alive-time: 60s
     keep-alive-timeout: 30s

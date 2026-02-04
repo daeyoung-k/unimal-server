@@ -35,7 +35,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+    url: jdbc:postgresql://${DATABASE_DOCKER_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     dbcp2:
@@ -43,7 +43,7 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: ${REDIS_DOCKER_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
@@ -77,11 +77,11 @@ management:
 
 grpc:
   client:
-    photo-grpc:
-      address: static://${PHOTO_SERVICE_URI}:${PHOTO_SERVICE_GRPC_PORT}
-      negotiation-type: plaintext
     map-grpc:
-      address: static://${MAP_SERVICE_URI}:${MAP_SERVICE_GRPC_PORT}
+      address: static://${MAP_SERVICE_DOCKER_URI}:${MAP_SERVICE_GRPC_PORT}
+      negotiation-type: plaintext
+    photo-grpc:
+      address: static://${PHOTO_SERVICE_DOCKER_URI}:${PHOTO_SERVICE_GRPC_PORT}
       negotiation-type: plaintext
 
 
