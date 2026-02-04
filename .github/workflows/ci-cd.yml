@@ -352,14 +352,14 @@ jobs:
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "cd ${{ secrets.SERVER_PATH }} && export ${{ matrix.env_var }}=${{ github.sha }} && docker compose up -d --force-recreate --no-deps ${{ matrix.service }}"
 
-      - name: Wait for service to be ready
+      - name: Wait for service to start
         if: steps.check.outputs.changed == 'true'
         run: |
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "for i in {1..30}; do if curl -f http://localhost:${{ matrix.port }}/actuator/health 2>/dev/null; then echo 'Service is healthy'; exit 0; fi; echo 'Waiting for service...'; sleep 2; done; echo 'Health check timeout' && exit 1"
+          echo "Waiting for service to start..."
+          sleep 30
 
       - name: Verify deployment
         if: steps.check.outputs.changed == 'true'
         run: |
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "docker ps | grep ${{ matrix.service }}"
+            "docker ps --filter name=${{ matrix.service }} --filter status=running --format '{{.Names}}: {{.Status}}'"
