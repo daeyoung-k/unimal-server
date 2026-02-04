@@ -282,6 +282,7 @@ jobs:
         needs.detect-changes.outputs.notification == 'true'
       )
     strategy:
+      max-parallel: 3
       matrix:
         module:
           - api-gateway
