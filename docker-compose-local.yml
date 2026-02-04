@@ -13,6 +13,9 @@ services:
     restart: always
 
   api-gateway-server:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
     image: eodud4976/unimal-apigateway
     platform: linux/amd64
     ports:
@@ -33,6 +36,9 @@ services:
       start_period: 40s
 
   user-server:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
     image: eodud4976/unimal-user
     platform: linux/amd64
     depends_on:
@@ -57,6 +63,9 @@ services:
       start_period: 40s
 
   map-server:
+    build:
+      context: ./map
+      dockerfile: Dockerfile
     image: eodud4976/unimal-map
     platform: linux/amd64
     depends_on:
@@ -81,6 +90,9 @@ services:
       start_period: 40s
 
   board-server:
+    build:
+      context: ./board
+      dockerfile: Dockerfile
     image: eodud4976/unimal-board
     platform: linux/amd64
     depends_on:
@@ -105,6 +117,9 @@ services:
       start_period: 40s
 
   photo-server:
+    build:
+      context: ./photo
+      dockerfile: Dockerfile
     image: eodud4976/unimal-photo
     platform: linux/amd64
     ports:
@@ -126,6 +141,9 @@ services:
       start_period: 40s
 
   notification-server:
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
     image: eodud4976/unimal-notification
     platform: linux/amd64
     ports:
