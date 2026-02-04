@@ -50,11 +50,7 @@ spring:
     endpoints:
       web:
         exposure:
-          include: health,info,metrics,prometheus
-    metrics:
-      export:
-        prometheus:
-          enabled: true
+          include: health
 
 custom:
   jwt:
