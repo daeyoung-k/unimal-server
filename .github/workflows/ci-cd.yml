@@ -176,6 +176,12 @@ jobs:
         if: steps.check.outputs.changed == 'true'
         run: chmod +x gradlew
 
+      - name: Create Firebase config for notification module
+        if: steps.check.outputs.changed == 'true' && matrix.module == 'notification'
+        run: |
+          mkdir -p notification/src/main/resources/firebase
+          echo '${{ secrets.FIREBASE_ADMIN_SDK }}' > notification/src/main/resources/firebase/unimal-project-firebase-adminsdk.json
+
       - name: Build ${{ matrix.module }}
         if: steps.check.outputs.changed == 'true'
         run: |
