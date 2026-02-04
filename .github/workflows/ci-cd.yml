@@ -346,17 +346,11 @@ jobs:
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
             "docker pull ${{ matrix.image }}:${{ github.sha }}"
 
-      - name: Stop and remove old container
-        if: steps.check.outputs.changed == 'true'
-        run: |
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "cd ${{ secrets.SERVER_PATH }} && docker-compose rm -sf ${{ matrix.service }}"
-
       - name: Deploy service with new image
         if: steps.check.outputs.changed == 'true'
         run: |
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "cd ${{ secrets.SERVER_PATH }} && export ${{ matrix.env_var }}=${{ github.sha }} && docker-compose up -d --no-deps ${{ matrix.service }}"
+            "cd ${{ secrets.SERVER_PATH }} && export ${{ matrix.env_var }}=${{ github.sha }} && docker compose up -d --force-recreate --no-deps ${{ matrix.service }}"
 
       - name: Wait for service to be ready
         if: steps.check.outputs.changed == 'true'
