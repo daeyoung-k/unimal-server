@@ -32,7 +32,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
+    url: jdbc:postgresql://${DATABASE_DOCKER_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     dbcp2:
@@ -40,7 +40,7 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: ${REDIS_DOCKER_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
 
@@ -70,7 +70,7 @@ spring:
             user-name-attribute: id
 
   kafka:
-    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
+    bootstrap-servers: ${KAFKA_SERVER_DOCKER_1},${KAFKA_SERVER_DOCKER_2},${KAFKA_SERVER_DOCKER_3}
     consumer:
       group-id: unimal-user-group
       auto-offset-reset: latest
@@ -83,6 +83,10 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        request.timeout.ms: 5000 # 요청 타임아웃 (기본: 30초)
+        max.block.ms: 5000 # 브로커가 응답하지 않으면 send()가 대기하는 최대 시간
+        retry.backoff.ms: 1000 # 재시도 간격
     listener:
       missing-topics-fatal: false
 
@@ -106,5 +110,5 @@ management:
 grpc:
   client:
     notification-grpc:
-      address: static://${NOTIFICATION_SERVICE_URI}:50085
+      address: static://${NOTIFICATION_SERVICE_DOCKER_URI}:${NOTIFICATION_SERVICE_GRPC_PORT}
       negotiation-type: plaintext
