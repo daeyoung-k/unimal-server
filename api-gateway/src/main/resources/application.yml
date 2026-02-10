@@ -57,19 +57,19 @@ custom:
     secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}
   route:
     user:
-      uri: ${USER_SERVICE_URI}
+      uri: http://${USER_SERVICE_URI}
       port: ${USER_SERVICE_PORT}
     map:
-      uri: ${MAP_SERVICE_URI}
+      uri: http://${MAP_SERVICE_URI}
       port: ${MAP_SERVICE_PORT}
     board:
-      uri: ${BOARD_SERVICE_URI}
+      uri: http://${BOARD_SERVICE_URI}
       port: ${BOARD_SERVICE_PORT}
     photo:
-      uri: ${PHOTO_SERVICE_URI}
+      uri: http://${PHOTO_SERVICE_URI}
       port: ${PHOTO_SERVICE_PORT}
     notification:
-      uri: ${NOTIFICATION_SERVICE_URI}
+      uri: http://${NOTIFICATION_SERVICE_URI}
       port: ${NOTIFICATION_SERVICE_PORT}
 
 
