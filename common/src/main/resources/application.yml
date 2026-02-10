@@ -5,7 +5,3 @@ spring:
 hashids:
   salt: ${HASHIDS_SALT}
   min-length: ${HASHIDS_MIN_LENGTH}
-
-# test1
-# test2
-# test3

@@ -1,22 +1,10 @@
 services:
-  nginx:
-    image: nginx:alpine
-    container_name: unimal-nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - api-gateway-server
-    networks:
-      - backend-network
-    restart: always
 
   api-gateway-server:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
-    image: eodud4976/unimal-apigateway
+    image: eodud4976/unimal-apigateway:latest
     platform: linux/amd64
     ports:
       - "8080:8080"
@@ -25,7 +13,6 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
     networks:
       - backend-network
     healthcheck:
@@ -39,7 +26,7 @@ services:
     build:
       context: ./user
       dockerfile: Dockerfile
-    image: eodud4976/unimal-user
+    image: eodud4976/unimal-user:latest
     platform: linux/amd64
     depends_on:
       api-gateway-server:
@@ -52,7 +39,6 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
     networks:
       - backend-network
     healthcheck:
@@ -66,7 +52,7 @@ services:
     build:
       context: ./map
       dockerfile: Dockerfile
-    image: eodud4976/unimal-map
+    image: eodud4976/unimal-map:latest
     platform: linux/amd64
     depends_on:
       api-gateway-server:
@@ -79,7 +65,6 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
     networks:
       - backend-network
     healthcheck:
@@ -93,7 +78,7 @@ services:
     build:
       context: ./board
       dockerfile: Dockerfile
-    image: eodud4976/unimal-board
+    image: eodud4976/unimal-board:latest
     platform: linux/amd64
     depends_on:
       api-gateway-server:
@@ -106,7 +91,6 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
     networks:
       - backend-network
     healthcheck:
@@ -120,7 +104,7 @@ services:
     build:
       context: ./photo
       dockerfile: Dockerfile
-    image: eodud4976/unimal-photo
+    image: eodud4976/unimal-photo:latest
     platform: linux/amd64
     ports:
       - "8084:8084"
@@ -130,7 +114,6 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
     networks:
       - backend-network
     healthcheck:
@@ -144,7 +127,7 @@ services:
     build:
       context: ./notification
       dockerfile: Dockerfile
-    image: eodud4976/unimal-notification
+    image: eodud4976/unimal-notification:latest
     platform: linux/amd64
     ports:
       - "8085:8085"
@@ -154,7 +137,6 @@ services:
       - .env
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      DATABASE_HOST: postgis-db
     networks:
       - backend-network
     healthcheck:
