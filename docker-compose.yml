@@ -14,6 +14,7 @@ services:
 
   api-gateway-server:
     image: eodud4976/unimal-apigateway:${API_GATEWAY_TAG:-latest}
+    pull_policy: always
     ports:
       - "127.0.0.1:8080:8080"
     restart: always
@@ -28,6 +29,7 @@ services:
 
   user-server:
     image: eodud4976/unimal-user:${USER_TAG:-latest}
+    pull_policy: always
     depends_on:
       api-gateway-server:
         condition: service_started
@@ -46,6 +48,7 @@ services:
 
   map-server:
     image: eodud4976/unimal-map:${MAP_TAG:-latest}
+    pull_policy: always
     depends_on:
       api-gateway-server:
         condition: service_started
@@ -64,6 +67,7 @@ services:
 
   board-server:
     image: eodud4976/unimal-board:${BOARD_TAG:-latest}
+    pull_policy: always
     depends_on:
       api-gateway-server:
         condition: service_started
@@ -82,6 +86,7 @@ services:
 
   photo-server:
     image: eodud4976/unimal-photo:${PHOTO_TAG:-latest}
+    pull_policy: always
     ports:
       - "127.0.0.1:8084:8084"
       - "127.0.0.1:50084:50084"
@@ -97,6 +102,7 @@ services:
 
   notification-server:
     image: eodud4976/unimal-notification:${NOTIFICATION_TAG:-latest}
+    pull_policy: always
     ports:
       - "127.0.0.1:8085:8085"
       - "127.0.0.1:50085:50085"
