@@ -1,6 +1,9 @@
 name: CI/CD Pipeline
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
@@ -198,12 +201,14 @@ jobs:
     needs: [detect-changes, build]
     runs-on: ubuntu-latest
     if: |
-      needs.detect-changes.outputs.api-gateway == 'true' ||
-      needs.detect-changes.outputs.user == 'true' ||
-      needs.detect-changes.outputs.map == 'true' ||
-      needs.detect-changes.outputs.board == 'true' ||
-      needs.detect-changes.outputs.photo == 'true' ||
-      needs.detect-changes.outputs.notification == 'true'
+      github.event_name == 'push' && (
+        needs.detect-changes.outputs.api-gateway == 'true' ||
+        needs.detect-changes.outputs.user == 'true' ||
+        needs.detect-changes.outputs.map == 'true' ||
+        needs.detect-changes.outputs.board == 'true' ||
+        needs.detect-changes.outputs.photo == 'true' ||
+        needs.detect-changes.outputs.notification == 'true'
+      )
     strategy:
       matrix:
         module:
