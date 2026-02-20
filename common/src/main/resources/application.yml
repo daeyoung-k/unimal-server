@@ -5,3 +5,5 @@ spring:
 hashids:
   salt: ${HASHIDS_SALT}
   min-length: ${HASHIDS_MIN_LENGTH}
+
+# 모두 재배포

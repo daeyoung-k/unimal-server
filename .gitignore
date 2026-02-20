@@ -48,3 +48,5 @@ out/
 ### Custom ###
 .env*
 docker/
+.claude
+*local.yml
