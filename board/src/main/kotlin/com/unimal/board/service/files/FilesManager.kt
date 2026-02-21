@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @Component
 class FilesManager(
-    @Value("\${etc.base-url}")
+    @Value("\${etc.base-url.photo}")
     private val baseUrl: String,
     @Value("\${etc.files.base-url}")
     private val fileBaseUrl: String,
