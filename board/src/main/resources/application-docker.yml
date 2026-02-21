@@ -86,6 +86,7 @@ grpc:
 
 
 etc:
-  base-url: https://${BASE_SERVICE_DOCKER_URI}
+  base-url:
+    photo: http://${PHOTO_SERVICE_DOCKER_URI}:${PHOTO_SERVICE_PORT}
   files:
     base-url: ${AWS_CLOUDFRONT_DOMAIN}
