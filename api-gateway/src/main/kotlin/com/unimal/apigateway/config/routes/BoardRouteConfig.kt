@@ -44,7 +44,6 @@ class BoardRouteConfig(
             path(
                 "/board/post/list",
                 "/board/post/{boardId}",
-                "/board/post/{boardId}/like"
             )
                 .filters { f ->
                     f.filter(optionalAccessTokenFilter.apply(OptionalAccessTokenFilter.Config()))
@@ -55,7 +54,14 @@ class BoardRouteConfig(
         route("boardPostAccessTokenFilterRoutes") {
             path(
                 "/board/post",
-                "/board/post/{boardId}/like"
+                "/board/post/{boardId}/like",
+                "/board/post/{boardId}/delete",
+                "/board/post/{boardId}/update",
+                "/board/post/{boardId}/file/upload",
+                "/board/post/{boardId}/file/delete",
+                "/board/post/{boardId}/reply",
+                "/board/post/{boardId}/reply/{replyId}/update",
+                "/board/post/{boardId}/reply/{replyId}/delete",
             )
             .filters { f ->
                 f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))

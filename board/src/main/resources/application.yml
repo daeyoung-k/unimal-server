@@ -86,6 +86,7 @@ grpc:
 
 
 etc:
-  base-url: http://${BASE_URI}:${API_GATEWAY_SERVICE_PORT}
+  base-url:
+    photo: http://${BASE_URI}:${API_GATEWAY_SERVICE_PORT}
   files:
     base-url: ${AWS_CLOUDFRONT_DOMAIN}
