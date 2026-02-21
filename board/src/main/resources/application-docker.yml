@@ -86,6 +86,6 @@ grpc:
 
 
 etc:
-  base-url: http://${BASE_URI}:${API_GATEWAY_SERVICE_PORT}
+  base-url: https://${BASE_SERVICE_DOCKER_URI}
   files:
     base-url: ${AWS_CLOUDFRONT_DOMAIN}
