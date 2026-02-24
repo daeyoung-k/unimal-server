@@ -1,22 +1,35 @@
 package com.unimal.user.service.member
 
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.common.dto.kafka.UpdateUser
 import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternLocalDateTime
 import com.unimal.user.controller.request.ChangePasswordInterface
 import com.unimal.user.controller.request.EmailRequest
 import com.unimal.user.controller.request.InfoUpdateRequest
 import com.unimal.user.controller.request.TelRequest
+import com.unimal.user.domain.member.MemberRepository
+import com.unimal.user.kafka.topics.MemberKafkaTopic
+import com.unimal.user.service.file.FileService
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.dto.FindEmailInfo
 import com.unimal.user.service.member.dto.MemberInfo
 import com.unimal.webcommon.exception.*
 import jakarta.transaction.Transactional
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 class MemberService(
-    private val memberObject: MemberObject
+    private val memberObject: MemberObject,
+    private val fileService: FileService,
+    private val memberKafkaTopic: MemberKafkaTopic,
+
+    private val memberRepository: MemberRepository,
+
+    @Value("\${etc.files.base-url}")
+    private val fileBaseUrl: String,
 ) {
 
     fun getMemberInfo(
@@ -135,5 +148,31 @@ class MemberService(
         if (member != null) {
             throw DuplicatedException(ErrorCode.NICKNAME_USED.message)
         }
+    }
+
+    @Transactional
+    fun uploadProfileImage(
+        email: String,
+        image: MultipartFile
+    ) {
+        val member = memberRepository.findByEmail(email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+
+        val uploadFileInfo = fileService.uploadFileHttp(image, "profile")
+        val fileUrl = fileBaseUrl + "/" + uploadFileInfo.key
+
+        if (member.profileImage?.contains(fileBaseUrl) == true) {
+            val key = listOf(member.profileImage!!.replace("$fileBaseUrl/", ""))
+            fileService.deleteFileHttp(key)
+        }
+
+        member.updateProfileImage(fileUrl)
+        memberRepository.save(member)
+
+        memberKafkaTopic.userUpdateTopicIssue(
+            UpdateUser(
+                email = member.email,
+                profileImage = member.profileImage
+            )
+        )
     }
 }

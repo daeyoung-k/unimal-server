@@ -3,9 +3,8 @@ package com.unimal.common.dto.kafka
 import com.unimal.common.enums.UserStatus
 import java.time.LocalDateTime
 
-data class SignInUser(
+data class UpdateUser(
     val email: String,
-    val name: String? = null,
     val nickname: String? = null,
     val profileImage: String? = null,
     val withdrawalAt: LocalDateTime? = null,

@@ -83,12 +83,6 @@ class MemberObject(
 
     fun update(member: Member) = memberRepository.save(member)
 
-    fun withdrawal(member: Member) {
-        member.withdrawalAt = LocalDateTime.now()
-        member.tel = null
-        memberRepository.save(member)
-    }
-
     fun reSignIn(member: Member) {
         member.withdrawalAt = null
         memberRepository.save(member)
@@ -102,13 +96,10 @@ class MemberObject(
                 name = member.name,
                 nickname = member.nickname,
                 profileImage = member.profileImage,
-                withdrawalAt = member.withdrawalAt
+                withdrawalAt = member.withdrawalAt,
+                status = member.status
             )
         )
-    }
-
-    fun withdrawalTopicIssue(member: Member) {
-        memberKafkaTopic.withdrawalTopicIssue(member.email)
     }
 
     fun passwordFormatCheck(password: String): Boolean {

@@ -34,6 +34,7 @@ enum class ErrorCode(
     AUTHENTICATION_NOT_COMPLETED(message = "이메일 인증 또는 휴대폰 인증이 완료되지 않았습니다."),
     EXISTING_PASSWORD_NOT_CHANGE(message = "기존 비밀번호와 동일한 비밀번호로 변경할 수 없습니다."),
     FILE_UPLOAD_ERROR(message = "파일 업로드에 실패했습니다."),
+    FILE_ERROR(message = "파일 오류입니다."),
     MULTIFILE_UPLOAD_ERROR(message = "다중 파일 업로드에 실패했습니다."),
     BOARD_OWNER_NOT_MATCH(message = "게시판 작성자가 아닙니다."),
 

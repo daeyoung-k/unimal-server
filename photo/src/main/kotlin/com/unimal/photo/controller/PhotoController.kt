@@ -2,6 +2,7 @@ package com.unimal.photo.controller
 
 import com.unimal.common.dto.CommonResponse
 import com.unimal.photo.controller.request.DeleteRequest
+import com.unimal.photo.controller.request.UploadRequest
 import com.unimal.photo.service.S3Service
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -13,9 +14,9 @@ class PhotoController(
 
     @PostMapping("/upload", consumes = ["multipart/form-data"])
     fun upload(
-        @RequestBody file: MultipartFile
+        @ModelAttribute uploadRequest: UploadRequest
     ): CommonResponse {
-        return CommonResponse(data = s3Service.uploadFile(file))
+        return CommonResponse(data = s3Service.uploadFile(uploadRequest.file, uploadRequest.folder))
     }
 
     @PostMapping("/multiple-upload", consumes = ["multipart/form-data"])

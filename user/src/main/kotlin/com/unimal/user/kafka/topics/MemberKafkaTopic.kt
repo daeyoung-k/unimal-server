@@ -1,6 +1,7 @@
 package com.unimal.user.kafka.topics
 
 import com.unimal.common.dto.kafka.SignInUser
+import com.unimal.common.dto.kafka.UpdateUser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service
 @Service
 class MemberKafkaTopic(
     private val kafkaUserTemplate: KafkaTemplate<String, SignInUser>,
+    private val kafkaUserUpdateTemplate: KafkaTemplate<String, UpdateUser>,
     private val kafkaStringTemplate: KafkaTemplate<String, String>
 ) {
     val logger = KotlinLogging.logger {}
@@ -16,16 +18,15 @@ class MemberKafkaTopic(
         try {
             kafkaUserTemplate.send("user.signInTopic", signInUser)
         } catch (e: Exception) {
-            logger.error { "회원가입 토픽 발행 오류 : ${e.message}" }
+            logger.error(e) { "회원가입 토픽 발행 오류 : ${e.message}" }
         }
     }
 
-    fun withdrawalTopicIssue(email: String) {
+    fun userUpdateTopicIssue(updateUser: UpdateUser) {
         try {
-            kafkaStringTemplate.send("user.withdrawalTopic", email)
+            kafkaUserUpdateTemplate.send("user.userUpdateTopic", updateUser)
         } catch (e: Exception) {
-            logger.error { "회원 탈퇴 토픽 발행 오류 : ${e.message}" }
-            logger.error { "회원 탈퇴 토픽 발행 오류 : $e" }
+            logger.error(e) { "회원 업데이트 토픽 발행 오류 : ${e.message}" }
         }
     }
 
@@ -33,7 +34,7 @@ class MemberKafkaTopic(
         try {
             kafkaStringTemplate.send("user.reSignInTopic", email)
         } catch (e: Exception) {
-            logger.error { "재가입 토픽 발행 오류 : ${e.message}" }
+            logger.error(e) { "재가입 토픽 발행 오류 : ${e.message}" }
         }
     }
 }
