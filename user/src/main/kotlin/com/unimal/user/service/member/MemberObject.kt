@@ -76,6 +76,7 @@ class MemberObject(
                 birthday = member.birthday?.toPatternString("yyyy-MM-dd HH:mm"),
                 gender = Gender.from(member.gender)?.name,
                 introduction = member.introduction,
+                profileImage = member.profileImage
             )
         } ?: throw LoginException(ErrorCode.USER_NOT_FOUND.message)
     }
