@@ -2,11 +2,14 @@ package com.unimal.user.service.login
 
 
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.common.dto.kafka.UpdateUser
 import com.unimal.user.controller.request.*
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException
 import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.domain.member.Member
+import com.unimal.user.domain.member.MemberRepository
+import com.unimal.user.kafka.topics.MemberKafkaTopic
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.token.TokenManager
 import com.unimal.user.service.token.dto.JwtTokenDTO
@@ -26,6 +29,9 @@ class LoginService(
     @Qualifier("ManualLoginObject") private val manualLoginObject: LoginInterface,
     private val tokenManager: TokenManager,
     private val memberObject: MemberObject,
+    private val memberKafkaTopic: MemberKafkaTopic,
+
+    private val memberRepository: MemberRepository,
 ) {
 
     @Transactional
@@ -128,9 +134,9 @@ class LoginService(
 
     @Transactional
     fun withdrawal(commonUserInfo: CommonUserInfo) {
-        val member = memberObject.getEmailProviderMember(
-            email = commonUserInfo.email,
-            provider = LoginType.from(commonUserInfo.provider)
+        val member = memberRepository.findByEmailAndProvider(
+            commonUserInfo.email,
+            LoginType.from(commonUserInfo.provider).name
         ) ?: throw UserNotFoundException(
             message = ErrorCode.USER_NOT_FOUND.message,
             code = HttpStatus.UNAUTHORIZED.value(),
@@ -139,7 +145,16 @@ class LoginService(
 
         tokenManager.deleteCacheToken(member.email)
         tokenManager.deleteDbToken(member.email)
-        memberObject.withdrawal(member)
-        memberObject.withdrawalTopicIssue(member)
+
+        member.withdrawal()
+        memberRepository.save(member)
+
+        memberKafkaTopic.userUpdateTopicIssue(
+            UpdateUser(
+                email = member.email,
+                withdrawalAt = member.withdrawalAt,
+                status = member.status
+            )
+        )
     }
 }

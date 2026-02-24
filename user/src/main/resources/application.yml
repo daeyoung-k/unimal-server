@@ -106,6 +106,12 @@ custom:
   auth:
     master-code: ${AUTH_MASTER_CODE}
 
+etc:
+  base-url:
+    photo: http://${BASE_URI}:${API_GATEWAY_SERVICE_PORT}
+  files:
+    base-url: ${AWS_CLOUDFRONT_DOMAIN}
+
 
 grpc:
   client:

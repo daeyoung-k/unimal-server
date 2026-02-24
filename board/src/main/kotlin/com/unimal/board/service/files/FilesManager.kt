@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.board.BoardFile
 import com.unimal.board.domain.board.BoardFileRepository
-import com.unimal.board.service.files.dto.UploadFileResult
+import com.unimal.common.dto.file.UploadFileResult
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.FileException
 import io.github.oshai.kotlinlogging.KotlinLogging

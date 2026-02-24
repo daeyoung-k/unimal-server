@@ -1,8 +1,8 @@
 package com.unimal.photo.service.s3
 
+import com.unimal.common.dto.file.UploadFileResult
 import com.unimal.photo.service.s3.dto.FileType
 import com.unimal.photo.service.s3.dto.MultipleFiles
-import com.unimal.photo.service.s3.dto.UploadFileResult
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile

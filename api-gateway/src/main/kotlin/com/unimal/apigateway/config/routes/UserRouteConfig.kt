@@ -80,6 +80,7 @@ class UserRouteConfig(
                 "/user/member/info/**",
                 "/user/member/change/password",
                 "/user/member/device/info/update",
+                "/user/member/profile/image/upload",
             )
             .filters { f ->
                 f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))
