@@ -76,17 +76,12 @@ class MemberObject(
                 birthday = member.birthday?.toPatternString("yyyy-MM-dd HH:mm"),
                 gender = Gender.from(member.gender)?.name,
                 introduction = member.introduction,
+                profileImage = member.profileImage
             )
         } ?: throw LoginException(ErrorCode.USER_NOT_FOUND.message)
     }
 
     fun update(member: Member) = memberRepository.save(member)
-
-    fun withdrawal(member: Member) {
-        member.withdrawalAt = LocalDateTime.now()
-        member.tel = null
-        memberRepository.save(member)
-    }
 
     fun reSignIn(member: Member) {
         member.withdrawalAt = null
@@ -101,13 +96,10 @@ class MemberObject(
                 name = member.name,
                 nickname = member.nickname,
                 profileImage = member.profileImage,
-                withdrawalAt = member.withdrawalAt
+                withdrawalAt = member.withdrawalAt,
+                status = member.status
             )
         )
-    }
-
-    fun withdrawalTopicIssue(member: Member) {
-        memberKafkaTopic.withdrawalTopicIssue(member.email)
     }
 
     fun passwordFormatCheck(password: String): Boolean {

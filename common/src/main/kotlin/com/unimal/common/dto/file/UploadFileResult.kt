@@ -1,4 +1,4 @@
-package com.unimal.board.service.files.dto
+package com.unimal.common.dto.file
 
 data class UploadFileResult(
     val originalFilename: String,

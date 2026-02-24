@@ -1,9 +1,9 @@
 package com.unimal.photo.service
 
+import com.unimal.common.dto.file.UploadFileResult
 import com.unimal.photo.service.s3.S3Manager
 import com.unimal.photo.service.s3.UploadType
 import com.unimal.photo.service.s3.dto.MultipleFiles
-import com.unimal.photo.service.s3.dto.UploadFileResult
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
@@ -15,14 +15,18 @@ class S3Service(
     private val s3Manager: S3Manager,
 ) {
 
-    fun uploadFile(file: MultipartFile): UploadFileResult {
+    fun uploadFile(
+        file: MultipartFile,
+        folder: String? = null,
+    ): UploadFileResult {
         val originalFilename = file.originalFilename ?: "unnamed"
         val encodedFilename = s3Manager.base64EncodeAndUUIDString(originalFilename)
 
         val getType = s3Manager.getFileType(file.contentType ?: "etc/unknown")
         val fileType = UploadType.from(getType.type)
 
-        val key = fileType.path + encodedFilename + "." + getType.subType
+        val folderPath = if (folder.isNullOrBlank()) "" else "$folder/"
+        val key = fileType.path + folderPath + encodedFilename + "." + getType.subType
         s3Manager.uploadFile(key, file)
 
         return UploadFileResult(
