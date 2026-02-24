@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 
 @RestController
@@ -112,6 +113,15 @@ class MemberController(
         @RequestBody @Valid memberDeviceInfo: MemberDeviceInfo
     ): CommonResponse {
         memberDeviceService.saveOrUpdate(commonUserInfo.email, memberDeviceInfo)
+        return CommonResponse()
+    }
+
+    @PostMapping("/profile/image/upload", consumes = ["multipart/form-data"])
+    fun uploadProfileImage(
+        @UserInfoAnnotation commonUserInfo: CommonUserInfo,
+        @RequestParam("image") image: MultipartFile,
+    ): CommonResponse {
+        memberService.uploadProfileImage(commonUserInfo.email, image)
         return CommonResponse()
     }
 
