@@ -166,7 +166,6 @@ class MemberService(
         }
 
         member.updateProfileImage(fileUrl)
-        memberRepository.save(member)
 
         memberKafkaTopic.userUpdateTopicIssue(
             UpdateUser(
