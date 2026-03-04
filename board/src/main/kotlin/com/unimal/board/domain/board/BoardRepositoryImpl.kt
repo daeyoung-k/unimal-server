@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import com.unimal.board.controller.enums.PostSortType
 import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.domain.board.like.QBoardLike
+import com.unimal.board.domain.board.reply.QBoardReply
 import com.unimal.board.enums.PostShow
 import org.springframework.stereotype.Repository
 
@@ -19,6 +20,7 @@ class BoardRepositoryImpl(
     private val board = QBoard.board
     private val boardLike = QBoardLike.boardLike
     private val boardFile = QBoardFile.boardFile
+    private val boardReply = QBoardReply.boardReply
 
     fun boardConditionList(
         postListRequest: PostListRequest
@@ -57,9 +59,9 @@ class BoardRepositoryImpl(
                 OrderSpecifier(
                     Order.DESC,
                     JPAExpressions
-                        .select(boardLike.count())
-                        .from(boardLike)
-                        .where(boardLike.board.eq(board))
+                        .select(boardReply.count())
+                        .from(boardReply)
+                        .where(boardReply.board.eq(board))
                 )
             }
             else -> board.createdAt.desc()
