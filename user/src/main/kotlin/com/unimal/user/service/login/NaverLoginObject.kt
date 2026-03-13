@@ -4,6 +4,7 @@ import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException
 import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.domain.member.Member
+import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.MemberObject
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Component
 
 @Component("NaverLoginObject")
 class NaverLoginObject(
-    private val memberObject: MemberObject
+    private val memberObject: MemberObject,
+    private val memberRepository: MemberRepository,
 ): LoginInterface {
     override fun provider(): LoginType = LoginType.NAVER
     override fun <T> getUserInfo(info: T): UserInfo {
@@ -23,7 +25,7 @@ class NaverLoginObject(
     }
 
     override fun getMember(userInfo: UserInfo): Member {
-        return memberObject.getEmailMember(userInfo.email) ?: memberObject.signIn(userInfo)
+        return memberRepository.findByEmail(userInfo.email) ?: memberObject.signIn(userInfo)
     }
 
 }

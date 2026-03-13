@@ -67,7 +67,8 @@ class LoginService(
 
         // 재가입
         if (member.withdrawalAt != null) {
-            memberObject.reSignIn(member)
+            member.reSignIn()
+            memberKafkaTopic.reSignInTopicIssue(member.email)
         }
 
         val roles = member.roles.map { it.roleName.name }
@@ -76,15 +77,8 @@ class LoginService(
 
     @Transactional
     fun signup(signupRequest: SignupRequest) {
-        val checkEmail = memberObject.getEmailMember(signupRequest.email)
-        if (checkEmail != null) {
-            throw DuplicatedException(ErrorCode.EMAIL_USED.message)
-        }
-
-        val checkTel = memberObject.getTelMember(signupRequest.tel)
-        if (checkTel != null) {
-            throw DuplicatedException(ErrorCode.TEL_USED.message)
-        }
+        memberRepository.findByEmail(signupRequest.email)?.let { throw DuplicatedException(ErrorCode.EMAIL_USED.message) }
+        memberRepository.findByTel(signupRequest.tel)?.let { throw DuplicatedException(ErrorCode.TEL_USED.message) }
 
         if (signupRequest.password.lowercase() != signupRequest.checkPassword.lowercase()) {
             throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
@@ -105,9 +99,9 @@ class LoginService(
 
     @Transactional
     fun logout(commonUserInfo: CommonUserInfo) {
-        val member = memberObject.getEmailProviderMember(
+        val member = memberRepository.findByEmailAndProvider(
             email = commonUserInfo.email,
-            provider = LoginType.from(commonUserInfo.provider)
+            provider = LoginType.from(commonUserInfo.provider).name
         ) ?: throw UserNotFoundException(
             message = ErrorCode.USER_NOT_FOUND.message,
             code = HttpStatus.UNAUTHORIZED.value(),
@@ -119,13 +113,11 @@ class LoginService(
 
     @Transactional
     fun telCheckUpdate(email: String, tel: String): JwtTokenDTO {
-        val checkTel = memberObject.getTelMember(tel)
-        if (checkTel != null) {
-            throw DuplicatedException(ErrorCode.TEL_USED.message)
-        }
-        val member = memberObject.getEmailMember(email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        memberRepository.findByTel(tel)?.let { throw DuplicatedException(ErrorCode.TEL_USED.message) }
+
+        val member = memberRepository.findByEmail(email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         member.updateMember(tel = tel)
-        val updateMember = memberObject.update(member)
+        val updateMember = memberRepository.save(member)
 
         val provider = LoginType.from(updateMember.provider)
         val roles = member.roles.map { it.roleName.name }
