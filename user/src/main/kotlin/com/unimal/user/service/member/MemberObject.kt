@@ -1,7 +1,6 @@
 package com.unimal.user.service.member
 
 import com.unimal.common.dto.kafka.SignInUser
-import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternString
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException
@@ -14,7 +13,6 @@ import com.unimal.user.domain.slang.SlangType
 import com.unimal.user.kafka.topics.MemberKafkaTopic
 import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
-import com.unimal.user.service.member.dto.MemberInfo
 import com.unimal.user.utils.RedisCacheManager
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
@@ -31,17 +29,6 @@ class MemberObject(
 ) {
     fun getEmailProviderMember(email: String, provider: LoginType) = memberRepository.findByEmailAndProvider(email, provider.name)
 
-    fun getEmailMember(email: String): Member? = memberRepository.findByEmail(email)
-
-    fun getTelMember(tel: String): Member? = memberRepository.findByTel(tel)
-
-    fun getNicknameMember(nickname: String): Member? = memberRepository.findByNickname(nickname)
-
-    fun passwordCheck(
-        password: String,
-        encodePassword: String
-    ): Boolean = passwordEncoder.matches(password, encodePassword)
-
     fun signIn(userInfo: UserInfo): Member {
 
         if (!userInfo.nickname.isNullOrBlank()) {
@@ -53,43 +40,6 @@ class MemberObject(
             ?: throw LoginException(ErrorCode.ROLE_NOT_FOUND.message)
         memberRoleRepository.save(member.getMemberRole(role))
         // 회원가입 토픽 발행
-        signInTopicIssue(member)
-        return member
-    }
-
-    fun signInNicknameCheck(nickname: String): String {
-        // 비속어 체크
-        if (nicknameSlangCheck(nickname)) return createUnimalNickname()
-        // 중복 닉네임 체크
-        if (getNicknameMember(nickname) != null) return createUnimalNickname()
-        return nickname
-    }
-
-    fun getMemberInfo(email: String, provider: LoginType): MemberInfo {
-        return getEmailProviderMember(email, provider)?.let { member ->
-            MemberInfo(
-                email = member.email,
-                provider = provider.name,
-                nickname = member.nickname,
-                name = member.name,
-                tel = member.tel,
-                birthday = member.birthday?.toPatternString("yyyy-MM-dd HH:mm"),
-                gender = Gender.from(member.gender)?.name,
-                introduction = member.introduction,
-                profileImage = member.profileImage
-            )
-        } ?: throw LoginException(ErrorCode.USER_NOT_FOUND.message)
-    }
-
-    fun update(member: Member) = memberRepository.save(member)
-
-    fun reSignIn(member: Member) {
-        member.withdrawalAt = null
-        memberRepository.save(member)
-        memberKafkaTopic.reSignInTopicIssue(member.email)
-    }
-
-    fun signInTopicIssue(member: Member) {
         memberKafkaTopic.signInTopicIssue(
             SignInUser(
                 email = member.email,
@@ -100,7 +50,13 @@ class MemberObject(
                 status = member.status
             )
         )
+        return member
     }
+
+    fun passwordCheck(
+        password: String,
+        encodePassword: String
+    ): Boolean = passwordEncoder.matches(password, encodePassword)
 
     fun passwordFormatCheck(password: String): Boolean {
         // 비밀번호는 8자 ~ 20자 사이, 영문, 숫자, 특수문자를 포함.
@@ -112,15 +68,20 @@ class MemberObject(
         return passwordEncoder.encode(password.lowercase())
     }
 
+    fun signInNicknameCheck(nickname: String): String {
+        val timestamp = LocalDateTime.now().toPatternString("yyyyMMddHHmmss")
+        val unimalNickname = "UNIMAL_$timestamp"
+        // 비속어 체크
+        if (nicknameSlangCheck(nickname)) return unimalNickname
+        // 중복 닉네임 체크
+        memberRepository.findByNickname(nickname)?.let { return unimalNickname }
+        return nickname
+    }
+
     fun nicknameSlangCheck(nickname: String): Boolean {
         val cacheProfanity = redisCacheManager.getStringCacheSet(SlangType.PROFANITY.name)
         val hasSlang = cacheProfanity.any { slang -> nickname.contains(slang) }
         return hasSlang
-    }
-
-    fun createUnimalNickname(): String {
-        val timestamp = LocalDateTime.now().toPatternString("yyyyMMddHHmmss")
-        return "UNIMAL_$timestamp"
     }
 
 }

@@ -122,37 +122,5 @@ class MemberObjectTest {
     }
 
 
-    @Test
-    fun `getMemberInfo - 존재하는 유저 정보를 가져온다`() {
-        // Given
-        val member = Member(
-            email = TEST_EMAIL,
-            provider = TEST_PROVIDER.name,
-        )
-        val memberInfo = MemberInfo(
-            email = TEST_EMAIL,
-            provider = TEST_PROVIDER.name
-        )
-
-        every { memberObject.getEmailProviderMember(TEST_EMAIL, TEST_PROVIDER) } returns member
-
-        //When
-        val result = memberObject.getMemberInfo(TEST_EMAIL, TEST_PROVIDER)
-
-        //Then
-        assertNotNull(result)
-        assertEquals(memberInfo, result)
-        assertEquals(TEST_EMAIL, result.email)
-    }
-
-    @Test
-    fun `getMemberInfo - 존재하지 않는 유저를 반환하여 예외를 발생한다`() {
-        //Given
-        every { memberObject.getEmailProviderMember(TEST_EMAIL, TEST_PROVIDER) } returns null
-
-        //When //Then
-        assertThrows(LoginException::class.java) {memberObject.getMemberInfo(TEST_EMAIL, TEST_PROVIDER)}
-    }
-
 
 }
