@@ -27,4 +27,20 @@ class LikeManager(
         redisCacheManager.setAnyCache(key, count)
         return redisCacheManager.getCache(key)!!.toLong()
     }
+
+    fun getUserTotalLikeCount(
+        email: String
+    ): Long? {
+        val key = "user:$email:likeCount"
+        return redisCacheManager.getCache(key)?.toLong()
+    }
+
+    fun saveUserTotalLikeCount(
+        email: String,
+        count: Long
+    ): Long {
+        val key = "user:$email:likeCount"
+        redisCacheManager.setAnyCache(key, count)
+        return redisCacheManager.getCache(key)!!.toLong()
+    }
 }
