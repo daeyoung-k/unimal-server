@@ -5,6 +5,8 @@ import com.unimal.board.controller.request.post.PostUpdateRequest
 import com.unimal.board.controller.request.post.PostCreateRequest
 import com.unimal.board.controller.request.post.PostFileDeleteRequest
 import com.unimal.board.controller.request.post.PostListRequest
+import com.unimal.board.kafka.topics.dto.UserCountIssueType
+import com.unimal.board.service.post.PostCalculateService
 import com.unimal.board.service.post.PostService
 import com.unimal.common.annotation.user.OptionalUserInfoAnnotation
 import com.unimal.common.annotation.user.UserInfoAnnotation
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 class PostController(
     private val postService: PostService,
+    private val postCalculateService: PostCalculateService,
 ) {
 
     @GetMapping("/post/{boardId}")
@@ -123,4 +126,18 @@ class PostController(
         return CommonResponse(data = postService.replyDelete(userInfo, boardId, replyId))
     }
 
+
+    @GetMapping("/post/total/like")
+    fun totalLikeCount(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+    ): CommonResponse {
+        return CommonResponse(data = postCalculateService.getLikeTotalCount(userInfo.email))
+    }
+
+    @GetMapping("/post/total")
+    fun totalCount(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+    ): CommonResponse {
+        return CommonResponse(data = postCalculateService.getPostTotalCount(userInfo.email))
+    }
 }

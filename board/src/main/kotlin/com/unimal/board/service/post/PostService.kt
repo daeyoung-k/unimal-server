@@ -13,14 +13,17 @@ import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.domain.board.like.BoardLikeRepository
 import com.unimal.board.domain.board.reply.BoardReply
 import com.unimal.board.domain.board.reply.toDto
+import com.unimal.board.domain.member.BoardMemberRepository
 import com.unimal.board.grpc.file.FileDeleteGrpcService
+import com.unimal.board.kafka.topics.PostKafkaTopic
+import com.unimal.board.kafka.topics.dto.UserCountIssueType
 import com.unimal.board.service.files.FilesManager
-import com.unimal.board.service.member.MemberManager
 import com.unimal.board.service.post.dto.BoardFileInfo
 import com.unimal.board.service.post.dto.BoardId
 import com.unimal.board.service.post.dto.LikeResponse
 import com.unimal.board.service.post.dto.PostInfo
 import com.unimal.board.service.post.dto.Reply
+import com.unimal.board.service.post.enums.UserCountCalculateType
 import com.unimal.board.service.post.manager.LikeManager
 import com.unimal.board.service.post.manager.PostManager
 import com.unimal.board.service.post.manager.ReplyManager
@@ -39,12 +42,13 @@ class PostService(
     private val boardRepository: BoardRepository,
     private val boardLikeRepository: BoardLikeRepository,
     private val boardFileRepository: BoardFileRepository,
+    private val boardMemberRepository: BoardMemberRepository,
 
     private val filesManager: FilesManager,
     private val postManager: PostManager,
     private val likeManager: LikeManager,
-    private val memberManager: MemberManager,
     private val replyManager: ReplyManager,
+    private val postKafkaTopic: PostKafkaTopic,
 
     private val hashidsUtil: HashidsUtil,
     private val fileDeleteGrpcService: FileDeleteGrpcService,
@@ -60,7 +64,7 @@ class PostService(
         files: List<MultipartFile>?
     ): BoardId {
 
-        val user = memberManager.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        val user = boardMemberRepository.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         val location = postManager.createLocationPointInfo(postCreateRequest.longitude, postCreateRequest.latitude)
         val board = boardRepository.save(postCreateRequest.toBoardCreateDto(user, location))
 
@@ -68,6 +72,14 @@ class PostService(
         if (files?.isNotEmpty() == true) filesManager.uploadFile(board, files)
 
         postManager.createCachePostLikeAndReplyCount(board.id!!.toString())
+
+        // 유저 게시물 총 수 계산 이벤트 발행
+        postKafkaTopic.postCountCalculateEvent(
+            UserCountIssueType(
+                email = userInfo.email,
+                type = UserCountCalculateType.INCREMENT
+            )
+        )
 
         return BoardId(boardId = hashidsUtil.encode(board.id!!))
     }
@@ -193,6 +205,15 @@ class PostService(
             val count = boardLikeRepository.countByBoard(board)
             val likeCount = likeManager.saveCachePostLikeGetCount(board = board, count = count)
 
+            // 유저 좋아요 총 수 계산 이벤트 발행
+            val calculateType = if (isLiked) UserCountCalculateType.INCREMENT else UserCountCalculateType.DECREMENT
+            postKafkaTopic.likeCountCalculateEvent(
+                UserCountIssueType(
+                    email = userInfo.email,
+                    type = calculateType
+                )
+            )
+
             return LikeResponse(
                 isLiked = isLiked,
                 likeCount = likeCount
@@ -245,6 +266,14 @@ class PostService(
         if (userInfo.email.trim() == board.email.email.trim()) {
             board.del = true
             board.updatedAt = LocalDateTime.now()
+
+            // 유저 게시물 총 수 계산 이벤트 발행
+            postKafkaTopic.postCountCalculateEvent(
+                UserCountIssueType(
+                    email = userInfo.email,
+                    type = UserCountCalculateType.DECREMENT
+                )
+            )
         } else {
             throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
         }
