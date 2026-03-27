@@ -179,7 +179,7 @@ class PostService(
         userInfo: CommonUserInfo,
         myPostListRequest: MyPostListRequest
     ): List<PostInfo> {
-        val boardList = boardRepositoryImpl.boardMyConditionList(myPostListRequest)
+        val boardList = boardRepositoryImpl.boardMyConditionList(userInfo.email, myPostListRequest)
         if (boardList.isEmpty()) return emptyList()
 
         // N+1 방지

@@ -84,9 +84,12 @@ class BoardRepositoryImpl(
     }
 
     fun boardMyConditionList(
+        email: String,
         myPostListRequest: MyPostListRequest
     ): List<Board> {
-        val conditions = mutableListOf<BooleanExpression>()
+        val conditions = mutableListOf<BooleanExpression>(
+            board.email.email.eq(email),
+        )
 
         // 검색어
         myPostListRequest.keyword?.let {
