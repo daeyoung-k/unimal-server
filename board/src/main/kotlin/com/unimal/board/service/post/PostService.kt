@@ -1,5 +1,6 @@
 package com.unimal.board.service.post
 
+import com.unimal.board.controller.request.post.MyPostListRequest
 import com.unimal.board.controller.request.post.PostUpdateRequest
 import com.unimal.board.controller.request.post.PostCreateRequest
 import com.unimal.board.controller.request.post.PostFileDeleteRequest
@@ -141,6 +142,52 @@ class PostService(
         val likeList = boardLikeRepository.findBoardLikeByBoardList(boardList)
 
         val ownerEmail = optionalUserInfo?.email ?: ""
+
+        return boardList.map { board ->
+            val boardMember = board.email
+            val fileInfoList = boardFiles.mapNotNull {
+                if (it.board == board) {
+                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+                } else null
+            }
+            val isLike = likeList.any { it.board == board && it.email == ownerEmail }
+
+            val isOwner = boardMember.email == ownerEmail
+            val encryptBoardId = hashidsUtil.encode(board.id!!)
+            PostInfo(
+                boardId = encryptBoardId,
+                email = boardMember.email,
+                profileImage = boardMember.profileImage,
+                nickname = boardMember.nickname ?: "",
+                title = board.title ?: "",
+                content = board.content,
+                streetName = board.streetName!!,
+                show = board.show,
+                mapShow = board.mapShow,
+                createdAt = board.createdAt,
+                fileInfoList = fileInfoList,
+                likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
+                replyCount = replyManager.getCachePostReplyCount(board.id!!.toString()),
+                reply = emptyList(), // 리스트에선 댓글 목록을 조회하지 않는다.
+                isLike = isLike,
+                isOwner = isOwner
+            )
+        }
+    }
+
+    fun getMyPostList(
+        userInfo: CommonUserInfo,
+        myPostListRequest: MyPostListRequest
+    ): List<PostInfo> {
+        val boardList = boardRepositoryImpl.boardMyConditionList(myPostListRequest)
+        if (boardList.isEmpty()) return emptyList()
+
+        // N+1 방지
+        val idList = boardList.map { it.id!! }
+        val boardFiles = boardRepositoryImpl.boardFileList(idList)
+        val likeList = boardLikeRepository.findBoardLikeByBoardList(boardList)
+
+        val ownerEmail = userInfo?.email ?: ""
 
         return boardList.map { board ->
             val boardMember = board.email

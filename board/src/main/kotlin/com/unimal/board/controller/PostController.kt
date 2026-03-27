@@ -1,5 +1,6 @@
 package com.unimal.board.controller
 
+import com.unimal.board.controller.request.post.MyPostListRequest
 import com.unimal.board.controller.request.post.PostReplyRequest
 import com.unimal.board.controller.request.post.PostUpdateRequest
 import com.unimal.board.controller.request.post.PostCreateRequest
@@ -36,6 +37,14 @@ class PostController(
         @ModelAttribute postListRequest: PostListRequest
     ): CommonResponse {
         return CommonResponse(data = postService.getPostList(optionalUserInfo, postListRequest))
+    }
+
+    @GetMapping("/post/my/list")
+    fun getMyPostList(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+        @ModelAttribute myPostListRequest: MyPostListRequest
+    ): CommonResponse {
+        return CommonResponse(data = postService.getMyPostList(userInfo, myPostListRequest))
     }
 
     @PostMapping("/post", consumes = ["multipart/form-data"])

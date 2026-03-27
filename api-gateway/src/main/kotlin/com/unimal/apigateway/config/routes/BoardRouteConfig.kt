@@ -56,6 +56,7 @@ class BoardRouteConfig(
                 "/board/post",
                 "/post/total",
                 "/post/total/like",
+                "/board/post/my/list",
                 "/board/post/{boardId}/like",
                 "/board/post/{boardId}/delete",
                 "/board/post/{boardId}/update",

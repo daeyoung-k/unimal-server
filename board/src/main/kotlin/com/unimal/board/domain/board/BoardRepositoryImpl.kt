@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import com.unimal.board.controller.enums.PostSortType
+import com.unimal.board.controller.request.post.MyPostListRequest
 import com.unimal.board.controller.request.post.PostListRequest
 import com.unimal.board.domain.board.like.QBoardLike
 import com.unimal.board.domain.board.reply.QBoardReply
@@ -77,6 +78,54 @@ class BoardRepositoryImpl(
             .orderBy(orderBy)
             .offset(postListRequest.pageable.offset)
             .limit(postListRequest.pageable.pageSize.toLong())
+            .fetch()
+
+        return boards ?: emptyList()
+    }
+
+    fun boardMyConditionList(
+        myPostListRequest: MyPostListRequest
+    ): List<Board> {
+        val conditions = mutableListOf<BooleanExpression>()
+
+        // 검색어
+        myPostListRequest.keyword?.let {
+            conditions += board.title.containsIgnoreCase(it).or( board.content.containsIgnoreCase(it) )
+        }
+
+        // 정렬 적용
+        val orderBy = when (myPostListRequest.sortType) {
+            PostSortType.LIKES -> {
+                OrderSpecifier(
+                    Order.DESC,
+                    JPAExpressions
+                        .select(boardLike.count())
+                        .from(boardLike)
+                        .where(boardLike.board.eq(board))
+                )
+            }
+            PostSortType.REPLYS -> {
+                OrderSpecifier(
+                    Order.DESC,
+                    JPAExpressions
+                        .select(boardReply.count())
+                        .from(boardReply)
+                        .where(boardReply.board.eq(board))
+                )
+            }
+            else -> board.createdAt.desc()
+        }
+
+        // 게시글 조회
+        val boards = queryFactory
+            .selectFrom(board)
+            .where(
+                board.del.eq(false),
+                *conditions.toTypedArray()
+            )
+            .orderBy(orderBy)
+            .offset(myPostListRequest.pageable.offset)
+            .limit(myPostListRequest.pageable.pageSize.toLong())
             .fetch()
 
         return boards ?: emptyList()
