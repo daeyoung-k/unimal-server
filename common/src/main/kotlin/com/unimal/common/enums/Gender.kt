@@ -1,8 +1,8 @@
 package com.unimal.common.enums
 
 enum class Gender {
-    WOMAN,
-    MAN;
+    MALE,
+    FEMALE;
 
     companion object {
         fun from(value: String?): Gender? {

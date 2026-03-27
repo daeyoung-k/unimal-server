@@ -17,4 +17,9 @@ interface BoardLikeRepository: JpaRepository<BoardLike, Long> {
         select bl from BoardLike bl where bl.board in :boardList
     """)
     fun findBoardLikeByBoardList(boardList: List<Board>): List<BoardLike>
+
+    @Query("""
+        select count(bl) from BoardLike bl left join Board b on bl.board = b where b.email.email = :email
+    """)
+    fun getUserTotalLikeCount(email: String): Long
 }

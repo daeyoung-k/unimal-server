@@ -1,5 +1,6 @@
 package com.unimal.board.service.post
 
+import com.unimal.board.controller.request.post.MyPostListRequest
 import com.unimal.board.controller.request.post.PostUpdateRequest
 import com.unimal.board.controller.request.post.PostCreateRequest
 import com.unimal.board.controller.request.post.PostFileDeleteRequest
@@ -13,14 +14,17 @@ import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.domain.board.like.BoardLikeRepository
 import com.unimal.board.domain.board.reply.BoardReply
 import com.unimal.board.domain.board.reply.toDto
+import com.unimal.board.domain.member.BoardMemberRepository
 import com.unimal.board.grpc.file.FileDeleteGrpcService
+import com.unimal.board.kafka.topics.PostKafkaTopic
+import com.unimal.board.kafka.topics.dto.UserCountIssueType
 import com.unimal.board.service.files.FilesManager
-import com.unimal.board.service.member.MemberManager
 import com.unimal.board.service.post.dto.BoardFileInfo
 import com.unimal.board.service.post.dto.BoardId
 import com.unimal.board.service.post.dto.LikeResponse
 import com.unimal.board.service.post.dto.PostInfo
 import com.unimal.board.service.post.dto.Reply
+import com.unimal.board.service.post.enums.UserCountCalculateType
 import com.unimal.board.service.post.manager.LikeManager
 import com.unimal.board.service.post.manager.PostManager
 import com.unimal.board.service.post.manager.ReplyManager
@@ -39,12 +43,13 @@ class PostService(
     private val boardRepository: BoardRepository,
     private val boardLikeRepository: BoardLikeRepository,
     private val boardFileRepository: BoardFileRepository,
+    private val boardMemberRepository: BoardMemberRepository,
 
     private val filesManager: FilesManager,
     private val postManager: PostManager,
     private val likeManager: LikeManager,
-    private val memberManager: MemberManager,
     private val replyManager: ReplyManager,
+    private val postKafkaTopic: PostKafkaTopic,
 
     private val hashidsUtil: HashidsUtil,
     private val fileDeleteGrpcService: FileDeleteGrpcService,
@@ -60,7 +65,7 @@ class PostService(
         files: List<MultipartFile>?
     ): BoardId {
 
-        val user = memberManager.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        val user = boardMemberRepository.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         val location = postManager.createLocationPointInfo(postCreateRequest.longitude, postCreateRequest.latitude)
         val board = boardRepository.save(postCreateRequest.toBoardCreateDto(user, location))
 
@@ -68,6 +73,14 @@ class PostService(
         if (files?.isNotEmpty() == true) filesManager.uploadFile(board, files)
 
         postManager.createCachePostLikeAndReplyCount(board.id!!.toString())
+
+        // 유저 게시물 총 수 계산 이벤트 발행
+        postKafkaTopic.postCountCalculateEvent(
+            UserCountIssueType(
+                email = userInfo.email,
+                type = UserCountCalculateType.INCREMENT
+            )
+        )
 
         return BoardId(boardId = hashidsUtil.encode(board.id!!))
     }
@@ -160,6 +173,52 @@ class PostService(
                 isOwner = isOwner
             )
         }
+    }
+
+    fun getMyPostList(
+        userInfo: CommonUserInfo,
+        myPostListRequest: MyPostListRequest
+    ): List<PostInfo> {
+        val boardList = boardRepositoryImpl.boardMyConditionList(myPostListRequest)
+        if (boardList.isEmpty()) return emptyList()
+
+        // N+1 방지
+        val idList = boardList.map { it.id!! }
+        val boardFiles = boardRepositoryImpl.boardFileList(idList)
+        val likeList = boardLikeRepository.findBoardLikeByBoardList(boardList)
+
+        val ownerEmail = userInfo?.email ?: ""
+
+        return boardList.map { board ->
+            val boardMember = board.email
+            val fileInfoList = boardFiles.mapNotNull {
+                if (it.board == board) {
+                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+                } else null
+            }
+            val isLike = likeList.any { it.board == board && it.email == ownerEmail }
+
+            val isOwner = boardMember.email == ownerEmail
+            val encryptBoardId = hashidsUtil.encode(board.id!!)
+            PostInfo(
+                boardId = encryptBoardId,
+                email = boardMember.email,
+                profileImage = boardMember.profileImage,
+                nickname = boardMember.nickname ?: "",
+                title = board.title ?: "",
+                content = board.content,
+                streetName = board.streetName!!,
+                show = board.show,
+                mapShow = board.mapShow,
+                createdAt = board.createdAt,
+                fileInfoList = fileInfoList,
+                likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
+                replyCount = replyManager.getCachePostReplyCount(board.id!!.toString()),
+                reply = emptyList(), // 리스트에선 댓글 목록을 조회하지 않는다.
+                isLike = isLike,
+                isOwner = isOwner
+            )
+        }
 
     }
 
@@ -192,6 +251,15 @@ class PostService(
             // 좋아요 캐시 업데이트
             val count = boardLikeRepository.countByBoard(board)
             val likeCount = likeManager.saveCachePostLikeGetCount(board = board, count = count)
+
+            // 유저 좋아요 총 수 계산 이벤트 발행
+            val calculateType = if (isLiked) UserCountCalculateType.INCREMENT else UserCountCalculateType.DECREMENT
+            postKafkaTopic.likeCountCalculateEvent(
+                UserCountIssueType(
+                    email = userInfo.email,
+                    type = calculateType
+                )
+            )
 
             return LikeResponse(
                 isLiked = isLiked,
@@ -245,6 +313,14 @@ class PostService(
         if (userInfo.email.trim() == board.email.email.trim()) {
             board.del = true
             board.updatedAt = LocalDateTime.now()
+
+            // 유저 게시물 총 수 계산 이벤트 발행
+            postKafkaTopic.postCountCalculateEvent(
+                UserCountIssueType(
+                    email = userInfo.email,
+                    type = UserCountCalculateType.DECREMENT
+                )
+            )
         } else {
             throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
         }

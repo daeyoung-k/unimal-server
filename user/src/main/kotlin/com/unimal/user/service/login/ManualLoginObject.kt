@@ -2,6 +2,7 @@ package com.unimal.user.service.login
 
 import com.unimal.user.controller.request.ManualLoginRequest
 import com.unimal.user.domain.member.Member
+import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.MemberObject
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Component
 @Component("ManualLoginObject")
 class ManualLoginObject(
     private val memberObject: MemberObject,
-    private val redisCacheManager: RedisCacheManager
+    private val redisCacheManager: RedisCacheManager,
+    private val memberRepository: MemberRepository,
 ): LoginInterface {
     override fun provider(): LoginType = LoginType.MANUAL
 
@@ -27,7 +29,7 @@ class ManualLoginObject(
     }
 
     override fun getMember(userInfo: UserInfo): Member {
-        val member =  memberObject.getEmailMember(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        val member =  memberRepository.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         val psCheck = memberObject.passwordCheck(userInfo.password!!, member.password!!)
         return if (psCheck) {
             member

@@ -36,4 +36,20 @@ class PostManager(
         userEmail: String,
         boardEmail: String
     ) = userEmail.trim().equals(boardEmail.trim(), ignoreCase = true)
+
+    fun getUserTotalPostCount(
+        email: String
+    ): Long? {
+        val key = "user:$email:postCount"
+        return redisCacheManager.getCache(key)?.toLong()
+    }
+
+    fun saveUserTotalPostCount(
+        email: String,
+        count: Long
+    ): Long {
+        val key = "user:$email:postCount"
+        redisCacheManager.setAnyCache(key, count)
+        return redisCacheManager.getCache(key)!!.toLong()
+    }
 }
