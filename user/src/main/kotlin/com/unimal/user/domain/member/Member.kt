@@ -103,4 +103,15 @@ open class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
+    fun reSignIn() {
+        this.status = UserStatus.ACTIVE
+        this.withdrawalAt = null
+        this.updatedAt = LocalDateTime.now()
+    }
+
+    fun passwordUpdate(password: String) {
+        this.password = password
+        this.updatedAt = LocalDateTime.now()
+    }
+
 }

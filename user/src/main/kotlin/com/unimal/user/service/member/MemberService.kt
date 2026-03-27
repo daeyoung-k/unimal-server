@@ -3,7 +3,9 @@ package com.unimal.user.service.member
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.dto.kafka.UpdateUser
 import com.unimal.common.enums.Gender
+import com.unimal.common.extension.toPatternLocalDate
 import com.unimal.common.extension.toPatternLocalDateTime
+import com.unimal.common.extension.toPatternString
 import com.unimal.user.controller.request.ChangePasswordInterface
 import com.unimal.user.controller.request.EmailRequest
 import com.unimal.user.controller.request.InfoUpdateRequest
@@ -35,7 +37,20 @@ class MemberService(
     fun getMemberInfo(
         commonUserInfo: CommonUserInfo
     ): MemberInfo {
-        return memberObject.getMemberInfo(commonUserInfo.email, LoginType.from(commonUserInfo.provider))
+        val provider = LoginType.from(commonUserInfo.provider)
+        return memberRepository.findByEmailAndProvider(commonUserInfo.email, provider.name)?.let { member ->
+            MemberInfo(
+                email = member.email,
+                provider = provider.name,
+                nickname = member.nickname,
+                name = member.name,
+                tel = member.tel,
+                birthday = member.birthday?.toPatternString("yyyy-MM-dd"),
+                gender = Gender.from(member.gender)?.name,
+                introduction = member.introduction,
+                profileImage = member.profileImage
+            )
+        } ?: throw LoginException(ErrorCode.USER_NOT_FOUND.message)
     }
 
     @Transactional
@@ -47,62 +62,48 @@ class MemberService(
 
         if (!infoUpdateRequest.name.isNullOrBlank() && infoUpdateRequest.name != member.name) {
             member.updateMember(name = infoUpdateRequest.name)
-            memberObject.update(member)
         }
 
         if (!infoUpdateRequest.nickname.isNullOrBlank() && infoUpdateRequest.nickname != member.nickname) {
             member.updateMember(nickname = infoUpdateRequest.nickname)
-            memberObject.update(member)
         }
 
         if (!infoUpdateRequest.tel.isNullOrBlank() && infoUpdateRequest.tel != member.tel) {
             member.updateMember(tel = infoUpdateRequest.tel)
-            memberObject.update(member)
         }
 
         if (!infoUpdateRequest.introduction.isNullOrBlank() && infoUpdateRequest.introduction != member.introduction) {
             member.updateMember(introduction = infoUpdateRequest.introduction)
-            memberObject.update(member)
         }
 
         if (!infoUpdateRequest.birthday.isNullOrBlank()) {
-            val birthday = infoUpdateRequest.birthday.toPatternLocalDateTime("yyyy-MM-dd HH:mm")
+            val birthday = infoUpdateRequest.birthday.toPatternLocalDate("yyyy-MM-dd").atStartOfDay()
             if (birthday != member.birthday) {
                 member.updateMember(birthday = birthday)
-                memberObject.update(member)
             }
         }
 
         if (!infoUpdateRequest.gender.isNullOrBlank()) {
             val gender = Gender.from(infoUpdateRequest.gender) ?: throw CustomException("잘못된 성별 정보입니다")
             if (gender.name != member.gender) {
-                member.updateMember(gender = infoUpdateRequest.nickname)
-                memberObject.update(member)
+                member.updateMember(gender = gender.name)
             }
         }
     }
 
     fun getDuplicatedEmailCheck(emailRequest: EmailRequest) {
-        val checkEmail = memberObject.getEmailMember(emailRequest.email)
-        if (checkEmail != null) {
-            throw DuplicatedException(ErrorCode.EMAIL_USED.message)
-        }
+        memberRepository.findByEmail(emailRequest.email)?.let { throw DuplicatedException(ErrorCode.EMAIL_USED.message) }
     }
 
     fun getDuplicatedTelCheck(telRequest: TelRequest) {
-        val checkTel = memberObject.getTelMember(telRequest.tel)
-        if (checkTel != null) {
-            throw DuplicatedException(ErrorCode.TEL_USED.message)
-        }
+        memberRepository.findByTel(telRequest.tel)?.let { throw DuplicatedException(ErrorCode.TEL_USED.message) }
     }
 
     fun findEmailByTel(
         tel: String
     ): FindEmailInfo {
-        val member = memberObject.getTelMember(tel)
-
+        val member = memberRepository.findByTel(tel)
         val email = member?.email
-
         return FindEmailInfo(
             email = email,
             loginType = LoginType.from(member?.provider),
@@ -114,7 +115,7 @@ class MemberService(
         email: String,
         tel: String
     ) {
-        val member = memberObject.getTelMember(tel) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        val member = memberRepository.findByTel(tel) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         if (member.email != email) {
             throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
         }
@@ -122,30 +123,28 @@ class MemberService(
 
     @Transactional
     fun changePassword(changePassword: ChangePasswordInterface) {
-        val member = memberObject.getEmailMember(changePassword.email!!) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
+        memberRepository.findByEmail(changePassword.email!!)?.let { member ->
+            if (member.password != null && memberObject.passwordCheck(changePassword.newPassword.lowercase(), member.password!!)) {
+                throw LoginException(ErrorCode.EXISTING_PASSWORD_NOT_CHANGE.message)
+            }
 
-        if (member.password != null && memberObject.passwordCheck(changePassword.newPassword.lowercase(), member.password!!)) {
-            throw LoginException(ErrorCode.EXISTING_PASSWORD_NOT_CHANGE.message)
-        }
+            if (changePassword.oldPassword.lowercase() != changePassword.newPassword.lowercase()) {
+                throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
+            }
 
-        if (changePassword.oldPassword.lowercase() != changePassword.newPassword.lowercase()) {
-            throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
-        }
+            if (!memberObject.passwordFormatCheck(changePassword.newPassword.lowercase())) {
+                throw LoginException(ErrorCode.PASSWORD_FORMAT_INVALID.message)
+            }
 
-        if (!memberObject.passwordFormatCheck(changePassword.newPassword.lowercase())) {
-            throw LoginException(ErrorCode.PASSWORD_FORMAT_INVALID.message)
-        }
+            val password = memberObject.passwordEncode(changePassword.newPassword)
+            member.passwordUpdate(password)
 
-        val password = memberObject.passwordEncode(changePassword.newPassword)
-        member.password = password
-        memberObject.update(member)
+        } ?: run { throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message) }
     }
 
     fun findNicknameDuplicate(nickname: String) {
-        val nicknameCheck = memberObject.nicknameSlangCheck(nickname)
-        if (nicknameCheck) throw InvalidException("비속어가 포함된 닉네임입니다.")
-        val member = memberObject.getNicknameMember(nickname)
-        if (member != null) {
+        if (memberObject.nicknameSlangCheck(nickname)) throw InvalidException("비속어가 포함된 닉네임입니다.")
+        memberRepository.findByNickname(nickname)?.let {
             throw DuplicatedException(ErrorCode.NICKNAME_USED.message)
         }
     }

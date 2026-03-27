@@ -2,6 +2,7 @@ package com.unimal.user.service.login
 
 import com.google.gson.Gson
 import com.unimal.user.domain.member.Member
+import com.unimal.user.domain.member.MemberRepository
 import com.unimal.webcommon.exception.ApiCallException
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.user.service.login.dto.UserInfo
@@ -16,7 +17,8 @@ import org.springframework.web.client.RestTemplate
 
 @Component("KakaoLoginObject")
 class KakaoLoginObject(
-    private val memberObject: MemberObject
+    private val memberObject: MemberObject,
+    private val memberRepository: MemberRepository,
 ): LoginInterface {
     override fun provider() = LoginType.KAKAO
     override fun <T> getUserInfo(info: T): UserInfo {
@@ -44,6 +46,6 @@ class KakaoLoginObject(
     }
 
     override fun getMember(userInfo: UserInfo): Member {
-        return memberObject.getEmailMember(userInfo.email) ?: memberObject.signIn(userInfo)
+        return memberRepository.findByEmail(userInfo.email) ?: memberObject.signIn(userInfo)
     }
 }

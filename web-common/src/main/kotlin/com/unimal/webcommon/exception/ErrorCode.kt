@@ -40,5 +40,8 @@ enum class ErrorCode(
 
     API_CALL_ERROR(message = "API 호출에 실패했습니다."),
     HASHIDS_ENCODE_ERROR(message = "Hashids encode 오류입니다."),
-    HASHIDS_DECODE_ERROR(message = "Hashids decode 오류입니다.")
+    HASHIDS_DECODE_ERROR(message = "Hashids decode 오류입니다."),
+
+    UNAUTHORIZED_ERROR(message = "인증 정보가 유효하지 않습니다."),
+    BAD_REQUEST_ERROR(message = "잘못된 요청입니다."),
 }

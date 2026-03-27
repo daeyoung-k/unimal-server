@@ -45,39 +45,27 @@ class WebExceptionHandler {
             ),  ex.status ?: HttpStatus.OK)
     }
 
-    @ExceptionHandler(ExpiredJwtException::class)
-    fun expiredJwtException(ex: ExpiredJwtException): ResponseEntity<CommonResponse> {
+    @ExceptionHandler()
+    fun handleBedRequestException(ex: Exception): ResponseEntity<CommonResponse> {
         return ResponseEntity(
             CommonResponse(
-                code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.EXPIRED_TOKEN.message
-            ),  HttpStatus.UNAUTHORIZED)
+                code = HttpStatus.BAD_REQUEST.value(),
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.BAD_REQUEST_ERROR.message
+            ),  HttpStatus.BAD_REQUEST)
     }
 
-    @ExceptionHandler(SignatureException::class)
-    fun signatureException(ex: SignatureException): ResponseEntity<CommonResponse> {
-        return ResponseEntity(
-            CommonResponse(
-                code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.SIGNATURE_TOKEN.message
-            ),  HttpStatus.UNAUTHORIZED)
-    }
 
-    @ExceptionHandler(MalformedJwtException::class)
-    fun malformedJwtException(ex: MalformedJwtException): ResponseEntity<CommonResponse> {
+    @ExceptionHandler(
+        UserPrincipalNotFoundException::class,
+        ExpiredJwtException::class,
+        SignatureException::class,
+        MalformedJwtException::class,
+    )
+    fun handleUnauthorizedException(ex: Exception): ResponseEntity<CommonResponse> {
         return ResponseEntity(
             CommonResponse(
                 code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.INVALID_TOKEN.message
-            ),  HttpStatus.UNAUTHORIZED)
-    }
-
-    @ExceptionHandler(UserPrincipalNotFoundException::class)
-    fun userPrincipalNotFoundException(ex: UserPrincipalNotFoundException): ResponseEntity<CommonResponse> {
-        return ResponseEntity(
-            CommonResponse(
-                code = HttpStatus.UNAUTHORIZED.value(),
-                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.USER_NOT_FOUND.message
+                message = if (!ex.message.isNullOrBlank()) ex.message else ErrorCode.UNAUTHORIZED_ERROR.message
             ),  HttpStatus.UNAUTHORIZED)
     }
 }
@@ -173,4 +161,3 @@ class AlreadyBeenProcessedException(
     code: Int? = null,
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
-
