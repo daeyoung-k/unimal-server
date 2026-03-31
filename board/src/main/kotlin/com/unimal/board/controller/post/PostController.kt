@@ -1,12 +1,11 @@
-package com.unimal.board.controller
+package com.unimal.board.controller.post
 
-import com.unimal.board.controller.request.post.MyPostListRequest
-import com.unimal.board.controller.request.post.PostReplyRequest
-import com.unimal.board.controller.request.post.PostUpdateRequest
-import com.unimal.board.controller.request.post.PostCreateRequest
-import com.unimal.board.controller.request.post.PostFileDeleteRequest
-import com.unimal.board.controller.request.post.PostListRequest
-import com.unimal.board.kafka.topics.dto.UserCountIssueType
+import com.unimal.board.controller.post.dto.MyPostListRequest
+import com.unimal.board.controller.post.dto.PostCreateRequest
+import com.unimal.board.controller.post.dto.PostFileDeleteRequest
+import com.unimal.board.controller.post.dto.PostListRequest
+import com.unimal.board.controller.post.dto.PostReplyRequest
+import com.unimal.board.controller.post.dto.PostUpdateRequest
 import com.unimal.board.service.post.PostCalculateService
 import com.unimal.board.service.post.PostService
 import com.unimal.common.annotation.user.OptionalUserInfoAnnotation
@@ -14,16 +13,26 @@ import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
 import jakarta.validation.Valid
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
+@RequestMapping("/post")
 class PostController(
     private val postService: PostService,
     private val postCalculateService: PostCalculateService,
 ) {
 
-    @GetMapping("/post/{boardId}")
+    @GetMapping("/{boardId}")
     fun getPost(
         @OptionalUserInfoAnnotation optionalUserInfo: CommonUserInfo?,
         @PathVariable boardId: String,
@@ -31,7 +40,7 @@ class PostController(
         return CommonResponse(data = postService.getPost(optionalUserInfo, boardId))
     }
 
-    @GetMapping("/post/list")
+    @GetMapping("/list")
     fun getPostList(
         @OptionalUserInfoAnnotation optionalUserInfo: CommonUserInfo?,
         @ModelAttribute postListRequest: PostListRequest
@@ -39,7 +48,7 @@ class PostController(
         return CommonResponse(data = postService.getPostList(optionalUserInfo, postListRequest))
     }
 
-    @GetMapping("/post/my/list")
+    @GetMapping("/my/list")
     fun getMyPostList(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @ModelAttribute myPostListRequest: MyPostListRequest
@@ -47,7 +56,7 @@ class PostController(
         return CommonResponse(data = postService.getMyPostList(userInfo, myPostListRequest))
     }
 
-    @PostMapping("/post", consumes = ["multipart/form-data"])
+    @PostMapping(consumes = ["multipart/form-data"])
     fun createPost(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @ModelAttribute postCreateRequest: PostCreateRequest,
@@ -56,7 +65,7 @@ class PostController(
         return CommonResponse(data = postService.posting(userInfo, postCreateRequest, files))
     }
 
-    @PatchMapping("/post/{boardId}/update")
+    @PatchMapping("/{boardId}/update")
     fun updatePost(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
@@ -65,7 +74,7 @@ class PostController(
         return CommonResponse(data = postService.postUpdate(userInfo, boardId, postUpdateRequest))
     }
 
-    @PostMapping("/post/{boardId}/file/upload", consumes = ["multipart/form-data"])
+    @PostMapping("/{boardId}/file/upload", consumes = ["multipart/form-data"])
     fun uploadPostFile(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
@@ -74,7 +83,7 @@ class PostController(
         return CommonResponse(data = postService.postFileUpload(userInfo, boardId, files))
     }
 
-    @PostMapping("/post/{boardId}/file/delete")
+    @PostMapping("/{boardId}/file/delete")
     fun deletePostFile(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
@@ -83,7 +92,7 @@ class PostController(
         return CommonResponse(data = postService.postFileDelete(userInfo, boardId, postFileDeleteRequest))
     }
 
-    @DeleteMapping("/post/{boardId}/delete")
+    @DeleteMapping("/{boardId}/delete")
     fun deletePost(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
@@ -91,7 +100,7 @@ class PostController(
         return CommonResponse(data = postService.postDelete(userInfo, boardId))
     }
 
-    @GetMapping("/post/{boardId}/like")
+    @GetMapping("/{boardId}/like")
     fun likePost(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
@@ -99,7 +108,7 @@ class PostController(
         return CommonResponse(data = postService.postLike(userInfo, boardId))
     }
 
-    @PostMapping("/post/{boardId}/reply")
+    @PostMapping("/{boardId}/reply")
     fun createReply(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
@@ -108,7 +117,7 @@ class PostController(
         return CommonResponse(data = postService.replyCreate(userInfo, boardId, postReplyRequest))
     }
 
-    @GetMapping("/post/{boardId}/reply")
+    @GetMapping("/{boardId}/reply")
     fun getReplyList(
         @OptionalUserInfoAnnotation optionalUserInfo: CommonUserInfo?,
         @PathVariable boardId: String,
@@ -116,7 +125,7 @@ class PostController(
         return CommonResponse(data = postService.replyList(optionalUserInfo, boardId))
     }
 
-    @PatchMapping("/post/{boardId}/reply/{replyId}/update")
+    @PatchMapping("/{boardId}/reply/{replyId}/update")
     fun replyUpdate(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
@@ -126,7 +135,7 @@ class PostController(
         return CommonResponse(data = postService.replyUpdate(userInfo, boardId, replyId, postReplyRequest))
     }
 
-    @DeleteMapping("/post/{boardId}/reply/{replyId}/delete")
+    @DeleteMapping("/{boardId}/reply/{replyId}/delete")
     fun replyDelete(
         @UserInfoAnnotation userInfo: CommonUserInfo,
         @PathVariable boardId: String,
@@ -136,14 +145,14 @@ class PostController(
     }
 
 
-    @GetMapping("/post/total/like")
+    @GetMapping("/total/like")
     fun totalLikeCount(
         @UserInfoAnnotation userInfo: CommonUserInfo,
     ): CommonResponse {
         return CommonResponse(data = postCalculateService.getLikeTotalCount(userInfo.email))
     }
 
-    @GetMapping("/post/total")
+    @GetMapping("/total")
     fun totalCount(
         @UserInfoAnnotation userInfo: CommonUserInfo,
     ): CommonResponse {

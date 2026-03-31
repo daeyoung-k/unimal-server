@@ -1,4 +1,4 @@
-package com.unimal.board.controller.enums
+package com.unimal.board.controller.post.enums
 
 enum class PostSortType(
     val description: String

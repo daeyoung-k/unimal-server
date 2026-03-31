@@ -161,3 +161,9 @@ class AlreadyBeenProcessedException(
     code: Int? = null,
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
+
+class NoticeNotFoundException(
+    message: String = "공지사항 정보가 존재하지 않습니다.",
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)

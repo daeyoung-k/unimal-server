@@ -34,6 +34,13 @@ class BoardRouteConfig(
     private fun RouteLocatorDsl.publicRoutes(
         baseUri: String
     ) {
+        route("boardPublicRoutes") {
+            path(
+                "/board/notice",
+                "/board/notice/**",
+            )
+            uri(baseUri)
+        }
 
     }
 
