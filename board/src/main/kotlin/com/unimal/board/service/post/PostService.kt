@@ -1,11 +1,11 @@
 package com.unimal.board.service.post
 
-import com.unimal.board.controller.request.post.MyPostListRequest
-import com.unimal.board.controller.request.post.PostUpdateRequest
-import com.unimal.board.controller.request.post.PostCreateRequest
-import com.unimal.board.controller.request.post.PostFileDeleteRequest
-import com.unimal.board.controller.request.post.PostListRequest
-import com.unimal.board.controller.request.post.PostReplyRequest
+import com.unimal.board.controller.post.dto.MyPostListRequest
+import com.unimal.board.controller.post.dto.PostUpdateRequest
+import com.unimal.board.controller.post.dto.PostCreateRequest
+import com.unimal.board.controller.post.dto.PostFileDeleteRequest
+import com.unimal.board.controller.post.dto.PostListRequest
+import com.unimal.board.controller.post.dto.PostReplyRequest
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.board.BoardFileRepository
 import com.unimal.board.domain.board.BoardRepository

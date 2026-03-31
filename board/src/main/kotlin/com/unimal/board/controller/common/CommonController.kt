@@ -1,4 +1,4 @@
-package com.unimal.board.controller
+package com.unimal.board.controller.common
 
 import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.dto.CommonResponse

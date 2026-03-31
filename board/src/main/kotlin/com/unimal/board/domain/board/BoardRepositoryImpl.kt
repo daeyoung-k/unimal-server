@@ -6,9 +6,9 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
-import com.unimal.board.controller.enums.PostSortType
-import com.unimal.board.controller.request.post.MyPostListRequest
-import com.unimal.board.controller.request.post.PostListRequest
+import com.unimal.board.controller.post.enums.PostSortType
+import com.unimal.board.controller.post.dto.MyPostListRequest
+import com.unimal.board.controller.post.dto.PostListRequest
 import com.unimal.board.domain.board.like.QBoardLike
 import com.unimal.board.domain.board.reply.QBoardReply
 import com.unimal.board.enums.PostShow
