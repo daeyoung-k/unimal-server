@@ -1,6 +1,6 @@
-package com.unimal.board.controller.request.post
+package com.unimal.board.controller.post.dto
 
-import com.unimal.board.controller.enums.PostSortType
+import com.unimal.board.controller.post.enums.PostSortType
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 

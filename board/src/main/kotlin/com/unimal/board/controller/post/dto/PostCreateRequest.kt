@@ -1,4 +1,4 @@
-package com.unimal.board.controller.request.post
+package com.unimal.board.controller.post.dto
 
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.member.BoardMember
