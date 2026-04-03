@@ -19,4 +19,5 @@ data class MapPostInfo(
     val likeCount: Long,
     @JsonProperty("reply_count")
     val replyCount: Long,
+    val score: Double,
 )

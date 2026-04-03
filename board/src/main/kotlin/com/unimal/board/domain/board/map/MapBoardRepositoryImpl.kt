@@ -25,7 +25,18 @@ class MapBoardRepositoryImpl(
                 ST_Y(b.location::geometry) AS latitude,
                 ST_X(b.location::geometry) AS longitude,
                 b.created_at,
-                bf.file_url, COUNT(DISTINCT bl.id) as like_count, COUNT(DISTINCT br.id) as reply_count
+                bf.file_url, COUNT(DISTINCT bl.id) as like_count, COUNT(DISTINCT br.id) as reply_count,
+                (
+                  CASE WHEN b.email = :userEmail THEN 10000.0 ELSE 0.0 END
+                  + CASE
+                      WHEN b.created_at >= NOW() - INTERVAL '30 minutes' THEN 1.0
+                      WHEN b.created_at >= NOW() - INTERVAL '2 hours'    THEN 0.6
+                      WHEN b.created_at >= NOW() - INTERVAL '6 hours'    THEN 0.3
+                      ELSE 0.1
+                    END
+                  + COUNT(DISTINCT bl.id) * 2.0
+                  + COUNT(DISTINCT br.id) * 3.0
+                ) AS score
             FROM board b
             INNER JOIN LATERAL (
                 SELECT bf.file_url
@@ -40,17 +51,7 @@ class MapBoardRepositoryImpl(
               AND b.del = false
               AND b.show = 'PUBLIC'
             GROUP BY b.id, bf.file_url
-            ORDER BY (
-              CASE WHEN b.email = :userEmail THEN 10000.0 ELSE 0.0 END
-              + CASE
-                  WHEN b.created_at >= NOW() - INTERVAL '30 minutes' THEN 1.0
-                  WHEN b.created_at >= NOW() - INTERVAL '2 hours'    THEN 0.6
-                  WHEN b.created_at >= NOW() - INTERVAL '6 hours'    THEN 0.3
-                  ELSE 0.1
-                END
-              + COUNT(DISTINCT bl.id) * 2.0
-              + COUNT(DISTINCT br.id) * 3.0
-            ) DESC
+            ORDER BY score DESC
             LIMIT :limit
         """.trimIndent()
 
@@ -74,6 +75,7 @@ class MapBoardRepositoryImpl(
                     fileUrl     = row[7] as? String,
                     likeCount   = (row[8] as Number).toLong(),
                     replyCount  = (row[9] as Number).toLong(),
+                    score       = (row[10] as Number).toDouble(),
                 )
             }
     }
