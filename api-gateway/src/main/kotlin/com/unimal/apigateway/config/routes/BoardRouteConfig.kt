@@ -60,9 +60,12 @@ class BoardRouteConfig(
 
         route("boardPostAccessTokenFilterRoutes") {
             path(
-                "/board/post",
+                // etc
                 "/post/total",
                 "/post/total/like",
+
+                // 게시판 관련
+                "/board/post",
                 "/board/post/my/list",
                 "/board/post/{boardId}/like",
                 "/board/post/{boardId}/delete",
@@ -72,6 +75,9 @@ class BoardRouteConfig(
                 "/board/post/{boardId}/reply",
                 "/board/post/{boardId}/reply/{replyId}/update",
                 "/board/post/{boardId}/reply/{replyId}/delete",
+
+                // 지도 관련
+                "/board/map/location/post",
             )
             .filters { f ->
                 f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))
