@@ -1,10 +1,9 @@
 package com.unimal.user.service.member
 
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.common.dto.kafka.UpdateUser
+import com.unimal.common.dto.kafka.user.UpdateUser
 import com.unimal.common.enums.Gender
 import com.unimal.common.extension.toPatternLocalDate
-import com.unimal.common.extension.toPatternLocalDateTime
 import com.unimal.common.extension.toPatternString
 import com.unimal.user.controller.request.ChangePasswordInterface
 import com.unimal.user.controller.request.EmailRequest

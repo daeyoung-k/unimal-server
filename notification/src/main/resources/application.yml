@@ -38,7 +38,7 @@ spring:
       mail.smtp.starttls.enable: true
 
   kafka:
-    bootstrap-servers: localhost:9091,localhost:9092,localhost:9093
+    bootstrap-servers: ${KAFKA_SERVER_1},${KAFKA_SERVER_2},${KAFKA_SERVER_3}
     consumer:
       group-id: unimal-notification-group
       auto-offset-reset: latest

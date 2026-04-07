@@ -13,11 +13,12 @@ import com.unimal.board.domain.board.BoardRepositoryImpl
 import com.unimal.board.domain.board.like.BoardLike
 import com.unimal.board.domain.board.like.BoardLikeRepository
 import com.unimal.board.domain.board.reply.BoardReply
+import com.unimal.board.domain.board.reply.BoardReplyRepository
 import com.unimal.board.domain.board.reply.toDto
 import com.unimal.board.domain.member.BoardMemberRepository
 import com.unimal.board.grpc.file.FileDeleteGrpcService
 import com.unimal.board.kafka.topics.PostKafkaTopic
-import com.unimal.board.kafka.topics.dto.UserCountIssueType
+import com.unimal.board.kafka.topics.dto.UserCountIssue
 import com.unimal.board.service.files.FilesManager
 import com.unimal.board.service.post.dto.BoardFileInfo
 import com.unimal.board.service.post.dto.BoardId
@@ -30,6 +31,8 @@ import com.unimal.board.service.post.manager.PostManager
 import com.unimal.board.service.post.manager.ReplyManager
 import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.dto.CommonUserInfo
+import com.unimal.common.dto.kafka.post.PostAppPushEvent
+import com.unimal.common.enums.AppPushType
 import com.unimal.webcommon.exception.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -44,6 +47,7 @@ class PostService(
     private val boardLikeRepository: BoardLikeRepository,
     private val boardFileRepository: BoardFileRepository,
     private val boardMemberRepository: BoardMemberRepository,
+    private val boardReplyRepository: BoardReplyRepository,
 
     private val filesManager: FilesManager,
     private val postManager: PostManager,
@@ -76,7 +80,7 @@ class PostService(
 
         // 유저 게시물 총 수 계산 이벤트 발행
         postKafkaTopic.postCountCalculateEvent(
-            UserCountIssueType(
+            UserCountIssue(
                 email = userInfo.email,
                 type = UserCountCalculateType.INCREMENT
             )
@@ -255,11 +259,25 @@ class PostService(
             // 유저 좋아요 총 수 계산 이벤트 발행
             val calculateType = if (isLiked) UserCountCalculateType.INCREMENT else UserCountCalculateType.DECREMENT
             postKafkaTopic.likeCountCalculateEvent(
-                UserCountIssueType(
+                UserCountIssue(
                     email = userInfo.email,
                     type = calculateType
                 )
             )
+
+            // 좋아요 앱푸시 이벤트 발행
+            // 자기 자신이 누른건 보내지 않는다.
+            if (isLiked && userInfo.email != board.email.email && !board.email.fcmToken.isNullOrBlank()) {
+                postKafkaTopic.postAppPushEvent(
+                    PostAppPushEvent(
+                        token = board.email.fcmToken!!,
+                        type = AppPushType.LIKE,
+                        targetId = boardId,
+                        title = AppPushType.LIKE.title,
+                        body = "${userInfo.nickname}님이 회원님의 이야기를 좋아합니다."
+                    )
+                )
+            }
 
             return LikeResponse(
                 isLiked = isLiked,
@@ -316,7 +334,7 @@ class PostService(
 
             // 유저 게시물 총 수 계산 이벤트 발행
             postKafkaTopic.postCountCalculateEvent(
-                UserCountIssueType(
+                UserCountIssue(
                     email = userInfo.email,
                     type = UserCountCalculateType.DECREMENT
                 )
@@ -383,7 +401,7 @@ class PostService(
             null
         }
 
-        val reply = replyManager.saveReply(
+        val reply = boardReplyRepository.save(
             BoardReply(
                 board = board,
                 replyId = replyId,
@@ -392,7 +410,45 @@ class PostService(
             )
         )
 
-        val newReplyId = if (reply.replyId == null) null else hashidsUtil.encode(reply.replyId)
+        // 대댓글이 아닐때
+        if (replyId == null) {
+            // 댓글 알림 앱푸시 이벤트 발행
+            // 나의 댓글은 보내지 않는다.
+            if (userInfo.email != board.email.email && !board.email.fcmToken.isNullOrBlank()) {
+                postKafkaTopic.postAppPushEvent(
+                    PostAppPushEvent(
+                        token = board.email.fcmToken!!,
+                        type = AppPushType.REPLY,
+                        targetId = encryptBoardId,
+                        title = AppPushType.REPLY.title,
+                        body = "${userInfo.nickname}님이 댓글을 남겼습니다.\n${
+                            postReplyRequest.comment.trim().let {
+                                if (it.length > 20) it.take(20) + "..." else it
+                            }
+                        }"
+                    )
+                )
+            }
+        } else {
+            // 대댓글 알림 앱푸시 이벤트 발행
+            // 나의 대댓글은 보내지 않는다.
+            val replyMember = boardMemberRepository.findByFcmTokenByReply(replyId)
+            if (userInfo.email != replyMember?.email && !replyMember?.fcmToken.isNullOrBlank()) {
+                postKafkaTopic.postAppPushEvent(
+                    PostAppPushEvent(
+                        token = replyMember!!.fcmToken!!,
+                        type = AppPushType.REPLY,
+                        targetId = encryptBoardId,
+                        title = AppPushType.REPLY.title,
+                        body = "${userInfo.nickname}님이 회원님의 댓글에 답글을 남겼습니다.\n${
+                            postReplyRequest.comment.trim().let {
+                                if (it.length > 20) it.take(20) + "..." else it
+                            }
+                        }"
+                    )
+                )
+            }
+        }
 
         // 댓글수 캐시 업데이트
         replyManager.saveCachePostReplyCount(board)
@@ -400,8 +456,8 @@ class PostService(
         return Reply(
             id = hashidsUtil.encode(reply.id!!),
             boardId = hashidsUtil.encode(board.id!!),
-            replyId = newReplyId,
-            reReplyYn = newReplyId != null,
+            replyId = postReplyRequest.replyId,
+            reReplyYn = replyId != null,
             email = userInfo.email,
             nickname = userInfo.nickname,
             comment = reply.comment,
@@ -416,7 +472,7 @@ class PostService(
         encryptBoardId: String,
     ): List<Reply> {
         val board = getBoard(encryptBoardId)
-        val boardReplyList = replyManager.getBoardReplyList(board.id!!)
+        val boardReplyList = boardReplyRepository.getBoardReplyByBoardId(board.id!!)
         return boardReplyList.map {
             val isOwner = optionalUserInfo?.email == it.email
             it.toDto(
@@ -438,7 +494,7 @@ class PostService(
         val board = getBoard(encryptBoardId)
         val replyId = hashidsUtil.decode(encryptReplyId)
 
-        val boardReply = replyManager.getBoardReplyIdAndBoardAndEmail(replyId, board, userInfo.email)
+        val boardReply = boardReplyRepository.findByIdAndBoardAndEmail(replyId, board, userInfo.email)
             ?: throw ReplyNotFoundException(ErrorCode.REPLY_NOT_FOUND.message)
 
         boardReply.comment = postReplyRequest.comment
@@ -468,7 +524,7 @@ class PostService(
         val board = getBoard(encryptBoardId)
         val replyId = hashidsUtil.decode(encryptReplyId)
 
-        val boardReply = replyManager.getBoardReplyIdAndBoardAndEmail(replyId, board, userInfo.email)
+        val boardReply = boardReplyRepository.findByIdAndBoardAndEmail(replyId, board, userInfo.email)
             ?: throw ReplyNotFoundException(ErrorCode.REPLY_NOT_FOUND.message)
 
         boardReply.del = true
