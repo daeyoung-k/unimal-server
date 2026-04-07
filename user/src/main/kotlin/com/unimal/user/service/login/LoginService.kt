@@ -2,7 +2,7 @@ package com.unimal.user.service.login
 
 
 import com.unimal.common.dto.CommonUserInfo
-import com.unimal.common.dto.kafka.UpdateUser
+import com.unimal.common.dto.kafka.user.UpdateUser
 import com.unimal.user.controller.request.*
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException

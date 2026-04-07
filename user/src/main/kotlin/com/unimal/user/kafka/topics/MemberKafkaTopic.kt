@@ -1,7 +1,7 @@
 package com.unimal.user.kafka.topics
 
-import com.unimal.common.dto.kafka.SignInUser
-import com.unimal.common.dto.kafka.UpdateUser
+import com.unimal.common.dto.kafka.user.SignInUser
+import com.unimal.common.dto.kafka.user.UpdateUser
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
