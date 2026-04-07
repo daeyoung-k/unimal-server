@@ -12,15 +12,6 @@ class ReplyManager(
 
     private val redisCacheManager: RedisCacheManager,
 ) {
-    fun getBoardReplyIdAndBoardAndEmail(
-        replyId: Long,
-        board: Board,
-        email: String
-    ) = boardReplyRepository.findByIdAndBoardAndEmail(replyId, board, email)
-
-    fun saveReply(
-        boardReply: BoardReply
-    ) = boardReplyRepository.save(boardReply)
 
     fun saveCachePostReplyCount(
         board: Board
@@ -39,7 +30,5 @@ class ReplyManager(
             0L
         }
     }
-
-    fun getBoardReplyList(boardId: Long) = boardReplyRepository.getBoardReplyByBoardId(boardId)
 
 }

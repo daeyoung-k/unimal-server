@@ -28,6 +28,8 @@ open class BoardMember(
     @Column(length = 15)
     var status: UserStatus = UserStatus.ACTIVE,
 
+    var fcmToken: String? = null
+
 ) : BaseIdEntity() {
     fun nicknameUpdate(nickname: String) {
         this.nickname = nickname
@@ -45,5 +47,9 @@ open class BoardMember(
     fun reSignIn() {
         this.withdrawalAt = null
         this.status = UserStatus.ACTIVE
+    }
+
+    fun fcmTokenUpdate(fcmToken: String) {
+        this.fcmToken = fcmToken
     }
 }

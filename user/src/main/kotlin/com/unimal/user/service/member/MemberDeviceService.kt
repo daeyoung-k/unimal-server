@@ -1,8 +1,9 @@
 package com.unimal.user.service.member
 
-import com.unimal.user.domain.member.Member
+import com.unimal.common.dto.kafka.user.UpdateUser
 import com.unimal.user.domain.member.MemberDeviceRepository
 import com.unimal.user.domain.member.MemberRepository
+import com.unimal.user.kafka.topics.MemberKafkaTopic
 import com.unimal.user.service.member.dto.MemberDeviceInfo
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -11,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional
 class MemberDeviceService(
     private val memberRepository: MemberRepository,
     private val memberDeviceRepository: MemberDeviceRepository,
+
+    private val memberKafkaTopic: MemberKafkaTopic,
 ) {
 
     @Transactional
@@ -29,6 +32,13 @@ class MemberDeviceService(
             ?: run {
                 memberDeviceRepository.save(memberDeviceInfo.toEntity(member))
             }
+
+            memberKafkaTopic.userUpdateTopicIssue(
+                UpdateUser(
+                    email = member.email,
+                    fcmToken = memberDeviceInfo.fcmToken
+                )
+            )
         }
     }
 }

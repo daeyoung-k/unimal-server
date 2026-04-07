@@ -2,8 +2,8 @@ package com.unimal.board.kafka.consumers.member
 
 import com.unimal.board.domain.member.BoardMember
 import com.unimal.board.domain.member.BoardMemberRepository
-import com.unimal.common.dto.kafka.SignInUser
-import com.unimal.common.dto.kafka.UpdateUser
+import com.unimal.common.dto.kafka.user.SignInUser
+import com.unimal.common.dto.kafka.user.UpdateUser
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 
@@ -26,11 +26,12 @@ class MemberConsumer(
     }
 
     @KafkaListener(topics = ["user.userUpdateTopic"], groupId = "unimal-board-group")
-    fun withdrawalConsumer(updateUser: UpdateUser) {
+    fun userUpdateConsumer(updateUser: UpdateUser) {
         boardMemberRepository.findByEmail(updateUser.email)?.let { user ->
             if (!updateUser.nickname.isNullOrBlank()) user.nicknameUpdate(updateUser.nickname!!)
             if (!updateUser.profileImage.isNullOrBlank()) user.profileImageUpdate(updateUser.profileImage)
             if (updateUser.withdrawalAt != null) user.withdrawal(updateUser.withdrawalAt!!, updateUser.status!!)
+            if (!updateUser.fcmToken.isNullOrBlank()) user.fcmTokenUpdate(updateUser.fcmToken!!)
             boardMemberRepository.save(user)
         }
     }
