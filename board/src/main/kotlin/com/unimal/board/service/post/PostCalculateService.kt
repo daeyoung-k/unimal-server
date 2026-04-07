@@ -2,7 +2,7 @@ package com.unimal.board.service.post
 
 import com.unimal.board.domain.board.BoardRepository
 import com.unimal.board.domain.board.like.BoardLikeRepository
-import com.unimal.board.kafka.topics.dto.UserCountIssueType
+import com.unimal.board.kafka.topics.dto.UserCountIssue
 import com.unimal.board.service.post.enums.UserCountCalculateType
 import com.unimal.board.service.post.manager.LikeManager
 import com.unimal.board.service.post.manager.PostManager
@@ -18,32 +18,32 @@ class PostCalculateService(
 ) {
 
     fun likeCountCalculate(
-        userCountIssueType: UserCountIssueType
+        userCountIssue: UserCountIssue
     ) {
-        val totalLikeCount = getLikeTotalCount(userCountIssueType.email)
-        when (userCountIssueType.type) {
-            UserCountCalculateType.INCREMENT -> likeManager.saveUserTotalLikeCount(userCountIssueType.email, totalLikeCount + 1)
+        val totalLikeCount = getLikeTotalCount(userCountIssue.email)
+        when (userCountIssue.type) {
+            UserCountCalculateType.INCREMENT -> likeManager.saveUserTotalLikeCount(userCountIssue.email, totalLikeCount + 1)
             UserCountCalculateType.DECREMENT -> {
                 if (totalLikeCount > 0) {
-                    likeManager.saveUserTotalLikeCount(userCountIssueType.email, totalLikeCount - 1)
+                    likeManager.saveUserTotalLikeCount(userCountIssue.email, totalLikeCount - 1)
                 } else {
-                    likeManager.saveUserTotalLikeCount(userCountIssueType.email, 0)
+                    likeManager.saveUserTotalLikeCount(userCountIssue.email, 0)
                 }
             }
         }
     }
 
     fun postCountCalculate(
-        userCountIssueType: UserCountIssueType
+        userCountIssue: UserCountIssue
     ) {
-        val totalPostCount = getPostTotalCount(userCountIssueType.email)
-        when (userCountIssueType.type) {
-            UserCountCalculateType.INCREMENT -> postManager.saveUserTotalPostCount(userCountIssueType.email, totalPostCount + 1)
+        val totalPostCount = getPostTotalCount(userCountIssue.email)
+        when (userCountIssue.type) {
+            UserCountCalculateType.INCREMENT -> postManager.saveUserTotalPostCount(userCountIssue.email, totalPostCount + 1)
             UserCountCalculateType.DECREMENT -> {
                 if (totalPostCount > 0) {
-                    postManager.saveUserTotalPostCount(userCountIssueType.email, totalPostCount - 1)
+                    postManager.saveUserTotalPostCount(userCountIssue.email, totalPostCount - 1)
                 } else {
-                    postManager.saveUserTotalPostCount(userCountIssueType.email, 0)
+                    postManager.saveUserTotalPostCount(userCountIssue.email, 0)
                 }
             }
         }

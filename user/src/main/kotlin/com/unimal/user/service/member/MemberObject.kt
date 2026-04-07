@@ -1,6 +1,6 @@
 package com.unimal.user.service.member
 
-import com.unimal.common.dto.kafka.SignInUser
+import com.unimal.common.dto.kafka.user.SignInUser
 import com.unimal.common.extension.toPatternString
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException

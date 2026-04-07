@@ -1,4 +1,4 @@
-package com.unimal.common.dto.kafka
+package com.unimal.common.dto.kafka.user
 
 import com.unimal.common.enums.UserStatus
 import java.time.LocalDateTime
