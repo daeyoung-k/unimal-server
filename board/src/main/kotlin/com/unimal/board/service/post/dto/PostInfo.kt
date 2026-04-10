@@ -12,6 +12,8 @@ data class PostInfo(
     val title: String? = "",
     val content: String,
     val streetName: String,
+    val latitude: Double,
+    val longitude: Double,
     val show: PostShow,
     val mapShow: MapShow,
     val createdAt: LocalDateTime,
