@@ -9,6 +9,7 @@ interface BoardReplyListInterface {
     val replyId: Long?
     val email: String
     val nickname: String?
+    val profileImage: String?
     val comment: String
     val createdAt: String
     val del: Boolean?
@@ -27,6 +28,7 @@ fun BoardReplyListInterface.toDto(
         reReplyYn = replyId != null,
         email = email,
         nickname = nickname ?: "",
+        profileImage = profileImage,
         comment = comment,
         createdAt = createdAt,
         isOwner = isOwner,
