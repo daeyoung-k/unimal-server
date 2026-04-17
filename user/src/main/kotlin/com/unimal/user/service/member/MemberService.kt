@@ -59,12 +59,25 @@ class MemberService(
     ) {
         val member = memberObject.getEmailProviderMember(commonUserInfo.email, LoginType.from(commonUserInfo.provider)) ?: throw UserNotFoundException("회원이 존재하지 않습니다.")
 
+        var isUpdated = false
         if (!infoUpdateRequest.name.isNullOrBlank() && infoUpdateRequest.name != member.name) {
             member.updateMember(name = infoUpdateRequest.name)
+            isUpdated = true
         }
 
         if (!infoUpdateRequest.nickname.isNullOrBlank() && infoUpdateRequest.nickname != member.nickname) {
             member.updateMember(nickname = infoUpdateRequest.nickname)
+            isUpdated = true
+        }
+
+        if (isUpdated) {
+            memberKafkaTopic.userUpdateTopicIssue(
+                UpdateUser(
+                    email = member.email,
+                    name = member.name,
+                    nickname = member.nickname,
+                )
+            )
         }
 
         if (!infoUpdateRequest.tel.isNullOrBlank() && infoUpdateRequest.tel != member.tel) {
