@@ -9,6 +9,8 @@ import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import kotlin.text.removePrefix
 
 @Component
@@ -35,7 +37,7 @@ class OptionalAccessTokenFilter(
                 val tokenClaims = jwtProvider.tokenValidation(token)
                 val userInfo = tokenService.getUserInfo(tokenClaims, token)
                 exchange.request.headers.add(config.addHeaderEmail, userInfo.email)
-                exchange.request.headers.add(config.addHeaderNickname, userInfo.nickname)
+                exchange.request.headers.add(config.addHeaderNickname, URLEncoder.encode(userInfo.nickname, StandardCharsets.UTF_8))
                 exchange.request.headers.add(config.addHeaderRoles, userInfo.roleString)
                 exchange.request.headers.add(config.addHeaderProvider, userInfo.provider)
                 exchange.request.headers.add(config.addHeaderTokenType, userInfo.tokenType.name)

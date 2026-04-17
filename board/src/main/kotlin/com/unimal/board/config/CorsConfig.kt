@@ -9,6 +9,8 @@ import com.unimal.webcommon.exception.TokenException
 import com.unimal.webcommon.exception.UserNotFoundException
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.context.annotation.Configuration
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import org.springframework.core.MethodParameter
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.support.WebDataBinderFactory
@@ -45,7 +47,7 @@ class CorsConfig: WebMvcConfigurer {
             val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
             val userInfo = CommonUserInfo(
                 email = request?.getHeader("X-Unimal-User-email") ?: throw UserNotFoundException(ErrorCode.EMAIL_NOT_FOUND.message),
-                nickname = request.getHeader("X-Unimal-User-nickname") ?: throw UserNotFoundException(ErrorCode.NICKNAME_NOT_FOUND.message),
+                nickname = URLDecoder.decode(request.getHeader("X-Unimal-User-nickname") ?: throw UserNotFoundException(ErrorCode.NICKNAME_NOT_FOUND.message), StandardCharsets.UTF_8),
                 roles = request.getHeader("X-Unimal-User-roles")?.split(",") ?: throw UserNotFoundException(ErrorCode.ROLE_NOT_FOUND.message),
                 provider = request.getHeader("X-Unimal-User-provider") ?: throw UserNotFoundException(ErrorCode.PROVIDER_NOT_FOUND.message),
                 tokenType = TokenType.from(request.getHeader("X-Unimal-User-token-type")) ?: throw TokenException(ErrorCode.TOKEN_TYPE_NOT_FOUND.message, HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED)
@@ -71,7 +73,7 @@ class CorsConfig: WebMvcConfigurer {
             val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
 
             val email = request?.getHeader("X-Unimal-User-email")
-            val nickname = request?.getHeader("X-Unimal-User-nickname")
+            val nickname = request?.getHeader("X-Unimal-User-nickname")?.let { URLDecoder.decode(it, StandardCharsets.UTF_8) }
             val roles = request?.getHeader("X-Unimal-User-roles")
             val provider = request?.getHeader("X-Unimal-User-provider")
             val tokenType = TokenType.from(request?.getHeader("X-Unimal-User-token-type"))
