@@ -16,7 +16,7 @@ open class BoardMember(
     val email: String,
 
     @Column(length = 20)
-    val name: String? = null,
+    var name: String? = null,
     @Column(length = 30)
     var nickname: String? = null,
 
@@ -31,7 +31,9 @@ open class BoardMember(
     var fcmToken: String? = null
 
 ) : BaseIdEntity() {
-    fun nicknameUpdate(nickname: String) {
+    fun nameUpdate(name: String) {
+        this.name = name
+    }fun nicknameUpdate(nickname: String) {
         this.nickname = nickname
     }
     fun profileImageUpdate(profileImage: String?) {

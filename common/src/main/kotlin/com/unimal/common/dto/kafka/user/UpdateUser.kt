@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 
 data class UpdateUser(
     val email: String,
+    val name: String? = null,
     val nickname: String? = null,
     val profileImage: String? = null,
     val withdrawalAt: LocalDateTime? = null,

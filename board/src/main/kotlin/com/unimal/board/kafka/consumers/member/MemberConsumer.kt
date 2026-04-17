@@ -28,6 +28,7 @@ class MemberConsumer(
     @KafkaListener(topics = ["user.userUpdateTopic"], groupId = "unimal-board-group")
     fun userUpdateConsumer(updateUser: UpdateUser) {
         boardMemberRepository.findByEmail(updateUser.email)?.let { user ->
+            if (!updateUser.name.isNullOrBlank()) user.nameUpdate(updateUser.name!!)
             if (!updateUser.nickname.isNullOrBlank()) user.nicknameUpdate(updateUser.nickname!!)
             if (!updateUser.profileImage.isNullOrBlank()) user.profileImageUpdate(updateUser.profileImage)
             if (updateUser.withdrawalAt != null) user.withdrawal(updateUser.withdrawalAt!!, updateUser.status!!)
