@@ -14,7 +14,8 @@ interface BoardReplyRepository: JpaRepository<BoardReply, Long> {
     @Query("""
         select 
             rereply.*,
-            (select nickname from member where email = rereply.email) nickname
+            (select nickname from member where email = rereply.email) nickname,
+            (select profile_image from member where email = rereply.email) profile_image
          from board_reply rereply left join board_reply reply on rereply.reply_id = reply.id
         where rereply.board_id = :boardId
             order by
