@@ -36,6 +36,8 @@ class BoardRouteConfig(
     ) {
         route("boardPublicRoutes") {
             path(
+                "/board/hashids",
+                "/board/hashids/**",
                 "/board/notice",
                 "/board/notice/**",
             )
