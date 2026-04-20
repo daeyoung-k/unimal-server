@@ -100,12 +100,24 @@ open class Member(
         this.status = UserStatus.WITHDRAWAL
         this.withdrawalAt = LocalDateTime.now()
         this.tel = null
+        this.profileImage = null
+        this.name = null
+        this.nickname = null
+        this.introduction = null
+        this.birthday = null
+        this.gender = null
         this.updatedAt = LocalDateTime.now()
     }
 
-    fun reSignIn() {
+    fun reSignIn(
+        name: String?,
+        nickname: String?,
+        profileImage: String?
+    ) {
         this.status = UserStatus.ACTIVE
-        this.withdrawalAt = null
+        this.nickname = nickname
+        this.name = name
+        this.profileImage = profileImage
         this.updatedAt = LocalDateTime.now()
     }
 

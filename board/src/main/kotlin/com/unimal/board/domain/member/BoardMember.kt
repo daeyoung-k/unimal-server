@@ -33,22 +33,34 @@ open class BoardMember(
 ) : BaseIdEntity() {
     fun nameUpdate(name: String) {
         this.name = name
-    }fun nicknameUpdate(nickname: String) {
+    }
+
+    fun nicknameUpdate(nickname: String) {
         this.nickname = nickname
     }
+
     fun profileImageUpdate(profileImage: String?) {
         this.profileImage = profileImage
     }
-    fun withdrawal(
-        withdrawalAt: LocalDateTime,
-        status: UserStatus
-    ) {
-        this.withdrawalAt = withdrawalAt
-        this.status = status
+
+    fun withdrawal() {
+        this.status = UserStatus.WITHDRAWAL
+        this.name = null
+        this.nickname =null
+        this.profileImage = null
+        this.fcmToken = null
+        this.withdrawalAt = LocalDateTime.now()
     }
-    fun reSignIn() {
-        this.withdrawalAt = null
+
+    fun reSignIn(
+        name: String?,
+        nickname: String?,
+        profileImage: String?
+    ) {
         this.status = UserStatus.ACTIVE
+        this.name = name
+        this.nickname = nickname
+        this.profileImage = profileImage
     }
 
     fun fcmTokenUpdate(fcmToken: String) {
