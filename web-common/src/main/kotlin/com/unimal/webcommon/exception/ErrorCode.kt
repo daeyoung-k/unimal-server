@@ -16,6 +16,7 @@ enum class ErrorCode(
     ALLOW_ACCESS_TOKEN_ONLY(message = "액세스 토큰만 허용됩니다."),
     AUTH_CODE_NOT_FOUND(message = "인증코드가 존재하지 않습니다."),
     TEL_NOT_FOUND(code = 1009, message = "휴대폰 번호가 존재하지 않습니다."),
+    WITHDRAWAL_STATUS(code = 1001, message = "탈퇴 상태입니다."),
     AUTH_CODE_NOT_MATCH(message = "인증코드가 일치하지 않습니다."),
     NICKNAME_USED(message = "이미 사용중인 닉네임입니다."),
 

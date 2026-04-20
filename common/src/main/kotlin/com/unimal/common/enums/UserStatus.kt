@@ -7,4 +7,5 @@ enum class UserStatus(
     INACTIVE("비활성화"),
     BLOCK("차단"),
     WITHDRAWAL("탈퇴"),
+    RESIGNIN("재가입 요청")
 }
