@@ -21,4 +21,10 @@ class WebPageController {
         val html = ClassPathResource("static/delete-account.html").inputStream.readBytes().toString(Charsets.UTF_8)
         return Mono.just(html)
     }
+
+    @GetMapping("/stomap/support", produces = [MediaType.TEXT_HTML_VALUE])
+    fun support(): Mono<String> {
+        val html = ClassPathResource("static/support.html").inputStream.readBytes().toString(Charsets.UTF_8)
+        return Mono.just(html)
+    }
 }
