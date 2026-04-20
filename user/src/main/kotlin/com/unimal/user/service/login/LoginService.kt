@@ -3,6 +3,7 @@ package com.unimal.user.service.login
 
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.dto.kafka.user.UpdateUser
+import com.unimal.common.enums.UserStatus
 import com.unimal.user.controller.request.*
 import com.unimal.webcommon.exception.ErrorCode
 import com.unimal.webcommon.exception.LoginException
@@ -10,12 +11,14 @@ import com.unimal.webcommon.exception.UserNotFoundException
 import com.unimal.user.domain.member.Member
 import com.unimal.user.domain.member.MemberRepository
 import com.unimal.user.kafka.topics.MemberKafkaTopic
+import com.unimal.user.service.login.dto.UserInfo
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.token.TokenManager
 import com.unimal.user.service.token.dto.JwtTokenDTO
 import com.unimal.user.service.member.MemberObject
 import com.unimal.webcommon.exception.DuplicatedException
 import com.unimal.webcommon.exception.TelNotFoundException
+import com.unimal.webcommon.exception.WithdrawalException
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
@@ -38,26 +41,26 @@ class LoginService(
     fun login(loginRequest: LoginRequest): JwtTokenDTO? {
 
         val provider: LoginType = loginRequest.provider
-        val member: Member = when (loginRequest) {
-            is KakaoLoginRequest -> {
-                val userInfo = kakaoLoginObject.getUserInfo(loginRequest.token)
-                kakaoLoginObject.getMember(userInfo)
-            }
-            is NaverLoginRequest -> {
-                val userInfo = naverLoginObject.getUserInfo(loginRequest)
-                naverLoginObject.getMember(userInfo)
-            }
-            is GoogleLoginRequest -> {
-                val userInfo = googleLoginObject.getUserInfo(loginRequest)
-                googleLoginObject.getMember(userInfo)
-            }
-            is ManualLoginRequest -> {
-                val userInfo = manualLoginObject.getUserInfo(loginRequest)
-                manualLoginObject.getMember(userInfo)
-            }
-            else -> {
-                throw LoginException(ErrorCode.LOGIN_NOT_SUPPORTED.message)
-            }
+        val userInfo = getUserInfo(loginRequest)
+        val member = getMember(loginRequest, userInfo)
+
+        // 재가입
+        if (member.status == UserStatus.RESIGNIN) {
+            member.reSignIn(
+                name = userInfo.name,
+                nickname = userInfo.nickname,
+                profileImage = userInfo.profileImage,
+            )
+            memberRepository.save(member)
+
+            memberKafkaTopic.reSignInTopicIssue(
+                UpdateUser(
+                    email = member.email,
+                    name = member.name,
+                    nickname = member.nickname,
+                    profileImage = member.profileImage
+                )
+            )
         }
 
         // 전화번호가 없음
@@ -65,10 +68,9 @@ class LoginService(
             throw TelNotFoundException(data = member.email)
         }
 
-        // 재가입
-        if (member.withdrawalAt != null) {
-            member.reSignIn()
-            memberKafkaTopic.reSignInTopicIssue(member.email)
+        // 탈퇴 상태
+        if (member.status == UserStatus.WITHDRAWAL) {
+            throw WithdrawalException()
         }
 
         val roles = member.roles.map { it.roleName.name }
@@ -140,13 +142,25 @@ class LoginService(
 
         member.withdrawal()
         memberRepository.save(member)
+        memberKafkaTopic.withdrawalTopicIssue(member.email)
+    }
 
-        memberKafkaTopic.userUpdateTopicIssue(
-            UpdateUser(
-                email = member.email,
-                withdrawalAt = member.withdrawalAt,
-                status = member.status
-            )
-        )
+    private fun getUserInfo(
+        loginRequest: LoginRequest
+    ) = when (loginRequest) {
+        is KakaoLoginRequest -> kakaoLoginObject.getUserInfo(loginRequest.token)
+        is NaverLoginRequest -> naverLoginObject.getUserInfo(loginRequest)
+        is GoogleLoginRequest -> googleLoginObject.getUserInfo(loginRequest)
+        is ManualLoginRequest -> manualLoginObject.getUserInfo(loginRequest)
+    }
+
+    private fun getMember(
+        loginRequest: LoginRequest,
+        userInfo: UserInfo
+    ) = when (loginRequest) {
+        is KakaoLoginRequest -> kakaoLoginObject.getMember(userInfo)
+        is NaverLoginRequest -> naverLoginObject.getMember(userInfo)
+        is GoogleLoginRequest -> googleLoginObject.getMember(userInfo)
+        is ManualLoginRequest -> manualLoginObject.getMember(userInfo)
     }
 }
