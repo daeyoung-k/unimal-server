@@ -138,6 +138,13 @@ class TelNotFoundException(
     data: Any? = emptyMap<String, String>()
 ) : CustomException(message, code, status, data)
 
+class WithdrawalException(
+    message: String = ErrorCode.WITHDRAWAL_STATUS.message,
+    code: Int? = ErrorCode.WITHDRAWAL_STATUS.code,
+    status: HttpStatus? = null,
+    data: Any? = emptyMap<String, String>()
+) : CustomException(message, code, status, data)
+
 class InvalidException(
     message: String?,
     code: Int? = null,

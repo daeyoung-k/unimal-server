@@ -30,9 +30,17 @@ class MemberKafkaTopic(
         }
     }
 
-    fun reSignInTopicIssue(email: String) {
+    fun withdrawalTopicIssue(email: String) {
         try {
-            kafkaStringTemplate.send("user.reSignInTopic", email)
+            kafkaStringTemplate.send("user.withdrawalTopic", email)
+        } catch (e: Exception) {
+            logger.error(e) { "회원 탈퇴 토픽 발행 오류 : ${e.message}" }
+        }
+    }
+
+    fun reSignInTopicIssue(updateUser: UpdateUser) {
+        try {
+            kafkaUserUpdateTemplate.send("user.reSignInTopic", updateUser)
         } catch (e: Exception) {
             logger.error(e) { "재가입 토픽 발행 오류 : ${e.message}" }
         }
