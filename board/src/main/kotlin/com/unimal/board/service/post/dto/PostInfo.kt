@@ -1,6 +1,5 @@
 package com.unimal.board.service.post.dto
 
-import com.unimal.board.enums.MapShow
 import com.unimal.board.enums.PostShow
 import java.time.LocalDateTime
 
@@ -15,7 +14,7 @@ data class PostInfo(
     val latitude: Double,
     val longitude: Double,
     val show: PostShow,
-    val mapShow: MapShow,
+    val mapShow: PostShow,
     val createdAt: LocalDateTime,
     val fileInfoList: List<BoardFileInfo?>,
     val likeCount: Long,
