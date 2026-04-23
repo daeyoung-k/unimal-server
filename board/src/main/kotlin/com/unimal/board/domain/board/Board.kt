@@ -1,7 +1,6 @@
 package com.unimal.board.domain.board
 
 import com.unimal.board.domain.member.BoardMember
-import com.unimal.board.enums.MapShow
 import com.unimal.board.enums.PostShow
 import com.unimal.common.domain.BaseIdEntity
 import jakarta.persistence.*
@@ -40,7 +39,7 @@ open class Board(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "map_show", nullable = false, length = 20)
-    var mapShow: MapShow = MapShow.SAME,
+    var mapShow: PostShow = PostShow.SAME,
 
     var del: Boolean = false,
     val createdAt: LocalDateTime = LocalDateTime.now(),
