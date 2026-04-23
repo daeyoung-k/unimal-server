@@ -27,4 +27,10 @@ class WebPageController {
         val html = ClassPathResource("static/support.html").inputStream.readBytes().toString(Charsets.UTF_8)
         return Mono.just(html)
     }
+
+    @GetMapping("/stomap/terms", produces = [MediaType.TEXT_HTML_VALUE])
+    fun terms(): Mono<String> {
+        val html = ClassPathResource("static/terms.html").inputStream.readBytes().toString(Charsets.UTF_8)
+        return Mono.just(html)
+    }
 }
