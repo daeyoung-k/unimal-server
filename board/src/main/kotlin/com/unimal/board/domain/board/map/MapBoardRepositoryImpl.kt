@@ -49,7 +49,10 @@ class MapBoardRepositoryImpl(
             LEFT  JOIN board_reply br ON br.board_id = b.id AND br.del = false
             WHERE ST_DWithin(b.location, ST_MakePoint(:lng, :lat)::geography, :radius)
               AND b.del = false
-              AND b.show = 'PUBLIC'
+              AND (
+                    (b.map_show = 'SAME' AND b.show = 'PUBLIC')
+                    OR b.map_show = 'PUBLIC'
+                  )
             GROUP BY b.id, bf.file_url
             ORDER BY score DESC
             LIMIT :limit

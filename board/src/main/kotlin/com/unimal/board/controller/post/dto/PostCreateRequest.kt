@@ -2,7 +2,6 @@ package com.unimal.board.controller.post.dto
 
 import com.unimal.board.domain.board.Board
 import com.unimal.board.domain.member.BoardMember
-import com.unimal.board.enums.MapShow
 import com.unimal.board.enums.PostShow
 import org.locationtech.jts.geom.Point
 
@@ -17,7 +16,7 @@ data class PostCreateRequest(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val isShow: PostShow = PostShow.PUBLIC,
-    val isMapShow: MapShow = MapShow.SAME,
+    val isMapShow: PostShow = PostShow.SAME,
 ) {
     fun toBoardCreateDto(
         user: BoardMember,
@@ -33,8 +32,8 @@ data class PostCreateRequest(
             guGun = guGun,
             dong = dong,
             location = location,
-            show = isShow,
-            mapShow = isMapShow
+            show = PostShow.PUBLIC,
+            mapShow = isShow
         )
     }
 }
