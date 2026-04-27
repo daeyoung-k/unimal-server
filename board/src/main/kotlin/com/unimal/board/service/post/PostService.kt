@@ -16,6 +16,7 @@ import com.unimal.board.domain.board.reply.BoardReply
 import com.unimal.board.domain.board.reply.BoardReplyRepository
 import com.unimal.board.domain.board.reply.toDto
 import com.unimal.board.domain.member.BoardMemberRepository
+import com.unimal.board.enums.PostShow
 import com.unimal.board.grpc.file.FileDeleteGrpcService
 import com.unimal.board.kafka.topics.PostKafkaTopic
 import com.unimal.board.kafka.topics.dto.UserCountIssue
@@ -110,6 +111,11 @@ class PostService(
             isOwner = false
         }
 
+        val mapShow = if (
+            (board.location?.y != null && board.location?.x != null)
+            && ((board.mapShow == PostShow.SAME && board.show == PostShow.PUBLIC) || board.mapShow == PostShow.PUBLIC)
+            ) PostShow.PUBLIC else PostShow.PRIVATE
+
         return PostInfo(
             boardId = hashidsUtil.encode(board.id!!),
             email = boardMember.email,
@@ -121,7 +127,7 @@ class PostService(
             latitude = board.location?.y ?: 0.0,
             longitude = board.location?.x ?: 0.0,
             show = board.show,
-            mapShow = board.mapShow,
+            mapShow = mapShow,
             createdAt = board.createdAt,
             fileInfoList = boardFileInfo,
             likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
@@ -158,6 +164,11 @@ class PostService(
             }
             val isLike = likeList.any { it.board == board && it.email == ownerEmail }
 
+            val mapShow = if (
+                (board.location?.y != null && board.location?.x != null)
+                && ((board.mapShow == PostShow.SAME && board.show == PostShow.PUBLIC) || board.mapShow == PostShow.PUBLIC)
+            ) PostShow.PUBLIC else PostShow.PRIVATE
+
             val isOwner = boardMember.email == ownerEmail
             val encryptBoardId = hashidsUtil.encode(board.id!!)
             PostInfo(
@@ -171,7 +182,7 @@ class PostService(
                 latitude = board.location?.y ?: 0.0,
                 longitude = board.location?.x ?: 0.0,
                 show = board.show,
-                mapShow = board.mapShow,
+                mapShow = mapShow,
                 createdAt = board.createdAt,
                 fileInfoList = fileInfoList,
                 likeCount = likeManager.getCachePostLikeCount(board.id!!.toString()),
