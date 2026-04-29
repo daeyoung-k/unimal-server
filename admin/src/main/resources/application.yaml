@@ -1,5 +1,6 @@
 server:
   port: ${ADMIN_SERVICE_PORT}
+  forward-headers-strategy: framework
   servlet:
     context-path: /admin
 
