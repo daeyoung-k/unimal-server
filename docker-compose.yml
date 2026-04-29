@@ -85,6 +85,9 @@ services:
   photo-server:
     image: eodud4976/unimal-photo:${PHOTO_TAG:-latest}
     pull_policy: always
+    depends_on:
+      api-gateway-server:
+        condition: service_started
     ports:
       - "127.0.0.1:8084:8084"
       - "127.0.0.1:50084:50084"
@@ -101,9 +104,31 @@ services:
   notification-server:
     image: eodud4976/unimal-notification:${NOTIFICATION_TAG:-latest}
     pull_policy: always
+    depends_on:
+      api-gateway-server:
+        condition: service_started
     ports:
       - "127.0.0.1:8085:8085"
       - "127.0.0.1:50085:50085"
+    restart: always
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_HOST: ${DATABASE_DOCKER_HOST}
+      REDIS_HOST: ${REDIS_DOCKER_HOST}
+    networks:
+      - backend-network
+
+  admin-server:
+    image: eodud4976/unimal-admin:${ADMIN_TAG:-latest}
+    pull_policy: always
+    depends_on:
+      api-gateway-server:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8086:8086"
+      - "127.0.0.1:50086:50086"
     restart: always
     env_file:
       - .env
