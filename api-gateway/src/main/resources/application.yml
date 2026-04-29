@@ -71,5 +71,8 @@ custom:
     notification:
       uri: http://${NOTIFICATION_SERVICE_URI}
       port: ${NOTIFICATION_SERVICE_PORT}
+    admin:
+      uri: http://${ADMIN_SERVICE_URI}
+      port: ${ADMIN_SERVICE_PORT}
 
 
