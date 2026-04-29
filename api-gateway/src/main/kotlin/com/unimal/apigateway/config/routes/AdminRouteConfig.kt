@@ -1,0 +1,50 @@
+package com.unimal.apigateway.config.routes
+
+import com.unimal.apigateway.config.routes.filter.AccessTokenFilter
+import com.unimal.apigateway.config.routes.filter.OptionalAccessTokenFilter
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.cloud.gateway.route.RouteLocator
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
+import org.springframework.cloud.gateway.route.builder.RouteLocatorDsl
+import org.springframework.cloud.gateway.route.builder.routes
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+
+@Configuration
+class AdminRouteConfig(
+    private val accessTokenFilter: AccessTokenFilter,
+    private val optionalAccessTokenFilter: OptionalAccessTokenFilter,
+) {
+
+    @Value("\${custom.route.admin.uri}")
+    private lateinit var adminUri: String
+
+    @Value("\${custom.route.admin.port}")
+    private lateinit var adminPort: String
+
+    @Bean
+    fun adminRouting(builder: RouteLocatorBuilder): RouteLocator {
+        val baseUri = "${adminUri}:${adminPort}"
+        return builder.routes {
+            publicRoutes(baseUri)
+            filterRoutes(baseUri)
+        }
+    }
+
+    private fun RouteLocatorDsl.publicRoutes(
+        baseUri: String
+    ) {
+        route("adminPublicRoutes") {
+            path(
+                "/admin/**",
+            )
+            uri(baseUri)
+        }
+
+    }
+
+    private fun RouteLocatorDsl.filterRoutes(
+        baseUri: String
+    ) {
+    }
+}
