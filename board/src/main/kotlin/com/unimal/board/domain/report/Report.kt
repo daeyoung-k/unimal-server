@@ -13,14 +13,14 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "report")
 open class Report(
-    @Column("reporter_email")
+    @Column(name = "reporter_email")
     val reporterEmail: String,
 
     @Enumerated(EnumType.STRING)
-    @Column("target_type")
+    @Column(name = "target_type")
     val targetType: ReportTargetType,
 
-    @Column("target_id")
+    @Column(name = "target_id")
     val targetId: Long,
 
     @Column(length = 50)
@@ -32,7 +32,7 @@ open class Report(
     @Enumerated(EnumType.STRING)
     val status: ReportStatus = ReportStatus.PENDING,
 
-    @Column("admin_memo", length = 500)
+    @Column(name = "admin_memo", length = 500)
     val adminMemo: String? = null,
 
     val createdAt: LocalDateTime = LocalDateTime.now(),

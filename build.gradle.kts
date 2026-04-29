@@ -110,7 +110,8 @@ configure(listOf(
 // 1. QClass 생성만 필요한 모듈 (공통)
 configure(listOf(
     project(":common"),
-    project(":board"), // board도 QClass 생성이 필요하므로 포함
+    project(":board"),
+    project(":admin"),
 )) {
     dependencies {
         val queryDslVersion = "5.1.0"
@@ -131,6 +132,7 @@ configure(listOf(
 // 2. QueryDSL 런타임이 필요한 모듈 (실제 사용)
 configure(listOf(
     project(":board"),
+    project(":admin"),
 )) {
     dependencies {
         val queryDslVersion = "5.1.0"
