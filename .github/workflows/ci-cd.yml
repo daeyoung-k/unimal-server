@@ -20,6 +20,7 @@ jobs:
       board: ${{ steps.filter.outputs.board }}
       photo: ${{ steps.filter.outputs.photo }}
       notification: ${{ steps.filter.outputs.notification }}
+      admin: ${{ steps.filter.outputs.admin }}
       docker-compose: ${{ steps.filter.outputs.docker-compose }}
     steps:
       - name: Checkout code
@@ -66,6 +67,12 @@ jobs:
               - 'notification/**'
               - 'common/**'
               - 'proto-common/**'
+              - 'web-common/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+            admin:
+              - 'admin/**'
+              - 'common/**'
               - 'web-common/**'
               - 'build.gradle.kts'
               - 'settings.gradle.kts'
@@ -135,7 +142,8 @@ jobs:
       needs.detect-changes.outputs.map == 'true' ||
       needs.detect-changes.outputs.board == 'true' ||
       needs.detect-changes.outputs.photo == 'true' ||
-      needs.detect-changes.outputs.notification == 'true'
+      needs.detect-changes.outputs.notification == 'true' ||
+      needs.detect-changes.outputs.admin == 'true'
     strategy:
       matrix:
         module:
@@ -145,6 +153,7 @@ jobs:
           - board
           - photo
           - notification
+          - admin
     steps:
       - name: Check if module changed
         id: check
@@ -207,7 +216,8 @@ jobs:
         needs.detect-changes.outputs.map == 'true' ||
         needs.detect-changes.outputs.board == 'true' ||
         needs.detect-changes.outputs.photo == 'true' ||
-        needs.detect-changes.outputs.notification == 'true'
+        needs.detect-changes.outputs.notification == 'true' ||
+        needs.detect-changes.outputs.admin == 'true'
       )
     strategy:
       matrix:
@@ -218,6 +228,7 @@ jobs:
           - board
           - photo
           - notification
+          - admin
         include:
           - module: api-gateway
             image: eodud4976/unimal-apigateway
@@ -231,6 +242,8 @@ jobs:
             image: eodud4976/unimal-photo
           - module: notification
             image: eodud4976/unimal-notification
+          - module: admin
+            image: eodud4976/unimal-admin
     steps:
       - name: Check if module changed
         id: check
@@ -287,7 +300,8 @@ jobs:
         needs.detect-changes.outputs.map == 'true' ||
         needs.detect-changes.outputs.board == 'true' ||
         needs.detect-changes.outputs.photo == 'true' ||
-        needs.detect-changes.outputs.notification == 'true'
+        needs.detect-changes.outputs.notification == 'true' ||
+        needs.detect-changes.outputs.admin == 'true'
       )
     strategy:
       max-parallel: 3
@@ -299,6 +313,7 @@ jobs:
           - board
           - photo
           - notification
+          - admin
         include:
           - module: api-gateway
             service: api-gateway-server
@@ -330,6 +345,11 @@ jobs:
             image: eodud4976/unimal-notification
             port: 8085
             env_var: NOTIFICATION_TAG
+          - module: admin
+            service: admin-server
+            image: eodud4976/unimal-admin
+            port: 8086
+            env_var: ADMIN_TAG
     steps:
       - name: Check if module changed
         id: check
