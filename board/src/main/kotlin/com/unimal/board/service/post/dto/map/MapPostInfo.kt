@@ -24,5 +24,8 @@ data class MapPostInfo(
     @JsonProperty("reply_count")
     val replyCount: Long,
     val score: Double,
-    val isOwner: Boolean = false
+    @JsonProperty("is_owner")
+    val isOwner: Boolean = false,
+    @JsonProperty("is_like")
+    val isLike: Boolean = false,
 )

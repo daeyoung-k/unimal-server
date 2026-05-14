@@ -1,7 +1,6 @@
 package com.unimal.board.domain.board.map
 
 import com.unimal.board.service.post.dto.map.MapPostInfo
-import com.unimal.board.utils.HashidsUtil
 import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.springframework.stereotype.Repository
@@ -38,7 +37,13 @@ class MapBoardRepositoryImpl(
                   + COALESCE(bl.like_count, 0) * 2.0
                   + COALESCE(br.reply_count, 0) * 3.0
                 ) AS score,
-                (CASE WHEN b.email = :userEmail Then 'T' ELSE '' END) as is_owner
+                (CASE WHEN b.email = :userEmail Then 'T' ELSE '' END) as is_owner,
+                EXISTS (
+                    SELECT 1
+                    FROM board_like my_bl
+                    WHERE my_bl.board_id = b.id
+                      AND my_bl.email = :userEmail
+                ) AS is_like
             FROM board b
             INNER JOIN LATERAL (
                 SELECT bf.file_url
@@ -91,7 +96,8 @@ class MapBoardRepositoryImpl(
                     likeCount       = (row[9] as Number).toLong(),
                     replyCount      = (row[10] as Number).toLong(),
                     score           = (row[11] as Number).toDouble(),
-                    isOwner         = row[12]?.toString() == "T"
+                    isOwner         = row[12]?.toString() == "T",
+                    isLike         = row[13] as Boolean,
                 )
             }
     }
