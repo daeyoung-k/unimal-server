@@ -17,6 +17,8 @@ data class MapPostInfo(
     val longitude: Double,
     @JsonProperty("created_at")
     val createdAt: LocalDateTime,
+    @JsonProperty("file_url")
+    val fileUrl: String? = "",
     @JsonProperty("file_info_list")
     val fileInfoList: List<BoardFileInfo>? = emptyList(),
     @JsonProperty("like_count")
