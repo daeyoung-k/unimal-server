@@ -24,4 +24,12 @@ class MapController(
     ): CommonResponse {
         return CommonResponse(data = mapPostService.getLocationPosts(userInfo, locationPostRequest))
     }
+
+    @GetMapping("/post")
+    fun postList(
+        @UserInfoAnnotation userInfo: CommonUserInfo,
+        @ModelAttribute @Valid locationPostRequest: LocationPostRequest
+    ): CommonResponse {
+        return CommonResponse(data = mapPostService.mapPosts(userInfo, locationPostRequest))
+    }
 }

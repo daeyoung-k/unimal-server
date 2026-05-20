@@ -21,6 +21,19 @@ class MapPostService(
         userInfo: CommonUserInfo,
         locationPostRequest: LocationPostRequest
     ): List<MapPostInfo> {
+        return mapBoardRepositoryImpl.findLocationPosts(
+            userInfo.email,
+            locationPostRequest.latitude,
+            locationPostRequest.longitude,
+            locationPostRequest.zoomLevel.radiusMeters,
+            locationPostRequest.zoomLevel.postLimit
+        )
+    }
+
+    fun mapPosts(
+        userInfo: CommonUserInfo,
+        locationPostRequest: LocationPostRequest
+    ): List<MapPostInfo> {
         val mapBoardList = mapBoardRepositoryImpl.findLocationPosts(
             userInfo.email,
             locationPostRequest.latitude,
