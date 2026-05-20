@@ -50,3 +50,4 @@ out/
 docker/
 .claude
 *local.yml
+CLAUDE.md

@@ -80,6 +80,7 @@ class BoardRouteConfig(
 
                 // 지도 관련
                 "/board/map/location/post",
+                "/board/map/post",
             )
             .filters { f ->
                 f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))
