@@ -46,4 +46,9 @@ class ManualLoginObject(
         val telCheck = redisCacheManager.getCache(telKey)
         return emailCheck == "SUCCESS" && telCheck == "SUCCESS"
     }
+
+    fun emailSuccessCheck(email: String): Boolean {
+        val emailKey = "$email:auth-code"
+        return redisCacheManager.getCache(emailKey) == "SUCCESS"
+    }
 }
