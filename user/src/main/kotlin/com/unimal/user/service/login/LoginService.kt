@@ -119,7 +119,8 @@ class LoginService(
 
         val member = memberObject.signIn(signupRequest.toUserInfo())
 
-        // 소셜 로그인 tel-missing 플로우와 동일: Flutter가 code=1009 감지 후 tel 입력 화면으로 이동
+        // TelNotFoundException은 RuntimeException이 아닌 CustomException(checked)이므로
+        // @Transactional이 롤백하지 않고 member 저장이 먼저 커밋됨 — 소셜 로그인 tel-missing 플로우와 동일
         throw TelNotFoundException(data = member.email)
     }
 
