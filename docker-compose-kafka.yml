@@ -78,6 +78,9 @@ services:
       SERVER_PORT: 9090
       KAFKA_CLUSTERS_0_NAME: unimal-kafka-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:29092,kafka-2:29092,kafka-3:29092
+      AUTH_TYPE: LOGIN_FORM
+      SPRING_SECURITY_USER_NAME: ${KAFKA_ID}
+      SPRING_SECURITY_USER_PASSWORD: ${KAFKA_PASSWORD}
     depends_on:
       - kafka-1
       - kafka-2
