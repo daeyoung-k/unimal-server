@@ -100,6 +100,31 @@ class LoginService(
     }
 
     @Transactional
+    fun signupV2(signupRequest: SignupV2Request): Nothing {
+        memberRepository.findByEmail(signupRequest.email)
+            ?.let { throw DuplicatedException(ErrorCode.EMAIL_USED.message) }
+
+        if (signupRequest.password.lowercase() != signupRequest.checkPassword.lowercase()) {
+            throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
+        }
+
+        if (!memberObject.passwordFormatCheck(signupRequest.password.lowercase())) {
+            throw LoginException(ErrorCode.PASSWORD_FORMAT_INVALID.message)
+        }
+
+        manualLoginObject as ManualLoginObject
+        if (!manualLoginObject.emailSuccessCheck(signupRequest.email)) {
+            throw LoginException(ErrorCode.AUTHENTICATION_NOT_COMPLETED.message)
+        }
+
+        val member = memberObject.signIn(signupRequest.toUserInfo())
+
+        // TelNotFoundException은 RuntimeException이 아닌 CustomException(checked)이므로
+        // @Transactional이 롤백하지 않고 member 저장이 먼저 커밋됨 — 소셜 로그인 tel-missing 플로우와 동일
+        throw TelNotFoundException(data = member.email)
+    }
+
+    @Transactional
     fun logout(commonUserInfo: CommonUserInfo) {
         val member = memberRepository.findByEmailAndProvider(
             email = commonUserInfo.email,

@@ -4,22 +4,28 @@ import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.config.annotation.SocialLoginToken
-import com.unimal.user.controller.request.*
+import com.unimal.user.controller.request.EmailTelAuthCodeVerifyRequest
+import com.unimal.user.controller.request.GoogleLoginRequest
+import com.unimal.user.controller.request.KakaoLoginRequest
+import com.unimal.user.controller.request.ManualLoginRequest
+import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.service.authentication.AuthenticationService
 import com.unimal.user.service.login.LoginService
-import com.unimal.user.service.member.MemberService
 import com.unimal.user.service.token.TokenService
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/auth")
-class AuthController(
+class LoginController(
     private val loginService: LoginService,
     private val tokenService: TokenService,
     private val authenticationService: AuthenticationService,
-    private val memberService: MemberService
 ) {
     @GetMapping("/login/mobile/kakao")
     fun mobileKakao(
@@ -69,14 +75,6 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/signup/manual")
-    fun manualSignup(
-        @RequestBody @Valid signupRequest: SignupRequest,
-    ): CommonResponse {
-        loginService.signup(signupRequest)
-        return CommonResponse()
-    }
-
     @GetMapping("/token-reissue")
     fun tokenReissue(
         @UserInfoAnnotation commonUserInfo: CommonUserInfo,
@@ -105,61 +103,16 @@ class AuthController(
         return CommonResponse()
     }
 
-    @PostMapping("/email/code-request")
-    fun emailCodeRequest(
-        @RequestBody @Valid emailRequest: EmailRequest,
-    ): CommonResponse {
-        authenticationService.sendMailAuthCodeRequest(emailRequest)
-        return CommonResponse()
-    }
-
-    @PostMapping("/email/code-verify")
-    fun emailCodeVerify(
-        @RequestBody @Valid emailAuthCodeVerifyRequest: EmailAuthCodeVerifyRequest
-    ): CommonResponse {
-        authenticationService.emailAuthCodeVerify(emailAuthCodeVerifyRequest)
-        return CommonResponse()
-    }
-
-    @PostMapping("/tel/code-request")
-    fun telCodeRequest(
-        @RequestBody @Valid telRequest: TelRequest
-    ): CommonResponse {
-        authenticationService.sendTelAuthCodeRequest(telRequest)
-        return CommonResponse()
-    }
-
-    @PostMapping("/tel/code-verify")
-    fun telCodeVerify(
-        @RequestBody @Valid telAuthCodeVerifyRequest: TelAuthCodeVerifyRequest
-    ): CommonResponse {
-        authenticationService.telAuthCodeVerify(telAuthCodeVerifyRequest)
-        return CommonResponse()
-    }
-
-    @PostMapping("/email-tel/code-request")
-    fun emailTelCodeRequest(
-        @RequestBody @Valid emailTelAuthCodeRequest: EmailTelAuthCodeRequest
-    ): CommonResponse {
-        authenticationService.sendEmailTelAuthCodeRequest(emailTelAuthCodeRequest)
-        return CommonResponse()
-    }
-
-    @PostMapping("/email-tel/code-verify")
-    fun emailTelCodeVerify(
-        @RequestBody @Valid emailTelAuthCodeVerifyRequest: EmailTelAuthCodeVerifyRequest
-    ): CommonResponse {
-        authenticationService.emailTelAuthCodeVerify(emailTelAuthCodeVerifyRequest)
-        return CommonResponse()
-    }
-
     @PostMapping("/tel/check-update")
     fun telCheckUpdate(
         @RequestBody @Valid emailTelAuthCodeVerifyRequest: EmailTelAuthCodeVerifyRequest,
         response: HttpServletResponse
     ): CommonResponse {
         authenticationService.emailTelAuthCodeVerify(emailTelAuthCodeVerifyRequest)
-        val jwtToken = loginService.telCheckUpdate(emailTelAuthCodeVerifyRequest.email, emailTelAuthCodeVerifyRequest.tel)
+        val jwtToken = loginService.telCheckUpdate(
+            emailTelAuthCodeVerifyRequest.email,
+            emailTelAuthCodeVerifyRequest.tel
+        )
         response.setHeader("X-Unimal-Email", jwtToken.email)
         response.setHeader("X-Unimal-Access-Token", jwtToken.accessToken)
         response.setHeader("X-Unimal-Refresh-Token", jwtToken.refreshToken)

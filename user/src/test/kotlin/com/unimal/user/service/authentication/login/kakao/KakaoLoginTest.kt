@@ -39,7 +39,7 @@ class KakaoLoginTest {
     private val tokenManager: TokenManager = mockk(relaxed = true)
 
     private val memberObject = MemberObject(memberRepository, memberRoleRepository, roleRepository, memberKafkaTopic, passwordEncoder, redisCacheManager)
-    private val kakaoLoginObject = KakaoLoginObject(memberObject)
+    private val kakaoLoginObject = KakaoLoginObject(memberObject, memberRepository)
 
     // 테스트 실행 전 모킹 초기화
     @AfterEach
