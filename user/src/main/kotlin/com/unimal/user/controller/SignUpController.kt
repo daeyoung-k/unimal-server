@@ -7,13 +7,15 @@ import com.unimal.user.service.login.LoginService
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@RequestMapping("/auth")
 class SignUpController(
     private val loginService: LoginService
 ) {
-    @PostMapping("/auth/signup/manual")
+    @PostMapping("/signup/manual")
     fun manualSignup(
         @RequestBody @Valid signupRequest: SignupRequest,
     ): CommonResponse {
@@ -21,7 +23,7 @@ class SignUpController(
         return CommonResponse()
     }
 
-    @PostMapping("/v2/auth/signup/manual")
+    @PostMapping("/signup/v2/manual")
     fun manualSignupV2(
         @RequestBody @Valid signupRequest: SignupV2Request,
     ): CommonResponse {

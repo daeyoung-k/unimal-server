@@ -44,7 +44,6 @@ class UserRouteConfig(
             path(
                 "/user/auth/login/**",
                 "/user/auth/signup/**",
-                "/user/v2/auth/signup/**",
                 "/user/auth/email/**",
                 "/user/auth/tel/**",
                 "/user/auth/email-tel/**"
