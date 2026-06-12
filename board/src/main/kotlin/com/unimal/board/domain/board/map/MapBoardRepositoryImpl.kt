@@ -36,6 +36,11 @@ class MapBoardRepositoryImpl(
                     END
                   + COALESCE(bl.like_count, 0) * 2.0
                   + COALESCE(br.reply_count, 0) * 3.0
+                  + CASE WHEN EXISTS (
+                      SELECT 1                
+                      FROM board_file bf                
+                      WHERE bf.board_id = b.id                
+                    ) THEN 3.0 ELSE 0.0 END
                 ) AS score,
                 (CASE WHEN b.email = :userEmail Then 'T' ELSE '' END) as is_owner,
                 EXISTS (
@@ -45,13 +50,6 @@ class MapBoardRepositoryImpl(
                       AND my_bl.email = :userEmail
                 ) AS is_like
             FROM board b
-            INNER JOIN LATERAL (
-                SELECT bf.file_url
-                FROM board_file bf
-                WHERE bf.board_id = b.id
-                ORDER BY bf.id ASC
-                LIMIT 1
-            ) bf ON true
             LEFT JOIN board_member bm on bm.email = b.email
             LEFT JOIN (
                 SELECT board_id, COUNT(*) AS like_count
@@ -87,7 +85,7 @@ class MapBoardRepositoryImpl(
                     id              = row[0].toString(),
                     nickname        = row[1]?.toString() ?: "",
                     profileImage    = row[2]?.toString(),
-                    title           = row[3]?.toString(),
+                    title           = row[3]?.toString() ?: "",
                     content         = row[4].toString(),
                     streetName      = row[5]?.toString(),
                     latitude        = (row[6] as Number).toDouble(),
