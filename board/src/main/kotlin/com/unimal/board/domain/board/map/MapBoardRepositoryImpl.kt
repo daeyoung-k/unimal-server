@@ -36,6 +36,7 @@ class MapBoardRepositoryImpl(
                     END
                   + COALESCE(bl.like_count, 0) * 2.0
                   + COALESCE(br.reply_count, 0) * 3.0
+                  + CASE WHEN bf.board_id IS NOT NULL THEN 3.0 ELSE 0.0 END
                 ) AS score,
                 (CASE WHEN b.email = :userEmail Then 'T' ELSE '' END) as is_owner,
                 EXISTS (
@@ -45,13 +46,6 @@ class MapBoardRepositoryImpl(
                       AND my_bl.email = :userEmail
                 ) AS is_like
             FROM board b
-            INNER JOIN LATERAL (
-                SELECT bf.file_url
-                FROM board_file bf
-                WHERE bf.board_id = b.id
-                ORDER BY bf.id ASC
-                LIMIT 1
-            ) bf ON true
             LEFT JOIN board_member bm on bm.email = b.email
             LEFT JOIN (
                 SELECT board_id, COUNT(*) AS like_count
@@ -64,12 +58,20 @@ class MapBoardRepositoryImpl(
                 WHERE del = false
                 GROUP BY board_id
             ) br ON br.board_id = b.id
+            LEFT JOIN (
+                SELECT DISTINCT board_id
+                FROM board_file
+            ) bf ON bf.board_id = b.id
             WHERE ST_DWithin(b.location, ST_MakePoint(:lng, :lat)::geography, :radius)
               AND b.del = false
               AND (
                     (b.map_show = 'SAME' AND b.show = 'PUBLIC')
                     OR b.map_show = 'PUBLIC'
                   )
+              AND (
+                    bf.board_id IS NOT NULL
+                    OR b.created_at >= NOW() - INTERVAL '48 hours'
+                )    
             ORDER BY score DESC
             LIMIT :limit
         """.trimIndent()
@@ -87,7 +89,7 @@ class MapBoardRepositoryImpl(
                     id              = row[0].toString(),
                     nickname        = row[1]?.toString() ?: "",
                     profileImage    = row[2]?.toString(),
-                    title           = row[3]?.toString(),
+                    title           = row[3]?.toString() ?: "",
                     content         = row[4].toString(),
                     streetName      = row[5]?.toString(),
                     latitude        = (row[6] as Number).toDouble(),

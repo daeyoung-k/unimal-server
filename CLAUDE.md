@@ -229,3 +229,9 @@ GitHub Actions — `master` 브랜치 푸시 시 **변경된 모듈만** 빌드�
 | 프로필 이미지 | `UserInfoService` | `POST /user/member/profile/image/upload` |
 
 로그인 성공 시 응답 헤더(`X-Unimal-Access-Token`, `X-Unimal-Refresh-Token`, `X-Unimal-Email`, `X-Unimal-Provider`)를 Flutter `AccountService`가 파싱해 `SecureStorage`에 저장한다.
+
+## Git 커밋 규칙
+
+- **중간 커밋 금지.** 작업(요청받은 과제) 단위로 나눠서 커밋하지 않는다.
+- 요청받은 작업이 **전부 끝난 뒤 한 번에 커밋**한다 (빌드/테스트 통과 확인 후).
+- 사용자가 명시적으로 요청하기 전에는 커밋하지 않는다.
