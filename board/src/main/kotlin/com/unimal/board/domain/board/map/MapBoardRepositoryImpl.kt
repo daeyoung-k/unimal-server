@@ -36,11 +36,7 @@ class MapBoardRepositoryImpl(
                     END
                   + COALESCE(bl.like_count, 0) * 2.0
                   + COALESCE(br.reply_count, 0) * 3.0
-                  + CASE WHEN EXISTS (
-                      SELECT 1                
-                      FROM board_file bf                
-                      WHERE bf.board_id = b.id                
-                    ) THEN 3.0 ELSE 0.0 END
+                  + CASE WHEN bf.board_id IS NOT NULL THEN 3.0 ELSE 0.0 END
                 ) AS score,
                 (CASE WHEN b.email = :userEmail Then 'T' ELSE '' END) as is_owner,
                 EXISTS (
@@ -62,12 +58,20 @@ class MapBoardRepositoryImpl(
                 WHERE del = false
                 GROUP BY board_id
             ) br ON br.board_id = b.id
+            LEFT JOIN (
+                SELECT DISTINCT board_id
+                FROM board_file
+            ) bf ON bf.board_id = b.id
             WHERE ST_DWithin(b.location, ST_MakePoint(:lng, :lat)::geography, :radius)
               AND b.del = false
               AND (
                     (b.map_show = 'SAME' AND b.show = 'PUBLIC')
                     OR b.map_show = 'PUBLIC'
                   )
+              AND (
+                    bf.board_id IS NOT NULL
+                    OR b.created_at >= NOW() - INTERVAL '48 hours'
+                )    
             ORDER BY score DESC
             LIMIT :limit
         """.trimIndent()
