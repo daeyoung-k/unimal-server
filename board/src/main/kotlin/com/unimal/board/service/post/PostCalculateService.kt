@@ -75,4 +75,10 @@ class PostCalculateService(
             totalPostCount
         }
     }
+
+    fun getLikedStoriesCount(
+        email: String
+    ): Long {
+        return boardLikeRepository.getLikedStoriesTotalCount(email)
+    }
 }
