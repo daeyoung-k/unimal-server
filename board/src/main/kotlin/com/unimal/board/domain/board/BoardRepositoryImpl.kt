@@ -163,4 +163,26 @@ class BoardRepositoryImpl(
             .orderBy(boardFile.main.desc(), boardFile.id.asc())
             .fetch() ?: emptyList()
     }
+
+    fun boardLikedStoriesList(
+        email: String,
+        page: Int = 0,
+        size: Int = 20
+    ): List<Board> {
+        return queryFactory
+            .selectFrom(board)
+            .innerJoin(board.email).fetchJoin()
+            .innerJoin(boardLike).on(
+                boardLike.board.eq(board),
+                boardLike.email.eq(email)
+            )
+            .where(
+                board.del.eq(false),
+                board.email.email.ne(email)
+            )
+            .orderBy(boardLike.createdAt.desc())
+            .offset((page * size).toLong())
+            .limit(size.toLong())
+            .fetch()
+    }
 }
