@@ -558,4 +558,45 @@ class PostService(
         return boardRepository.findBoardById(boardId) ?: throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
     }
 
+    fun getLikeStoriesList(
+        email: String,
+        page: Int = 0,
+        size: Int = 20
+    ): List<PostInfo> {
+        val boardList = boardRepositoryImpl.boardLikedStoriesList(email, page, size)
+        if (boardList.isEmpty()) return emptyList()
+
+        val idList = boardList.map { it.id!! }
+        val boardFiles = boardRepositoryImpl.boardFileList(idList)
+
+        return boardList.map { b ->
+            val boardMember = b.email
+            val fileInfoList = boardFiles.mapNotNull {
+                if (it.board == b) {
+                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+                } else null
+            }
+            PostInfo(
+                boardId = hashidsUtil.encode(b.id!!),
+                email = boardMember.email,
+                profileImage = boardMember.profileImage,
+                nickname = boardMember.nickname ?: "",
+                title = b.title ?: "",
+                content = b.content,
+                streetName = b.streetName!!,
+                latitude = b.location?.y ?: 0.0,
+                longitude = b.location?.x ?: 0.0,
+                show = b.show,
+                mapShow = b.mapShow,
+                createdAt = b.createdAt,
+                fileInfoList = fileInfoList,
+                likeCount = likeManager.getCachePostLikeCount(b.id!!.toString()),
+                replyCount = replyManager.getCachePostReplyCount(b.id!!.toString()),
+                reply = emptyList(),
+                isLike = true,
+                isOwner = boardMember.email == email
+            )
+        }
+    }
+
 }
