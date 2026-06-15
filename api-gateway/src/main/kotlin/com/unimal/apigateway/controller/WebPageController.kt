@@ -33,4 +33,15 @@ class WebPageController {
         val html = ClassPathResource("static/terms.html").inputStream.readBytes().toString(Charsets.UTF_8)
         return Mono.just(html)
     }
+
+    /**
+     * AdMob app-ads.txt — 광고 판매자 인증용(애드 사기 방지).
+     * 반드시 도메인 "루트"(/app-ads.txt)로 노출돼야 구글이 크롤링한다. (/stomap 하위 불가)
+     * 스토어 등록정보의 개발자 웹사이트 도메인과 일치해야 효력 발생.
+     */
+    @GetMapping("/app-ads.txt", produces = [MediaType.TEXT_PLAIN_VALUE])
+    fun appAdsTxt(): Mono<String> {
+        val txt = ClassPathResource("static/app-ads.txt").inputStream.readBytes().toString(Charsets.UTF_8)
+        return Mono.just(txt)
+    }
 }
