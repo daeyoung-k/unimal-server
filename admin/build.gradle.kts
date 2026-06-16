@@ -13,6 +13,8 @@ dependencies {
 
     //web
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
     //actuator & prometheus
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -33,4 +35,5 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
 
     testImplementation("io.mockk:mockk:1.14.2")
+    testImplementation("org.springframework.security:spring-security-test")
 }

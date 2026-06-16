@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stomap Admin Members</title>
+    <style>
+        :root {
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --surface-strong: #111827;
+            --text: #172033;
+            --muted: #667085;
+            --line: #dde3eb;
+            --line-soft: #eef2f6;
+            --primary: #2563eb;
+            --primary-soft: #e8f0ff;
+            --success: #047857;
+            --danger: #b42318;
+            --warning: #b54708;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .shell {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+        aside {
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-strong);
+            color: #f9fafb;
+            padding: 24px 18px;
+        }
+
+        .brand {
+            margin-bottom: 28px;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0;
+        }
+
+        nav {
+            display: grid;
+            gap: 6px;
+        }
+
+        nav a {
+            display: flex;
+            align-items: center;
+            min-height: 40px;
+            padding: 0 12px;
+            border-radius: 6px;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        nav a.active {
+            background: #1f2937;
+            color: #ffffff;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid #243244;
+        }
+
+        .sidebar-logout {
+            width: 100%;
+            min-height: 40px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 0 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .sidebar-logout:hover {
+            background: #273449;
+        }
+
+        .content {
+            min-width: 0;
+            padding: 28px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 0;
+        }
+
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 10px;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .summary-provider {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #475467;
+            white-space: nowrap;
+        }
+
+        .summary-provider strong {
+            color: #101828;
+        }
+
+        .table-panel {
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: minmax(180px, 1fr) repeat(3, minmax(132px, 160px)) auto auto;
+            gap: 10px;
+            align-items: end;
+            padding: 16px;
+            border-bottom: 1px solid var(--line-soft);
+            background: #fcfcfd;
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+        }
+
+        label {
+            color: #475467;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        input,
+        select {
+            width: 100%;
+            height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--text);
+            padding: 0 10px;
+            font: inherit;
+            font-size: 14px;
+        }
+
+        .filter-action,
+        .filter-reset {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+            border-radius: 6px;
+            padding: 0 13px;
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .filter-action {
+            border: 1px solid var(--primary);
+            background: var(--primary);
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .filter-reset {
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: #344054;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line-soft);
+            text-align: left;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f9fafb;
+            color: #475467;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .member-main {
+            display: grid;
+            gap: 3px;
+        }
+
+        .member-name {
+            color: #101828;
+            font-weight: 800;
+        }
+
+        .member-meta {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 0 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .status.ACTIVE {
+            background: #ecfdf3;
+            color: var(--success);
+        }
+
+        .status.INACTIVE,
+        .status.WITHDRAWAL {
+            background: #f2f4f7;
+            color: #475467;
+        }
+
+        .status.BLOCK {
+            background: #fef3f2;
+            color: var(--danger);
+        }
+
+        .status.RESIGNIN {
+            background: #fffaeb;
+            color: var(--warning);
+        }
+
+        .empty {
+            padding: 56px 16px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 14px 16px;
+            border-top: 1px solid var(--line-soft);
+            background: #fcfcfd;
+        }
+
+        .page-link,
+        .page-current {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            border-radius: 6px;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .page-link {
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: #344054;
+        }
+
+        .page-current {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .page-link.disabled {
+            color: #98a2b3;
+            pointer-events: none;
+        }
+
+        @media (max-width: 860px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+
+            aside {
+                padding: 18px;
+            }
+
+            nav {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            nav a {
+                justify-content: center;
+            }
+
+            .sidebar-footer {
+                margin-top: 14px;
+                padding-top: 14px;
+            }
+
+            .content {
+                padding: 20px 14px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .table-panel {
+                overflow-x: auto;
+            }
+
+            .filters {
+                grid-template-columns: 1fr 1fr;
+                min-width: 760px;
+            }
+
+            table {
+                min-width: 760px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <aside>
+        <div class="brand">Stomap Admin</div>
+        <nav aria-label="관리자 메뉴">
+            <a class="active" th:href="@{/members}">회원 관리</a>
+            <a th:href="@{/reports}">신고 관리</a>
+            <a th:href="@{/admin-members}">관리자 계정</a>
+        </nav>
+
+        <form class="sidebar-footer" method="post" th:action="@{/logout}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="sidebar-logout" type="submit">로그아웃</button>
+        </form>
+    </aside>
+
+    <main class="content">
+        <div class="topbar">
+            <div>
+                <h1>회원 관리</h1>
+                <div class="summary">
+                    <span>전체 <strong th:text="${membersPage.totalElements}">0</strong>명</span>
+                    <span class="summary-provider"
+                          th:each="providerCount : ${providerCounts}">
+                        <span th:text="${providerCount.label}">카카오</span>
+                        <strong th:text="${providerCount.count}">0</strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <section class="table-panel" aria-labelledby="members-heading">
+            <form class="filters" method="get" th:action="@{/members}">
+                <input type="hidden" name="size" th:value="${size}">
+
+                <div class="field">
+                    <label for="keyword">검색</label>
+                    <input id="keyword"
+                           name="keyword"
+                           type="search"
+                           placeholder="이메일, 닉네임, 이름"
+                           th:value="${filter.keyword}">
+                </div>
+
+                <div class="field">
+                    <label for="status">상태</label>
+                    <select id="status" name="status">
+                        <option value="" th:selected="${filter.status == null}">전체</option>
+                        <option th:each="statusOption : ${statuses}"
+                                th:value="${statusOption.name()}"
+                                th:text="${statusOption.description}"
+                                th:selected="${filter.status == statusOption}">활성화</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="provider">가입 방식</label>
+                    <select id="provider" name="provider">
+                        <option value="" th:selected="${filter.provider == null}">전체</option>
+                        <option th:each="providerOption : ${providerOptions}"
+                                th:value="${providerOption.value}"
+                                th:text="${providerOption.label}"
+                                th:selected="${filter.provider == providerOption.value}">카카오</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="sort">정렬</label>
+                    <select id="sort" name="sort">
+                        <option th:each="sortOption : ${sortOptions}"
+                                th:value="${sortOption.parameterName}"
+                                th:text="${sortOption.label}"
+                                th:selected="${filter.sort == sortOption}">최신순</option>
+                    </select>
+                </div>
+
+                <button class="filter-action" type="submit">검색</button>
+                <a class="filter-reset" th:href="@{/members(size=${size})}">초기화</a>
+            </form>
+
+            <table th:if="${!membersPage.empty}">
+                <thead>
+                <tr>
+                    <th scope="col">회원</th>
+                    <th scope="col">이메일</th>
+                    <th scope="col">가입 방식</th>
+                    <th scope="col">상태</th>
+                    <th scope="col">가입일</th>
+                    <th scope="col">수정일</th>
+                    <th scope="col">관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="member : ${membersPage.content}">
+                    <td>
+                        <div class="member-main">
+                            <span class="member-name" th:text="${member.nickname ?: member.name ?: '-'}">스토맵유저</span>
+                            <span class="member-meta" th:text="|ID ${member.id ?: '-'}|">ID 1</span>
+                        </div>
+                    </td>
+                    <td th:text="${member.email}">user@unimal.co.kr</td>
+                    <td th:text="${member.provider ?: '-'}">MANUAL</td>
+                    <td>
+                        <span class="status"
+                              th:classappend="${member.status.name()}"
+                              th:text="${member.status.description}">활성화</span>
+                    </td>
+                    <td th:text="${member.createdAt != null ? #temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                    <td th:text="${member.updatedAt != null ? #temporals.format(member.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                    <td>
+                        <a class="page-link"
+                           th:href="@{/members/{id}(id=${member.id})}">상세</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="empty" th:if="${membersPage.empty}">조회된 회원이 없습니다.</div>
+
+            <div class="pagination">
+                <a class="page-link"
+                   th:classappend="${membersPage.first} ? 'disabled'"
+                   th:href="@{/members(page=${membersPage.number - 1}, size=${size}, status=${filter.status != null ? filter.status.name() : ''}, provider=${filter.provider}, keyword=${filter.keyword}, sort=${filter.sort.parameterName})}">이전</a>
+                <span class="page-current"
+                      th:text="|${membersPage.number + 1} / ${membersPage.totalPages == 0 ? 1 : membersPage.totalPages}|">1 / 1</span>
+                <a class="page-link"
+                   th:classappend="${membersPage.last} ? 'disabled'"
+                   th:href="@{/members(page=${membersPage.number + 1}, size=${size}, status=${filter.status != null ? filter.status.name() : ''}, provider=${filter.provider}, keyword=${filter.keyword}, sort=${filter.sort.parameterName})}">다음</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
