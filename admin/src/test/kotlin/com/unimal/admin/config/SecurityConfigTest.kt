@@ -8,12 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.model
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -84,6 +87,41 @@ class SecurityConfigTest {
             .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"sidebar-footer\"")))
             .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"sidebar-logout\"")))
             .andExpect(content().string(org.hamcrest.Matchers.containsString("로그아웃")))
+    }
+
+    @Test
+    fun `authenticated admin can view member detail moderation page`() {
+        mockMvc.perform(
+            get("/members/1")
+                .with(user("admin").roles("ADMIN"))
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("회원 상세")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("프로필 이미지 초기화")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("소개글 숨김")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("회원 차단")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("운영 로그")))
+    }
+
+    @Test
+    @Transactional
+    fun `profile image reset log renders previous image preview`() {
+        mockMvc.perform(
+            post("/members/1/actions/reset-profile-image")
+                .param("reason", "부적절한 프로필 이미지")
+                .with(user("admin").roles("ADMIN"))
+                .with(csrf())
+        )
+            .andExpect(status().is3xxRedirection)
+
+        mockMvc.perform(
+            get("/members/1")
+                .with(user("admin").roles("ADMIN"))
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("운영 조치 전 이미지")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"log-image-preview\"")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("src=\"https://cdn.unimal.co.kr/profile/leaf.png\"")))
     }
 
     @Test

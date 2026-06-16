@@ -6,7 +6,10 @@ import com.unimal.admin.service.appmember.AppMemberSort
 import com.unimal.common.enums.UserStatus
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
+import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 
@@ -45,5 +48,76 @@ class AppMemberViewController(
         model.addAttribute("sortOptions", AppMemberSort.entries)
 
         return "appmember/list"
+    }
+
+    @GetMapping("/{memberId}")
+    fun detail(
+        @PathVariable memberId: Long,
+        model: Model
+    ): String {
+        model.addAttribute("member", appMemberService.getMember(memberId))
+        model.addAttribute("actionLogs", appMemberService.getActionLogs(memberId))
+
+        return "appmember/detail"
+    }
+
+    @PostMapping("/{memberId}/actions/reset-profile-image")
+    fun resetProfileImage(
+        @PathVariable memberId: Long,
+        @RequestParam reason: String,
+        authentication: Authentication
+    ): String {
+        appMemberService.resetProfileImage(
+            memberId = memberId,
+            adminLoginId = authentication.name,
+            reason = reason
+        )
+
+        return "redirect:/members/$memberId"
+    }
+
+    @PostMapping("/{memberId}/actions/hide-introduction")
+    fun hideIntroduction(
+        @PathVariable memberId: Long,
+        @RequestParam reason: String,
+        authentication: Authentication
+    ): String {
+        appMemberService.hideIntroduction(
+            memberId = memberId,
+            adminLoginId = authentication.name,
+            reason = reason
+        )
+
+        return "redirect:/members/$memberId"
+    }
+
+    @PostMapping("/{memberId}/actions/block")
+    fun blockMember(
+        @PathVariable memberId: Long,
+        @RequestParam reason: String,
+        authentication: Authentication
+    ): String {
+        appMemberService.blockMember(
+            memberId = memberId,
+            adminLoginId = authentication.name,
+            reason = reason
+        )
+
+        return "redirect:/members/$memberId"
+    }
+
+    @PostMapping("/{memberId}/actions/unblock")
+    fun unblockMember(
+        @PathVariable memberId: Long,
+        @RequestParam reason: String,
+        authentication: Authentication
+    ): String {
+        appMemberService.unblockMember(
+            memberId = memberId,
+            adminLoginId = authentication.name,
+            reason = reason
+        )
+
+        return "redirect:/members/$memberId"
     }
 }

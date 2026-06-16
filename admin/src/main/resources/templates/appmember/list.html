@@ -457,6 +457,7 @@
                     <th scope="col">상태</th>
                     <th scope="col">가입일</th>
                     <th scope="col">수정일</th>
+                    <th scope="col">관리</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -476,6 +477,10 @@
                     </td>
                     <td th:text="${member.createdAt != null ? #temporals.format(member.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
                     <td th:text="${member.updatedAt != null ? #temporals.format(member.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
+                    <td>
+                        <a class="page-link"
+                           th:href="@{/members/{id}(id=${member.id})}">상세</a>
+                    </td>
                 </tr>
                 </tbody>
             </table>
