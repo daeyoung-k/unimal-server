@@ -93,9 +93,25 @@
         }
 
         .summary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 10px;
             margin-top: 6px;
             color: var(--muted);
             font-size: 14px;
+        }
+
+        .summary-provider {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #475467;
+            white-space: nowrap;
+        }
+
+        .summary-provider strong {
+            color: #101828;
         }
 
         .logout {
@@ -114,6 +130,67 @@
             border: 1px solid var(--line);
             border-radius: 8px;
             background: var(--surface);
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: minmax(180px, 1fr) repeat(3, minmax(132px, 160px)) auto auto;
+            gap: 10px;
+            align-items: end;
+            padding: 16px;
+            border-bottom: 1px solid var(--line-soft);
+            background: #fcfcfd;
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+        }
+
+        label {
+            color: #475467;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        input,
+        select {
+            width: 100%;
+            height: 38px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--text);
+            padding: 0 10px;
+            font: inherit;
+            font-size: 14px;
+        }
+
+        .filter-action,
+        .filter-reset {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 38px;
+            border-radius: 6px;
+            padding: 0 13px;
+            font-size: 13px;
+            font-weight: 800;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .filter-action {
+            border: 1px solid var(--primary);
+            background: var(--primary);
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .filter-reset {
+            border: 1px solid var(--line);
+            background: var(--surface);
+            color: #344054;
         }
 
         table {
@@ -261,6 +338,11 @@
                 overflow-x: auto;
             }
 
+            .filters {
+                grid-template-columns: 1fr 1fr;
+                min-width: 760px;
+            }
+
             table {
                 min-width: 760px;
             }
@@ -283,7 +365,12 @@
             <div>
                 <h1>회원 관리</h1>
                 <div class="summary">
-                    전체 <strong th:text="${membersPage.totalElements}">0</strong>명
+                    <span>전체 <strong th:text="${membersPage.totalElements}">0</strong>명</span>
+                    <span class="summary-provider"
+                          th:each="providerCount : ${providerCounts}">
+                        <span th:text="${providerCount.label}">카카오</span>
+                        <strong th:text="${providerCount.count}">0</strong>
+                    </span>
                 </div>
             </div>
 
@@ -294,6 +381,54 @@
         </div>
 
         <section class="table-panel" aria-labelledby="members-heading">
+            <form class="filters" method="get" th:action="@{/members}">
+                <input type="hidden" name="size" th:value="${size}">
+
+                <div class="field">
+                    <label for="keyword">검색</label>
+                    <input id="keyword"
+                           name="keyword"
+                           type="search"
+                           placeholder="이메일, 닉네임, 이름"
+                           th:value="${filter.keyword}">
+                </div>
+
+                <div class="field">
+                    <label for="status">상태</label>
+                    <select id="status" name="status">
+                        <option value="" th:selected="${filter.status == null}">전체</option>
+                        <option th:each="statusOption : ${statuses}"
+                                th:value="${statusOption.name()}"
+                                th:text="${statusOption.description}"
+                                th:selected="${filter.status == statusOption}">활성화</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="provider">가입 방식</label>
+                    <select id="provider" name="provider">
+                        <option value="" th:selected="${filter.provider == null}">전체</option>
+                        <option th:each="providerOption : ${providerOptions}"
+                                th:value="${providerOption.value}"
+                                th:text="${providerOption.label}"
+                                th:selected="${filter.provider == providerOption.value}">카카오</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="sort">정렬</label>
+                    <select id="sort" name="sort">
+                        <option th:each="sortOption : ${sortOptions}"
+                                th:value="${sortOption.parameterName}"
+                                th:text="${sortOption.label}"
+                                th:selected="${filter.sort == sortOption}">최신순</option>
+                    </select>
+                </div>
+
+                <button class="filter-action" type="submit">검색</button>
+                <a class="filter-reset" th:href="@{/members(size=${size})}">초기화</a>
+            </form>
+
             <table th:if="${!membersPage.empty}">
                 <thead>
                 <tr>
@@ -331,12 +466,12 @@
             <div class="pagination">
                 <a class="page-link"
                    th:classappend="${membersPage.first} ? 'disabled'"
-                   th:href="@{/members(page=${membersPage.number - 1}, size=${size})}">이전</a>
+                   th:href="@{/members(page=${membersPage.number - 1}, size=${size}, status=${filter.status != null ? filter.status.name() : ''}, provider=${filter.provider}, keyword=${filter.keyword}, sort=${filter.sort.parameterName})}">이전</a>
                 <span class="page-current"
                       th:text="|${membersPage.number + 1} / ${membersPage.totalPages == 0 ? 1 : membersPage.totalPages}|">1 / 1</span>
                 <a class="page-link"
                    th:classappend="${membersPage.last} ? 'disabled'"
-                   th:href="@{/members(page=${membersPage.number + 1}, size=${size})}">다음</a>
+                   th:href="@{/members(page=${membersPage.number + 1}, size=${size}, status=${filter.status != null ? filter.status.name() : ''}, provider=${filter.provider}, keyword=${filter.keyword}, sort=${filter.sort.parameterName})}">다음</a>
             </div>
         </section>
     </main>
