@@ -1,8 +1,6 @@
 server:
   port: ${ADMIN_SERVICE_PORT}
   forward-headers-strategy: framework
-  servlet:
-    context-path: /admin
 
 spring:
   main:
@@ -25,6 +23,9 @@ spring:
     show-sql: true
     database: postgresql
     defer-datasource-initialization: true
+    properties:
+      hibernate:
+        default_schema: ${DATABASE_ADMIN_SCHEMA}
 
   sql:
     init:
@@ -36,6 +37,8 @@ spring:
     url: jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
+    dbcp2:
+      default-schema: ${DATABASE_ADMIN_SCHEMA}
 
   data:
     redis:

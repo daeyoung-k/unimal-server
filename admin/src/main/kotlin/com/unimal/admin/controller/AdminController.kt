@@ -1,13 +1,13 @@
 package com.unimal.admin.controller
 
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.stereotype.Controller
 
-@RestController
+@Controller
 class AdminController {
 
     @GetMapping
-    fun adminHelloWorld(): String {
-        return "Hello World!!"
+    fun index(): String {
+        return "redirect:/members"
     }
 }
