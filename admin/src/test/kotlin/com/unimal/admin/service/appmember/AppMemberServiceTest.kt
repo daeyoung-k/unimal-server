@@ -1,7 +1,9 @@
 package com.unimal.admin.service.appmember
 
+import com.unimal.admin.domain.adminmember.AdminMemberRepository
 import com.unimal.admin.domain.appmember.AppMember
 import com.unimal.admin.domain.appmember.AppMemberRepository
+import com.unimal.admin.domain.appmember.actionlog.AppMemberActionLogRepository
 import com.unimal.common.enums.UserStatus
 import io.mockk.every
 import io.mockk.mockk
@@ -17,7 +19,13 @@ import org.springframework.data.jpa.domain.Specification
 class AppMemberServiceTest {
 
     private val appMemberRepository = mockk<AppMemberRepository>()
-    private val appMemberService = AppMemberService(appMemberRepository)
+    private val adminMemberRepository = mockk<AdminMemberRepository>()
+    private val appMemberActionLogRepository = mockk<AppMemberActionLogRepository>()
+    private val appMemberService = AppMemberService(
+        appMemberRepository,
+        adminMemberRepository,
+        appMemberActionLogRepository
+    )
 
     @Test
     fun `members are loaded newest first with paging`() {
