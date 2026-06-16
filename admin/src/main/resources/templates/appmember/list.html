@@ -39,6 +39,8 @@
         }
 
         aside {
+            display: flex;
+            flex-direction: column;
             background: var(--surface-strong);
             color: #f9fafb;
             padding: 24px 18px;
@@ -71,6 +73,29 @@
         nav a.active {
             background: #1f2937;
             color: #ffffff;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 18px;
+            border-top: 1px solid #243244;
+        }
+
+        .sidebar-logout {
+            width: 100%;
+            min-height: 40px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 0 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .sidebar-logout:hover {
+            background: #273449;
         }
 
         .content {
@@ -112,17 +137,6 @@
 
         .summary-provider strong {
             color: #101828;
-        }
-
-        .logout {
-            height: 38px;
-            border: 1px solid var(--line);
-            border-radius: 6px;
-            background: var(--surface);
-            color: #344054;
-            padding: 0 14px;
-            font-weight: 700;
-            cursor: pointer;
         }
 
         .table-panel {
@@ -325,6 +339,11 @@
                 justify-content: center;
             }
 
+            .sidebar-footer {
+                margin-top: 14px;
+                padding-top: 14px;
+            }
+
             .content {
                 padding: 20px 14px;
             }
@@ -358,6 +377,11 @@
             <a th:href="@{/reports}">신고 관리</a>
             <a th:href="@{/admin-members}">관리자 계정</a>
         </nav>
+
+        <form class="sidebar-footer" method="post" th:action="@{/logout}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="sidebar-logout" type="submit">로그아웃</button>
+        </form>
     </aside>
 
     <main class="content">
@@ -373,11 +397,6 @@
                     </span>
                 </div>
             </div>
-
-            <form method="post" th:action="@{/logout}">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <button class="logout" type="submit">로그아웃</button>
-            </form>
         </div>
 
         <section class="table-panel" aria-labelledby="members-heading">

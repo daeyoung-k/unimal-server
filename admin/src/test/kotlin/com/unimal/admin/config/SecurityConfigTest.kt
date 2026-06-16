@@ -75,6 +75,18 @@ class SecurityConfigTest {
     }
 
     @Test
+    fun `authenticated admin sees logout inside sidebar`() {
+        mockMvc.perform(
+            get("/members")
+                .with(user("admin").roles("ADMIN"))
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"sidebar-footer\"")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"sidebar-logout\"")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("로그아웃")))
+    }
+
+    @Test
     fun `admin role cannot access admin member management`() {
         mockMvc.perform(
             get("/admin-members")
