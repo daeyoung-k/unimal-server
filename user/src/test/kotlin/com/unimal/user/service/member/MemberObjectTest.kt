@@ -20,14 +20,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import com.unimal.webcommon.exception.LoginException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import kotlin.test.assertNotNull
 
-@SpringBootTest
-@ActiveProfiles("local")
 class MemberObjectTest {
 
     private val memberRepository: MemberRepository = mockk(relaxed = true)
@@ -64,7 +60,7 @@ class MemberObjectTest {
         val provider = TEST_PROVIDER
         val member = Member(email = email, provider = provider.name)
 
-        every { memberRepository.findByEmailAndProvider(email, provider.name) } returns member
+        every { memberRepository.findByEmail(email) } returns member
 
         // when
         val result = memberObject.getEmailProviderMember(email, provider)
@@ -81,7 +77,7 @@ class MemberObjectTest {
         // Given
         val email = TEST_EMAIL
         val provider = TEST_PROVIDER
-        every { memberRepository.findByEmailAndProvider(email, provider.name) } returns null
+        every { memberRepository.findByEmail(email) } returns null
 
         // When
         val result = memberObject.getEmailProviderMember(email, provider)
@@ -94,12 +90,11 @@ class MemberObjectTest {
     @Test
     fun `signIn - 회원가입에 성공한다`() {
         // Given
-        val userInfo = mockk<UserInfo> {
-            every { toEntity() } returns Member(
-                email = TEST_EMAIL,
-                provider = TEST_PROVIDER.name
-            )
-        }
+        val userInfo = UserInfo(
+            email = TEST_EMAIL,
+            provider = TEST_PROVIDER.name,
+            nickname = null
+        )
 
         val member = userInfo.toEntity()
         val role = Role(TEST_ROLE.name)

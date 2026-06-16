@@ -30,7 +30,8 @@ class ManualLoginObject(
 
     override fun getMember(userInfo: UserInfo): Member {
         val member =  memberRepository.findByEmail(userInfo.email) ?: throw UserNotFoundException(ErrorCode.USER_NOT_FOUND.message)
-        val psCheck = memberObject.passwordCheck(userInfo.password!!, member.password!!)
+        val encodedPassword = member.password ?: throw LoginException(ErrorCode.PASSWORD_NOT_MATCH.message)
+        val psCheck = memberObject.passwordCheck(userInfo.password!!.lowercase(), encodedPassword)
         return if (psCheck) {
             member
         } else {

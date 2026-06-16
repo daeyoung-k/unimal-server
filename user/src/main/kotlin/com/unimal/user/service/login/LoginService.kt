@@ -40,7 +40,6 @@ class LoginService(
     @Transactional
     fun login(loginRequest: LoginRequest): JwtTokenDTO? {
 
-        val provider: LoginType = loginRequest.provider
         val userInfo = getUserInfo(loginRequest)
         val member = getMember(loginRequest, userInfo)
 
@@ -74,6 +73,7 @@ class LoginService(
         }
 
         val roles = member.roles.map { it.roleName.name }
+        val provider = LoginType.from(member.provider)
         return tokenManager.createJwtToken(member.email, member.nickname ?: "", provider, roles)
     }
 
@@ -126,9 +126,9 @@ class LoginService(
 
     @Transactional
     fun logout(commonUserInfo: CommonUserInfo) {
-        val member = memberRepository.findByEmailAndProvider(
+        val member = memberObject.getEmailProviderMember(
             email = commonUserInfo.email,
-            provider = LoginType.from(commonUserInfo.provider).name
+            provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(
             message = ErrorCode.USER_NOT_FOUND.message,
             code = HttpStatus.UNAUTHORIZED.value(),
@@ -153,9 +153,9 @@ class LoginService(
 
     @Transactional
     fun withdrawal(commonUserInfo: CommonUserInfo) {
-        val member = memberRepository.findByEmailAndProvider(
-            commonUserInfo.email,
-            LoginType.from(commonUserInfo.provider).name
+        val member = memberObject.getEmailProviderMember(
+            email = commonUserInfo.email,
+            provider = LoginType.from(commonUserInfo.provider)
         ) ?: throw UserNotFoundException(
             message = ErrorCode.USER_NOT_FOUND.message,
             code = HttpStatus.UNAUTHORIZED.value(),

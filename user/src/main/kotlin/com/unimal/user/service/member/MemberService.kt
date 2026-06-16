@@ -36,8 +36,8 @@ class MemberService(
     fun getMemberInfo(
         commonUserInfo: CommonUserInfo
     ): MemberInfo {
-        val provider = LoginType.from(commonUserInfo.provider)
-        return memberRepository.findByEmailAndProvider(commonUserInfo.email, provider.name)?.let { member ->
+        return memberRepository.findByEmail(commonUserInfo.email)?.let { member ->
+            val provider = LoginType.from(member.provider)
             MemberInfo(
                 email = member.email,
                 provider = provider.name,

@@ -127,7 +127,7 @@ class KakaoLoginTest {
     fun `getMember - Member 를 반환한다` () {
         // given
         val email = "test@kakao.com"
-        every { memberRepository.findByEmailAndProvider(email, LoginType.KAKAO.name) } returns Member(email = email, provider = LoginType.KAKAO.name)
+        every { memberRepository.findByEmail(email) } returns Member(email = email, provider = LoginType.KAKAO.name)
 
         // when
         val result = memberObject.getEmailProviderMember(email, LoginType.KAKAO)
@@ -141,7 +141,7 @@ class KakaoLoginTest {
     fun `getMember - 유저가 없으면 null 을 반환한다` () {
         // given
         val email = "no-user@kakao.com"
-        every { memberRepository.findByEmailAndProvider(email, LoginType.KAKAO.name) } returns null
+        every { memberRepository.findByEmail(email) } returns null
 
         // when
         val result = memberObject.getEmailProviderMember(email, LoginType.KAKAO)

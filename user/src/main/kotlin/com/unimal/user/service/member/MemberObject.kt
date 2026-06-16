@@ -27,7 +27,7 @@ class MemberObject(
     private val passwordEncoder: BCryptPasswordEncoder,
     private val redisCacheManager: RedisCacheManager
 ) {
-    fun getEmailProviderMember(email: String, provider: LoginType) = memberRepository.findByEmailAndProvider(email, provider.name)
+    fun getEmailProviderMember(email: String, provider: LoginType) = memberRepository.findByEmail(email)
 
     fun signIn(userInfo: UserInfo): Member {
 
