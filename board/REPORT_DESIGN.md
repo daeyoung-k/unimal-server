@@ -17,7 +17,7 @@
 2. `targetId`가 Long → 앱이 가진 식별자(hashids String / email)와 불일치
 3. 중복 신고 방지 없음
 4. 자기 글/댓글/본인 신고 방지 없음
-5. 신고 대상(게시글/댓글/유저) 존재·삭제 여부 검증 없음
+5. 신고 대상(게시글/댓글/유저) 존재·삭제·노출 여부 검증 없음
 6. `ReportRepository`에 조회 메서드 0개
 
 ## 2. 데이터 모델
@@ -118,6 +118,8 @@ data class ReportCreateRequest(
 ### 응답
 - 성공: `CommonResponse(code = 201)` (기존 유지)
 - 실패: 아래 ErrorCode 기반 `CommonResponse`
+- 주의: 기존 컨벤션상 일부 실패는 **HTTP 200 OK + body `code=400`**로 내려간다.
+  Flutter는 HTTP status만 보지 말고 body의 `code`를 반드시 확인해야 한다.
 
 ## 4. 검증 규칙 (ReportService에서 처리)
 
@@ -127,10 +129,12 @@ data class ReportCreateRequest(
 2. **대상 해석 + 존재 검증** (targetType 분기):
    | type | 식별자 해석 | 존재/유효 검증 | 정규화 id |
    |------|-----------|--------------|----------|
-   | POST | hashids decode | `findBoardById` && `del == false` | board.id |
-   | REPLY | hashids decode | `findById` && `del != true` | reply.id |
+   | POST | hashids decode | `findBoardById` && `del == false` && `show == PUBLIC` | board.id |
+   | REPLY | hashids decode | `findById` && `del != true` && 부모 게시글 `del == false` && `show == PUBLIC` | reply.id |
    | USER | email 그대로 | `findByEmail` && `status == ACTIVE` | member.id |
-   - 없거나 삭제/탈퇴 → `REPORT_TARGET_NOT_FOUND`
+   - 없거나 삭제/탈퇴/비공개/차단 → `REPORT_TARGET_NOT_FOUND`
+   - 신고 접수는 "사용자가 정상적으로 볼 수 있는 대상"만 허용한다.
+     hashids를 추측/재사용해 PRIVATE/BLOCKED 게시글이나 그 댓글을 신고하는 흐름은 막는다.
 3. **자기 신고 방지**:
    - POST → `board.email.email == reporter`
    - REPLY → `reply.email == reporter`
@@ -140,6 +144,7 @@ data class ReportCreateRequest(
 5. 통과 시 `Report.create(...)` 저장 (정규화된 Long id로).
 
 > 자기 신고 검증은 대상 해석 단계에서 이미 작성자/대상 정보를 들고 있으므로, 묶어서 처리하면 쿼리 추가 없음.
+> 중복 신고는 서비스 레벨 `exists`와 DB unique 제약을 둘 다 둔다. 동시 요청 race는 DB가 최종 방어한다.
 
 ## 5. Repository 메서드 (신규)
 
@@ -175,6 +180,12 @@ class ReportException(
 ```
 - `code`/`status`를 안 넘기면 기존 컨벤션대로 **HTTP 200 OK + body `code=400`**로 응답된다
   (앱은 body의 `code`를 보고 처리). 즉 신고 실패도 HTTP 상태는 200이고 메시지로 구분.
+- DB unique 제약에서 잡힌 중복 신고는 `DataIntegrityViolationException`을 그대로 흘리지 말고
+  `REPORT_ALREADY_EXISTS`로 변환한다.
+  - 구현 선택지: `saveAndFlush()`를 `try/catch`로 감싸 constraint name이
+    `uk_report_reporter_target`이면 `ReportException(ErrorCode.REPORT_ALREADY_EXISTS.message)` throw.
+  - constraint name 매칭이 번거로우면, 이번 범위에서는 `DataIntegrityViolationException` 전체를
+    동일 메시지로 매핑해도 실사용 리스크는 낮다.
 
 ## 7. ReportService 구조 (스케치)
 
@@ -211,13 +222,16 @@ class ReportService(
         return when (req.targetType) {
             ReportTargetType.POST -> {
                 val board = boardRepository.findBoardById(hashidsUtil.decode(req.targetId))
-                    ?.takeIf { !it.del } ?: throw ReportException(ErrorCode.REPORT_TARGET_NOT_FOUND.message)
+                    ?.takeIf { !it.del && it.show == PostShow.PUBLIC }
+                    ?: throw ReportException(ErrorCode.REPORT_TARGET_NOT_FOUND.message)
                 if (board.email.email == reporter) throw ReportException(ErrorCode.REPORT_SELF_NOT_ALLOWED.message)
                 board.id!!
             }
             ReportTargetType.REPLY -> {
                 val reply = boardReplyRepository.findById(hashidsUtil.decode(req.targetId))
-                    .orElse(null)?.takeIf { it.del != true }
+                    .orElse(null)?.takeIf {
+                        it.del != true && !it.board.del && it.board.show == PostShow.PUBLIC
+                    }
                     ?: throw ReportException(ErrorCode.REPORT_TARGET_NOT_FOUND.message)
                 if (reply.email == reporter) throw ReportException(ErrorCode.REPORT_SELF_NOT_ALLOWED.message)
                 reply.id!!
@@ -246,6 +260,7 @@ class ReportService(
 | `board/.../service/report/ReportService.kt` | 검증 로직 전면 |
 | `web-common/.../exception/ErrorCode.kt` | 코드 4개 |
 | `web-common/.../exception/` | ReportException 추가 |
+| `web-common/.../exception/WebExceptionHandler.kt` 또는 `ReportService.kt` | unique 제약 충돌 → `REPORT_ALREADY_EXISTS` 매핑 |
 
 ## 9. 의도적으로 뺀 것 (오버엔지니어링 경계)
 - 자동 블라인드 / 신고 누적 카운트 집계 → 수동 검토 정책이라 불필요
@@ -257,6 +272,10 @@ class ReportService(
 - `PostInfo`가 작성자 `email`을 내려주고 있어 USER 신고에 그대로 사용 가능.
   단, **email 노출 자체가 개인정보 이슈**가 될 수 있으니 중장기적으로는 닉네임/식별 토큰으로 가리는 걸 권장.
 - 게시글/댓글 id는 이미 hashids string으로 내려가므로 앱은 그대로 `target_id`에 실어 보내면 됨.
+- 신고 API 호출 후 Flutter는 HTTP status가 아니라 body의 `code` 기준으로 성공/실패를 판단한다.
+  - 성공: `code == 201`
+  - 실패: `message`를 토스트/다이얼로그로 노출
+  - 특히 중복/자기신고/대상 없음은 모두 HTTP 200으로 내려올 수 있다.
 
 ---
 
@@ -296,8 +315,27 @@ enum class PostShow(val description: String) {
 현재 `getPost()`는 `show`/`del`을 **안 거름** → 블락/비공개 글도 id로 직접 열림. 블락이 반쪽이 됨.
 - 비소유자: `show in (PRIVATE, BLOCKED)` 또는 `del=true` → 기존 패턴대로 `BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)` throw.
   (이 컨벤션은 HTTP 404가 아니라 **HTTP 200 + body code=400**임에 유의 — 6번 참고. 실제 404를 만들지 말 것.)
-- 소유자: 본인 글은 PRIVATE까지 조회 허용. BLOCKED는 "블락됨" 안내 노출 여부 정책 결정 필요.
+- 소유자: 본인 글은 PRIVATE까지 조회 허용. BLOCKED는 이번 범위에서 조회 차단(`BOARD_NOT_FOUND`)으로 통일.
 - 댓글 native 쿼리(`getBoardReplyByBoardId`)도 `del` 필터 누락 → 함께 점검.
+
+### 11-4-1. 구현 시 함수 분리
+현재 `PostService.getBoard()`는 상세 조회뿐 아니라 수정/삭제/파일/댓글/좋아요 내부 작업에서도 함께 쓴다.
+여기에 가시성 가드를 직접 넣으면 작성자 수정/삭제나 내부 작업까지 의도치 않게 막힐 수 있다.
+
+따라서 보조 함수를 분리한다:
+- `getExistingBoard(encryptBoardId)`:
+  - 기존 `getBoard()` 역할. id decode + 존재 확인만.
+  - 수정/삭제/파일 업로드/파일 삭제 등 권한 검사를 별도로 하는 내부 작업에서 사용.
+- `getReadableBoard(optionalUserInfo, encryptBoardId)`:
+  - 상세 조회/댓글 목록처럼 "사용자에게 보여주는" 조회에서 사용.
+  - `del=true`면 모두 `BOARD_NOT_FOUND`.
+  - 비소유자는 `show == PUBLIC`만 허용.
+  - 소유자는 `PRIVATE`까지 허용.
+  - `BLOCKED`는 소유자에게도 `BOARD_NOT_FOUND` 처리한다.
+    안내 UI가 필요하면 어드민 처리 작업 때 별도 설계.
+
+추가로 `postLike`, `replyCreate`도 비소유자가 PRIVATE/BLOCKED 게시글에 액션하지 못하도록
+`getReadableBoard(CommonUserInfo, boardId)` 계열을 쓰는 편이 안전하다.
 
 ---
 
@@ -323,6 +361,8 @@ Flutter 코드 실측 결과, 구버전 앱이 `mapShow`/`show` 변경에 **깨�
 - `PostCreateRequest`/`PostUpdateRequest`: `isMapShow` 제거.
 - `PostService`: `mapShow` 계산 블록 전부 제거 + 단건조회 가시성 가드 추가 (11-4).
 - `MapBoardRepositoryImpl`: `map_show` 조건(68~70줄) → `b.show = 'PUBLIC'` 하나로.
+- `BoardRepositoryImpl.boardLikedStoriesList`: `board.show = PUBLIC` 필터 추가.
+  현재 좋아요한 글 목록은 `del=false`만 보고 있어 BLOCKED 글이 남을 수 있음.
 - **유일한 안전장치**: 구버전 수정요청이 보내는 `isMapShow:'SAME'`을 거부하지 않도록
   Jackson `FAIL_ON_UNKNOWN_PROPERTIES=false` 확인 (Spring 기본값이지만 명시 점검).
   DTO에서 `isMapShow`를 빼도 unknown 필드로 무시되므로 OK.
@@ -349,26 +389,32 @@ ALTER TABLE board DROP COLUMN map_show;
 | `enums/MapShow.kt` | 삭제 (죽은 코드) |
 | `domain/board/Board.kt` | `mapShow`/`map_show` 제거 |
 | `domain/board/map/MapBoardRepositoryImpl.kt` | `map_show` 조건 → `b.show='PUBLIC'` |
+| `domain/board/BoardRepositoryImpl.kt` | 좋아요한 글 목록에 `show=PUBLIC` 필터 추가 |
 | `controller/post/dto/PostCreateRequest.kt` | `isMapShow` + `mapShow=isShow` 매핑 제거 |
 | `controller/post/dto/PostUpdateRequest.kt` | `isMapShow` 제거 |
 | `service/post/dto/PostInfo.kt` | `mapShow` 필드 제거 |
-| `service/post/PostService.kt` | mapShow 계산 블록 제거, 단건조회 가시성 가드 추가 |
+| `service/post/PostService.kt` | mapShow 계산 블록 제거, `getExistingBoard`/`getReadableBoard` 분리, 단건조회 가시성 가드 추가 |
 | DB 마이그레이션 | `map_show` NOT NULL 해제 → DROP |
 
-## 12-5. 영향 파일 — Flutter (`unimal_flutter`, 별도 repo / 백엔드와 독립 진행 가능)
+## 12-5. 영향 파일 — Flutter (`unimal-flutter`, 별도 repo / 백엔드와 독립 진행 가능)
 | 위치 | 작업 | 비고 |
 |------|------|------|
 | `service/board/model/board_post.dart` | `mapShow` 필드 제거 | 안 지워도 `''`로 무해 — 정리 차원 |
 | `service/board/board_api_service.dart` (updateBoard) | `isMapShow: 'SAME'` 라인 제거 | 서버가 무시하므로 급하지 않음 |
+| `service/board/board_api_service.dart` (공통 응답 처리) | HTTP 200이어도 body `code != 200/201`이면 실패 처리 | 단건 조회 가드 후 `data` 캐스팅 크래시 방지 |
 | `screens/.../detail_board_card.dart` 등 `show=='PUBLIC'` 비교 | 그대로 유지 | PRIVATE/BLOCKED는 지도탭 비활성으로 자연 처리 |
-| `show` 이진 토글 UI | 그대로 | FRIENDS 추가는 팔로잉 기능 때 |
+| `show` 이진 토글 UI | 현재 공유/수정 시트엔 노출 토글 없음. 생성은 항상 `PUBLIC`, 수정은 기존 `show == PUBLIC` 여부만 보존 | FRIENDS 추가는 팔로잉 기능 때 |
 
 > 앱은 백엔드 배포에 의존하지 않음. 응답 `mapShow`가 사라져도 `''`로 받고 안 쓰므로,
 > 앱 수정은 **여유 있을 때** 정리하면 됨.
+> 단, 단건 조회 가드가 추가되면 `getBoardDetail()`은 HTTP 200 + body `code=400`, `data=null`을 받을 수 있으므로
+> body `code` 체크는 백엔드 배포 전후로 같이 챙기는 것이 안전함.
 
 ## 12-6. 회귀 테스트 체크리스트
 - 게시글 리스트/내글/지도 마커가 BLOCKED 글을 노출하지 않는지
-- PRIVATE/BLOCKED 글 단건 id 직접조회 시 비소유자 404
+- 좋아요한 글 목록(`like/stories/list`)이 BLOCKED/PRIVATE 글을 노출하지 않는지
+- PRIVATE/BLOCKED 글 단건 id 직접조회 시 비소유자 `BOARD_NOT_FOUND`
+- Flutter 상세 조회가 HTTP 200 + body `code=400`, `data=null` 응답에서 크래시 없이 안내 처리하는지
 - 게시글 생성/수정 정상 (특히 `isMapShow` 없이도, 그리고 구버전이 보내도)
 - 신고 RESOLVED → show=BLOCKED → 리스트/지도/단건 전부에서 사라지는지
 - 언블락 → PUBLIC 복구 후 정상 노출
@@ -414,11 +460,52 @@ SELECT count(*) FROM unimal_board.board  WHERE show = 'SAME';
 - 정상 디코드됐지만 존재하지 않는 id → `findBoardById`가 null → `REPORT_TARGET_NOT_FOUND`. (정상 흐름)
 - 클라이언트엔 둘 다 "대상 없음"으로 보여도 무방. 별도 처리 불필요.
 
-## 13-5. 커밋 규칙 (CLAUDE.md)
+## 13-5. Flutter 실제 경로 + 응답 처리 함정
+Flutter 실제 레포 경로는 `/Users/marketdesignrs/myprivate/unimal-flutter`.
+코드 실측 결과:
+- `BoardPost.fromJson`은 `mapShow` 누락에 안전함 (`json['mapShow'] as String? ?? ''`).
+- `updateBoard()`는 아직 `isMapShow: 'SAME'`을 보냄.
+- `getBoardDetail()`은 HTTP status가 200이면 곧바로 `bodyData['data'] as Map<String, dynamic>` 캐스팅.
+
+따라서 단건 조회 가드가 `BoardNotFoundException`을 던지면 서버 응답은 보통
+HTTP 200 + body `code=400`, `data={}` 또는 null 계열이 될 수 있고,
+Flutter가 그대로 캐스팅하다가 크래시날 수 있다.
+
+앱 쪽 최소 보강:
+- `BoardApiService`에 `CommonResponse` 파싱 헬퍼를 두고 `code == 200 || code == 201`일 때만 data 사용.
+- 상세 조회 실패 시 빈 화면 크래시 대신 "게시글을 볼 수 없어요" 안내 후 뒤로가기/새로고침.
+- 신고 API도 같은 헬퍼를 사용해 `code == 201`만 성공 처리.
+
+## 13-6. Jackson unknown 필드 설정
+`board/src/main/resources/application*.yml`에는 현재 `spring.jackson.time-zone`만 명시되어 있고
+`deserialization.fail-on-unknown-properties=false`가 명시되어 있지 않다.
+Spring Boot 기본값은 unknown field 무시지만, 이번 변경은 구버전 앱의 `isMapShow`를 무시하는 데 의존하므로
+아래 설정을 명시하는 것을 권장:
+
+```yaml
+spring:
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
+```
+
+## 13-7. BLOCKED 누락 가능 조회
+현재 일반 게시글 목록은 `board.show == PUBLIC` 필터가 있어 안전하지만,
+`BoardRepositoryImpl.boardLikedStoriesList()`는 `del=false`와 `email != me`만 조건으로 둔다.
+`show=BLOCKED` 처리 후에도 사용자의 "좋아요한 글" 목록에 남을 수 있으므로 반드시 `show=PUBLIC` 필터를 추가한다.
+
+댓글 조회 native query `getBoardReplyByBoardId()`도 `rereply.del` 필터가 없다.
+상세 조회/댓글 목록 작업 때 함께 수정한다:
+```sql
+WHERE rereply.board_id = :boardId
+  AND COALESCE(rereply.del, false) = false
+```
+
+## 13-8. 커밋 규칙 (CLAUDE.md)
 - **중간 커밋 금지.** 신고 접수 기능 **전부 끝난 뒤(빌드/테스트 통과) 한 번에 커밋.**
 - 사용자가 명시 요청 전엔 커밋하지 말 것.
 
-## 13-6. 이번 작업 범위 = 신고 접수만 (재확인)
+## 13-9. 이번 작업 범위 = 신고 접수만 (재확인)
 - 구현 대상: 1~7번(신고 접수 검증/저장) + 11번 중 **모델/enum/단건 가시성 가드**까지.
 - **블락 실행(show=BLOCKED 세팅)·신고 목록/처리는 admin 작업** → 이번 PR에 넣지 말 것.
 - `show` 리팩토링(map_show 제거)은 신고와 독립적이나 같은 board 모듈이라 함께 진행 가능 —
