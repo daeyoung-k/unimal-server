@@ -37,10 +37,6 @@ open class Board(
     @Column(name = "show", nullable = false, length = 20)
     var show: PostShow = PostShow.PUBLIC,
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "map_show", nullable = false, length = 20)
-    var mapShow: PostShow = PostShow.SAME,
-
     var del: Boolean = false,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     var updatedAt: LocalDateTime? = null,

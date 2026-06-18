@@ -14,7 +14,6 @@ data class PostInfo(
     val latitude: Double,
     val longitude: Double,
     val show: PostShow,
-    val mapShow: PostShow,
     val createdAt: LocalDateTime,
     val fileInfoList: List<BoardFileInfo?>,
     val likeCount: Long,

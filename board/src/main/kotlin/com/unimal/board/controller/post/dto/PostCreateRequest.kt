@@ -16,7 +16,6 @@ data class PostCreateRequest(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val isShow: PostShow = PostShow.PUBLIC,
-    val isMapShow: PostShow = PostShow.SAME,
 ) {
     fun toBoardCreateDto(
         user: BoardMember,
@@ -32,8 +31,7 @@ data class PostCreateRequest(
             guGun = guGun,
             dong = dong,
             location = location,
-            show = PostShow.PUBLIC,
-            mapShow = isShow
+            show = isShow
         )
     }
 }

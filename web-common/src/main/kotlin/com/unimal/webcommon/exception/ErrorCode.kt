@@ -45,4 +45,9 @@ enum class ErrorCode(
 
     UNAUTHORIZED_ERROR(message = "인증 정보가 유효하지 않습니다."),
     BAD_REQUEST_ERROR(message = "잘못된 요청입니다."),
+
+    REPORT_TARGET_NOT_FOUND(message = "신고 대상을 찾을 수 없습니다."),
+    REPORT_SELF_NOT_ALLOWED(message = "자기 자신은 신고할 수 없습니다."),
+    REPORT_ALREADY_EXISTS(message = "이미 신고한 대상입니다."),
+    REPORT_DESCRIPTION_REQUIRED(message = "기타 사유는 상세 내용이 필요합니다."),
 }

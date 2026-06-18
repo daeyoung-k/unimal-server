@@ -17,6 +17,8 @@ spring:
 
   jackson:
     time-zone: Asia/Seoul
+    deserialization:
+      fail-on-unknown-properties: false
 
   jpa:
     hibernate:
