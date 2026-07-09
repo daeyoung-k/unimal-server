@@ -174,3 +174,9 @@ class NoticeNotFoundException(
     code: Int? = null,
     status: HttpStatus? = null
 ) : CustomException(message, code, status)
+
+class ReportException(
+    message: String?,
+    code: Int? = null,
+    status: HttpStatus? = null
+) : CustomException(message, code, status)

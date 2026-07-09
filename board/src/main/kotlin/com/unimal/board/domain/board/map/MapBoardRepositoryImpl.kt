@@ -64,10 +64,7 @@ class MapBoardRepositoryImpl(
             ) bf ON bf.board_id = b.id
             WHERE ST_DWithin(b.location, ST_MakePoint(:lng, :lat)::geography, :radius)
               AND b.del = false
-              AND (
-                    (b.map_show = 'SAME' AND b.show = 'PUBLIC')
-                    OR b.map_show = 'PUBLIC'
-                  )
+              AND b.show = 'PUBLIC'
               AND (
                     bf.board_id IS NOT NULL
                     OR b.created_at >= NOW() - INTERVAL '48 hours'

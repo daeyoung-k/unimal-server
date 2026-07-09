@@ -12,6 +12,7 @@ import com.unimal.user.controller.request.NaverLoginRequest
 import com.unimal.user.service.authentication.AuthenticationService
 import com.unimal.user.service.login.LoginService
 import com.unimal.user.service.token.TokenService
+import com.unimal.user.service.token.dto.JwtTokenDTO
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
@@ -33,9 +34,7 @@ class LoginController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(KakaoLoginRequest(token = token))
-        response.setHeader("X-Unimal-Email", jwtToken?.email)
-        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        response.setJwtHeaders(jwtToken)
         return CommonResponse()
     }
 
@@ -45,9 +44,7 @@ class LoginController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(naverLoginRequest)
-        response.setHeader("X-Unimal-Email", jwtToken?.email)
-        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        response.setJwtHeaders(jwtToken)
         return CommonResponse()
     }
 
@@ -57,9 +54,7 @@ class LoginController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(googleLoginRequest)
-        response.setHeader("X-Unimal-Email", jwtToken?.email)
-        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        response.setJwtHeaders(jwtToken)
         return CommonResponse()
     }
 
@@ -69,9 +64,7 @@ class LoginController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(manualLoginRequest)
-        response.setHeader("X-Unimal-Email", jwtToken?.email)
-        response.setHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        response.setJwtHeaders(jwtToken)
         return CommonResponse()
     }
 
@@ -81,9 +74,7 @@ class LoginController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = tokenService.accessTokenCreate(commonUserInfo)
-        response.setHeader("X-Unimal-Email", jwtToken.email)
-        response.setHeader("X-Unimal-Access-Token", jwtToken.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken.refreshToken)
+        response.setJwtHeaders(jwtToken)
         return CommonResponse()
     }
 
@@ -113,10 +104,20 @@ class LoginController(
             emailTelAuthCodeVerifyRequest.email,
             emailTelAuthCodeVerifyRequest.tel
         )
-        response.setHeader("X-Unimal-Email", jwtToken.email)
-        response.setHeader("X-Unimal-Access-Token", jwtToken.accessToken)
-        response.setHeader("X-Unimal-Refresh-Token", jwtToken.refreshToken)
-        response.setHeader("X-Unimal-Provider", jwtToken.provider)
+        response.setJwtHeaders(jwtToken)
         return CommonResponse()
+    }
+
+    private fun HttpServletResponse.setJwtHeaders(jwtToken: JwtTokenDTO?) {
+        responseHeader("X-Unimal-Email", jwtToken?.email)
+        responseHeader("X-Unimal-Access-Token", jwtToken?.accessToken)
+        responseHeader("X-Unimal-Refresh-Token", jwtToken?.refreshToken)
+        responseHeader("X-Unimal-Provider", jwtToken?.provider)
+    }
+
+    private fun HttpServletResponse.responseHeader(name: String, value: String?) {
+        if (value != null) {
+            setHeader(name, value)
+        }
     }
 }

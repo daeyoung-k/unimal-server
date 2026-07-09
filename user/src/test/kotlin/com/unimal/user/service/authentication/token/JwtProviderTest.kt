@@ -1,21 +1,22 @@
 package com.unimal.user.service.authentication.token
 
+import com.unimal.common.enums.TokenType
 import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.token.JwtProvider
 import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.security.Keys
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import java.util.Base64
+import java.util.Date
 
-@SpringBootTest
-@ActiveProfiles("local")
 class JwtProviderTest {
 
-    @Autowired
-    private val provider = JwtProvider()
+    private val secretKey = "and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk="
+    private val provider = JwtProvider().apply {
+        this.secretKey = this@JwtProviderTest.secretKey
+    }
 
     @Test
     fun `Base64 인코딩`() {
@@ -49,7 +50,12 @@ class JwtProviderTest {
 
     @Test
     fun `JWT 토큰 인증`() {
-        val activeToken = "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NjAyNzQ3NzYsInR5cGUiOiJyZWZyZXNoIiwicm9sZSI6WyJST0xFX1VTRVIiLCJST0xFX0FETUlOIl0sInN1YiI6InRlc3RAdGVzdC5jb20ifQ.PeKeh_86YsVajeOMee6QnljvLcp4pp4Cgu8b2OtYkOw"
+        val activeToken = provider.createRefreshToken(
+            email = "test@test.com",
+            nickname = "테스트",
+            provider = LoginType.TEST,
+            roles = listOf("ROLE_USER", "ROLE_ADMIN")
+        )
         provider.getClaims(activeToken).let {
             assertNotNull(it)
             println("Claims: $it")
@@ -58,7 +64,12 @@ class JwtProviderTest {
 
     @Test
     fun `JWT 기간 만료`() {
-        val failToken = "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3NDQ3MjIzNzIsInR5cGUiOiJyZWZyZXNoIiwicm9sZSI6WyJST0xFX1VTRVIiLCJST0xFX0FETUlOIl0sInN1YiI6InRlc3RAdGVzdC5jb20ifQ.XQZ8JsmaUuGaebV5_JyjfyMyF3BmodZoeFfUvMMuswg"
+        val failToken = Jwts.builder()
+            .expiration(Date(System.currentTimeMillis() - 1000L))
+            .signWith(Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey)))
+            .claim("type", TokenType.REFRESH.name)
+            .subject("test@test.com")
+            .compact()
         assertThrows(ExpiredJwtException::class.java) {provider.getClaims(failToken)}
     }
 

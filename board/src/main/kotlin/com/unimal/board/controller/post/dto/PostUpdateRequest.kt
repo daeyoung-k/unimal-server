@@ -6,7 +6,6 @@ data class PostUpdateRequest(
     val title: String? = null,
     val content: String? = null,
     val isShow: PostShow? = null,
-    val isMapShow: PostShow? = null,
 )
 
 

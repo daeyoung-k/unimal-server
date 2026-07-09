@@ -178,6 +178,7 @@ class BoardRepositoryImpl(
             )
             .where(
                 board.del.eq(false),
+                board.show.eq(PostShow.PUBLIC),
                 board.email.email.ne(email)
             )
             .orderBy(boardLike.createdAt.desc())

@@ -230,6 +230,22 @@ GitHub Actions — `master` 브랜치 푸시 시 **변경된 모듈만** 빌드�
 
 로그인 성공 시 응답 헤더(`X-Unimal-Access-Token`, `X-Unimal-Refresh-Token`, `X-Unimal-Email`, `X-Unimal-Provider`)를 Flutter `AccountService`가 파싱해 `SecureStorage`에 저장한다.
 
+## 📄 문서 작성 규칙 (docs/)
+
+설계·계획·할일·트러블슈팅 문서는 **반드시 루트 `docs/` 아래에만** 만든다. 모듈 폴더(`board/`, `user/` 등) 안에 `.md` 설계 문서를 만들지 않는다.
+
+| 폴더 | 용도 | 명명 |
+| --- | --- | --- |
+| `docs/architecture/` | 시스템 구조·설계 결정(ADR)·방향성 (살아있는 문서) | 주제 기반 (`system-overview.md`) |
+| `docs/specs/` | 기능별 설계 — 무엇을/왜 | `YYYY-MM-DD-주제.md` |
+| `docs/plans/` | 구현 계획 — 어떻게/단계 | `YYYY-MM-DD-주제.md` |
+| `docs/todo/` | 할일·백로그 | 주제 기반 |
+| `docs/troubleshooting/` | 디버깅·장애 기록 | `YYYY-MM-DD-주제.md` |
+
+- 자동화 도구(superpowers 등)가 `docs/superpowers/...`에 문서를 생성하면, 작업 종료 전 위 카테고리 폴더로 옮기고 `superpowers/`는 비운다.
+- 한글 파일명은 공백 대신 하이픈(`-`)을 쓴다.
+- 자세한 규칙은 `docs/README.md` 참고.
+
 ## Git 커밋 규칙
 
 - **중간 커밋 금지.** 작업(요청받은 과제) 단위로 나눠서 커밋하지 않는다.

@@ -49,31 +49,21 @@ class PostCalculateService(
         }
     }
 
+    // 캐시 드리프트 방지: Redis 캐시(TTL 없음, 카프카 이벤트로만 증감)는 이벤트
+    // 유실 시 실제값과 영구히 어긋난다. 받은 좋아요 수는 조회 빈도가 낮아 매번
+    // DB 집계해도 비용 부담이 없으므로 캐시를 거치지 않고 DB에서 직접 센다.
     fun getLikeTotalCount(
         email: String
     ): Long {
-        val totalLikeCount = likeManager.getUserTotalLikeCount(email)
-        return if (totalLikeCount == null) {
-            val totalDbCount = boardLikeRepository.getUserTotalLikeCount(email)
-            likeManager.saveUserTotalLikeCount(email, totalDbCount)
-            totalDbCount
-        } else {
-            totalLikeCount
-        }
-
+        return boardLikeRepository.getUserTotalLikeCount(email)
     }
 
+    // 캐시 드리프트 방지: Redis 캐시 대신 DB에서 직접 집계한다(del=false 전체 글).
+    // 게시글 수 count는 인덱스로 가벼우며 마이페이지 진입 시에만 호출된다.
     fun getPostTotalCount(
         email: String
     ): Long {
-        val totalPostCount = postManager.getUserTotalPostCount(email)
-        return if (totalPostCount == null) {
-            val totalDbCount = boardRepository.getUserTotalPostCount(email)
-            postManager.saveUserTotalPostCount(email, totalDbCount)
-            totalDbCount
-        } else {
-            totalPostCount
-        }
+        return boardRepository.getUserTotalPostCount(email)
     }
 
     fun getLikedStoriesCount(
