@@ -6,6 +6,13 @@ enum class ZoomLevel(
     val postLimit: Int,
 ) {
     // 가독성을 위한 _ 리터럴 값 적용
+    // 6~9 추가 (2026-07-19): 앱 최대 줌아웃 10 → 6 확장.
+    // 반경은 줌 한 단계당 2배 규칙 유지 — 조회 반경은 항상 뷰포트를 덮는다.
+    // 6(800km)은 한반도 전체를 덮는다.
+    ZOOM_6(6, 800_000.0, 30),
+    ZOOM_7(7, 400_000.0, 30),
+    ZOOM_8(8, 200_000.0, 30),
+    ZOOM_9(9, 100_000.0, 30),
     ZOOM_10(10, 50_000.0, 30),
     ZOOM_11(11, 30_000.0, 30),
     ZOOM_12(12, 20_000.0, 30),
@@ -24,11 +31,11 @@ enum class ZoomLevel(
     ZOOM_20(20,    300.0, 100);
 
     companion object {
-        // 테이블 범위(10~20) 밖 줌은 가까운 경계로 클램프 —
+        // 테이블 범위(6~20) 밖 줌은 가까운 경계로 클램프 —
         // 기존 폴백(ZOOM_14, 5km)은 줌 21(네이버 최대)에서 반경이
         // 오히려 50배 커지는 역전이 있었다.
         fun from(zoom: Int): ZoomLevel {
-            val clamped = zoom.coerceIn(ZOOM_10.level, ZOOM_20.level)
+            val clamped = zoom.coerceIn(ZOOM_6.level, ZOOM_20.level)
             return entries.find { it.level == clamped } ?: ZOOM_14
         }
     }
