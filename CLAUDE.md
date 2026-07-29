@@ -230,6 +230,54 @@ GitHub Actions — `master` 브랜치 푸시 시 **변경된 모듈만** 빌드�
 
 로그인 성공 시 응답 헤더(`X-Unimal-Access-Token`, `X-Unimal-Refresh-Token`, `X-Unimal-Email`, `X-Unimal-Provider`)를 Flutter `AccountService`가 파싱해 `SecureStorage`에 저장한다.
 
+## 네이밍 규칙 — 내부 camelCase / 응답 snake_case (필수)
+
+**Kotlin 프로퍼티는 camelCase, API 응답 JSON 키는 snake_case.**
+코드 안에서는 camelCase로 쓰고 **직렬화 경계에서만 변환**한다.
+Kotlin 프로퍼티 이름을 `thumb_url` 처럼 짓지 않는다.
+
+### 구현 — 클래스 레벨 `@JsonNaming` 을 쓴다
+
+```kotlin
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class MapFeedCard(
+    val boardId: String,       // → "board_id"
+    val thumbnailUrl: String?, // → "thumbnail_url"
+    val likeCount: Long,       // → "like_count"
+)
+```
+
+**필드마다 `@JsonProperty("snake_case")` 를 나열하지 않는다.** 기존 `MapPostInfo` 가 그
+방식인데, 필드를 추가할 때 어노테이션을 빼먹으면 그 키만 조용히 camelCase로 새고
+앱에서 `null` 로 읽힌다. 클래스 레벨 어노테이션 하나면 그 사고가 구조적으로 불가능하다.
+
+### 전역 Jackson 설정(`spring.jackson.property-naming-strategy`)은 쓰지 않는다
+
+전역으로 `SNAKE_CASE` 를 켜면 **기존 camelCase 응답 API가 전부 깨져서 앱이 죽는다**
+(`PostInfo` 등은 지금 camelCase로 나가고 앱이 그렇게 파싱하고 있다).
+신규 DTO에 `@JsonNaming` 을 붙이는 방식으로만 적용하고, 기존 API는 앱 동시 배포가
+가능한 시점에 별도 작업으로 수렴시킨다.
+
+### 캐시에 DTO JSON을 저장한다면 키 표기 변경 시 캐시 버전을 올려라
+
+응답 DTO를 Redis에 JSON으로 캐싱하는 경우(예: `map:feed:v2:...`), 키 표기를 바꾸면
+**캐시 키의 버전 프리픽스를 반드시 올린다.** 안 올리면 배포 직후 옛 표기의 JSON을 읽어
+역직렬화가 깨진다 (Kotlin non-null 프로퍼티가 채워지지 않는다).
+
+### 그 외
+
+| 위치 | 표기 |
+|------|------|
+| 내부 변수·프로퍼티·함수 | camelCase |
+| API 응답 JSON 키 | **snake_case** |
+| API 요청 쿼리 파라미터 | snake_case |
+| DB 컬럼 | snake_case |
+| Kotlin 클래스·enum 이름 | PascalCase |
+| enum 상수 값 | UPPER_SNAKE_CASE (`NEAR`, `PUBLIC`) — 응답에도 그대로 나간다 |
+
 ## 📄 문서 작성 규칙 (docs/)
 
 설계·계획·할일·트러블슈팅 문서는 **반드시 루트 `docs/` 아래에만** 만든다. 모듈 폴더(`board/`, `user/` 등) 안에 `.md` 설계 문서를 만들지 않는다.
