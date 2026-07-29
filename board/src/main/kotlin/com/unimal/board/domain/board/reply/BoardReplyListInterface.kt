@@ -12,7 +12,7 @@ interface BoardReplyListInterface {
     val profileImage: String?
     val comment: String
     val createdAt: String
-    val del: Boolean?
+    val del: Boolean
 }
 
 fun BoardReplyListInterface.toDto(
@@ -32,6 +32,6 @@ fun BoardReplyListInterface.toDto(
         comment = comment,
         createdAt = createdAt,
         isOwner = isOwner,
-        isDel = del ?: false
+        isDel = del
     )
 }

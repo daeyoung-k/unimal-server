@@ -16,7 +16,7 @@ class PhotoController(
     fun upload(
         @ModelAttribute uploadRequest: UploadRequest
     ): CommonResponse {
-        return CommonResponse(data = s3Service.uploadFile(uploadRequest.file, uploadRequest.folder))
+        return CommonResponse(data = s3Service.uploadFile(uploadRequest.file, uploadRequest.folder, uploadRequest.thumbnail))
     }
 
     @PostMapping("/multiple-upload", consumes = ["multipart/form-data"])

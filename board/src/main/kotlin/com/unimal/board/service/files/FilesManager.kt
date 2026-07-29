@@ -36,6 +36,7 @@ class FilesManager(
 
         val multipartBody = MultipartBodyBuilder().apply {
             part("file", file.resource)
+            part("thumbnail", "true") // 마커용 400px 썸네일 파생 요청
         }.build()
 
         try {
@@ -100,6 +101,7 @@ class FilesManager(
             val main = if (mainOption) false else (index == 0)
             val uploadFileInfo = uploadFileHttp(file)
             val fileUrl = fileBaseUrl + "/" + uploadFileInfo.key
+            val thumbUrl = uploadFileInfo.thumbKey?.let { "$fileBaseUrl/$it" }
 
             boardFileRepository.save(
                 BoardFile(
@@ -107,7 +109,9 @@ class FilesManager(
                     main = main,
                     fileName = uploadFileInfo.originalFilename,
                     fileKey = uploadFileInfo.key,
-                    fileUrl = fileUrl
+                    fileUrl = fileUrl,
+                    thumbKey = uploadFileInfo.thumbKey,
+                    thumbUrl = thumbUrl
                 )
             )
         }

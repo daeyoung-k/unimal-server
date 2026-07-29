@@ -6,8 +6,11 @@ import org.springframework.data.jpa.repository.Query
 
 interface BoardReplyRepository: JpaRepository<BoardReply, Long> {
 
+    // coalesce(br.del, false) = false → br.del = false (2026-07-29).
+    // coalesce 는 부분 인덱스 WHERE del = false 의 predicate 함의를 깨서 인덱스를 못 탄다.
+    // del 을 NOT NULL 로 만들었으므로 coalesce 방어가 필요 없다.
     @Query("""
-        select count(br) from BoardReply br where br.board = :board and coalesce(br.del, false) = false
+        select count(br) from BoardReply br where br.board = :board and br.del = false
     """)
     fun countByBoard(board: Board): Int
 

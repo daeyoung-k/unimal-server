@@ -11,6 +11,23 @@ class MapBoardRepositoryImpl(
     @PersistenceContext private val em: EntityManager,
 ) {
 
+    /**
+     * 지도 마커 조회 — 반경 내 글을 score 내림차순으로 [postLimit] 건까지.
+     *
+     * score = 신선도 + 좋아요×2 + 댓글×3 + 사진 보유 3
+     *
+     * **본인글 보너스(+10000)는 제거됐다 (2026-07-29).** 내 글이 어디서나 최상위가
+     * 되어 마커 크기 위계·캡션 우선권·스택/클러스터 대표를 독점했다. 내 글 보기
+     * 필터가 따로 있으므로 기본 탐색에서는 모두에게 공평한 노출 기회를 준다.
+     *
+     * 대신 신선도 배점을 1.0/0.6/0.3 → 20.0/8.0/3.0 으로 올렸다. 보너스만 빼면
+     * 새 글 score 가 4점대로 떨어져 `ORDER BY score DESC LIMIT` 에서 밀리고,
+     * 방금 올린 글이 지도에 안 보인다. 30분간 상위권에 올렸다가 자연 하락시킨다.
+     *
+     * [userEmail] 은 score 와 무관하며 is_owner(마커 링 색)·is_like 판정에만 쓴다.
+     *
+     * 설계: unimal-flutter `docs/specs/2026-07-28-마커-사진-우선-대표-선정.md`
+     */
     fun findLocationPosts(
         userEmail: String,
         lat: Double,
@@ -27,11 +44,10 @@ class MapBoardRepositoryImpl(
                 COALESCE(bl.like_count, 0) AS like_count,
                 COALESCE(br.reply_count, 0) AS reply_count,
                 (
-                  CASE WHEN b.email = :userEmail THEN 10000.0 ELSE 0.0 END
-                  + CASE
-                      WHEN b.created_at >= NOW() - INTERVAL '30 minutes' THEN 1.0
-                      WHEN b.created_at >= NOW() - INTERVAL '2 hours'    THEN 0.6
-                      WHEN b.created_at >= NOW() - INTERVAL '6 hours'    THEN 0.3
+                  CASE
+                      WHEN b.created_at >= NOW() - INTERVAL '30 minutes' THEN 20.0
+                      WHEN b.created_at >= NOW() - INTERVAL '2 hours'    THEN 8.0
+                      WHEN b.created_at >= NOW() - INTERVAL '6 hours'    THEN 3.0
                       ELSE 0.1
                     END
                   + COALESCE(bl.like_count, 0) * 2.0

@@ -52,6 +52,9 @@ dependencies {
     //kafka
     implementation("org.springframework.kafka:spring-kafka")
 
+    //이미지 썸네일 리사이즈 (EXIF orientation 자동 처리)
+    implementation("net.coobird:thumbnailator:0.4.20")
+
     //aws
     implementation("software.amazon.awssdk:s3:2.32.26")
     implementation("software.amazon.awssdk:s3-transfer-manager:2.32.25")

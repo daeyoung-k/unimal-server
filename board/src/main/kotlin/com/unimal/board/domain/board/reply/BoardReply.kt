@@ -28,5 +28,11 @@ open class BoardReply(
     val createdAt: LocalDateTime = LocalDateTime.now(),
     var updatedAt: LocalDateTime? = null,
 
-    var del: Boolean? = false,
+    // nullable 이었으나 non-null 로 변경 (2026-07-29).
+    // nullable 이면 조회 조건을 coalesce(del, false) = false 로 써야 하는데,
+    // 그러면 부분 인덱스 idx_board_reply_board(board_id) WHERE del = false 의
+    // predicate 함의를 플래너가 증명할 수 없어 인덱스를 버리고 전체 스캔한다.
+    // DB 에 del IS NULL 인 행은 0건이었고, NOT NULL 제약을 걸었다.
+    @Column(nullable = false)
+    var del: Boolean = false,
 ) : BaseIdEntity()

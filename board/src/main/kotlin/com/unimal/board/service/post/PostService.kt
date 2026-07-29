@@ -97,7 +97,7 @@ class PostService(
 
         val boardMember = board.email
         val boardFileInfo = board.images.mapNotNull {
-            if (it?.id == null) null else BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+            if (it?.id == null) null else BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!, thumbUrl = it.thumbUrl)
         }
 
         val isLike: Boolean
@@ -152,7 +152,7 @@ class PostService(
             val boardMember = board.email
             val fileInfoList = boardFiles.mapNotNull {
                 if (it.board == board) {
-                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!, thumbUrl = it.thumbUrl)
                 } else null
             }
             val isLike = likeList.any { it.board == board && it.email == ownerEmail }
@@ -199,7 +199,7 @@ class PostService(
             val boardMember = board.email
             val fileInfoList = boardFiles.mapNotNull {
                 if (it.board == board) {
-                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!, thumbUrl = it.thumbUrl)
                 } else null
             }
             val isLike = likeList.any { it.board == board && it.email == ownerEmail }
@@ -358,7 +358,7 @@ class PostService(
         val boardFiles = boardRepositoryImpl.boardFileList(listOf(board.id!!))
 
         return boardFiles.map {
-            BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+            BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!, thumbUrl = it.thumbUrl)
         }
     }
 
@@ -378,7 +378,8 @@ class PostService(
         val boardFileList = boardFileRepository.findBoardFileInFileIdList(board, fileIdList)
 
         if (boardFileList.isNotEmpty()) {
-            val fileKeys = boardFileList.mapNotNull { it.fileKey }
+            // 원본 + 썸네일 파생 키를 함께 삭제 (썸네일 고아 파일 방지)
+            val fileKeys = boardFileList.flatMap { listOfNotNull(it.fileKey, it.thumbKey) }
             fileDeleteGrpcService.deleteFile(fileKeys)
 
             boardFileRepository.deleteAll(boardFileList)
@@ -461,7 +462,7 @@ class PostService(
             comment = reply.comment,
             createdAt = reply.createdAt.toString(),
             isOwner = true,
-            isDel = reply.del ?: false
+            isDel = reply.del
         )
     }
 
@@ -509,7 +510,7 @@ class PostService(
             comment = boardReply.comment,
             createdAt = boardReply.createdAt.toString(),
             isOwner = true,
-            isDel = boardReply.del ?: false
+            isDel = boardReply.del
         )
     }
 
@@ -554,7 +555,7 @@ class PostService(
             val boardMember = b.email
             val fileInfoList = boardFiles.mapNotNull {
                 if (it.board == b) {
-                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!, thumbUrl = it.thumbUrl)
                 } else null
             }
             PostInfo(
