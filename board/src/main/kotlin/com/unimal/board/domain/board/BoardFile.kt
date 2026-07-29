@@ -18,6 +18,10 @@ open class BoardFile(
     val fileKey: String? = null,
     val fileUrl: String? = null,
 
+    // 마커용 400px JPEG 썸네일 파생. 백필 전 기존 파일은 null (앱은 fileUrl 폴백)
+    val thumbKey: String? = null,
+    val thumbUrl: String? = null,
+
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime? = null,
 

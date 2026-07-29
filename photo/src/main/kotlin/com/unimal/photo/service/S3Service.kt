@@ -2,8 +2,10 @@ package com.unimal.photo.service
 
 import com.unimal.common.dto.file.UploadFileResult
 import com.unimal.photo.service.s3.S3Manager
+import com.unimal.photo.service.s3.ThumbnailManager
 import com.unimal.photo.service.s3.UploadType
 import com.unimal.photo.service.s3.dto.MultipleFiles
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
@@ -13,11 +15,15 @@ import kotlin.collections.map
 @Service
 class S3Service(
     private val s3Manager: S3Manager,
+    private val thumbnailManager: ThumbnailManager,
 ) {
+
+    private val logger = KotlinLogging.logger {}
 
     fun uploadFile(
         file: MultipartFile,
         folder: String? = null,
+        thumbnail: Boolean = false,
     ): UploadFileResult {
         val originalFilename = file.originalFilename ?: "unnamed"
         val encodedFilename = s3Manager.base64EncodeAndUUIDString(originalFilename)
@@ -27,12 +33,44 @@ class S3Service(
 
         val folderPath = if (folder.isNullOrBlank()) "" else "$folder/"
         val key = fileType.path + folderPath + encodedFilename + "." + getType.subType
-        s3Manager.uploadFile(key, file)
 
-        return UploadFileResult(
-            originalFilename = originalFilename,
-            key = key
-        )
+        // 썸네일 미대상: 원본만 스트림 업로드 (기존 동작 유지)
+        if (!thumbnail || !thumbnailManager.isImage(file.contentType)) {
+            s3Manager.uploadFile(key, file)
+            return UploadFileResult(
+                originalFilename = originalFilename,
+                key = key
+            )
+        }
+
+        // 썸네일 대상: 스트림을 두 번 읽어야 하므로 임시 파일 경유
+        val tmp = Files.createTempFile("unimal-", ".${getType.subType}")
+        try {
+            file.inputStream.use { Files.copy(it, tmp, StandardCopyOption.REPLACE_EXISTING) }
+            s3Manager.uploadFile(key, tmp, file.contentType)
+
+            // 썸네일 생성·업로드 실패는 원본 업로드 실패로 전파하지 않는다 (thumbKey null → 앱 폴백)
+            val thumbKey = thumbnailManager.createThumbFile(tmp)?.let { thumbTmp ->
+                try {
+                    val derivedKey = ThumbnailManager.THUMB_PATH + folderPath +
+                            encodedFilename + "." + ThumbnailManager.THUMB_EXTENSION
+                    s3Manager.uploadFile(derivedKey, thumbTmp, ThumbnailManager.THUMB_CONTENT_TYPE)
+                } catch (e: Exception) {
+                    logger.warn(e) { "썸네일 업로드 실패 — 원본만 유지: $key" }
+                    null
+                } finally {
+                    Files.deleteIfExists(thumbTmp)
+                }
+            }
+
+            return UploadFileResult(
+                originalFilename = originalFilename,
+                key = key,
+                thumbKey = thumbKey
+            )
+        } finally {
+            Files.deleteIfExists(tmp)
+        }
     }
 
     /**

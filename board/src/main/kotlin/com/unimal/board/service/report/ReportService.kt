@@ -84,7 +84,7 @@ class ReportService(
             ReportTargetType.REPLY -> {
                 val reply = boardReplyRepository.findById(hashidsUtil.decode(req.targetId))
                     .orElse(null)
-                    ?.takeIf { it.del != true && !it.board.del && it.board.show == PostShow.PUBLIC }
+                    ?.takeIf { !it.del && !it.board.del && it.board.show == PostShow.PUBLIC }
                     ?: throw ReportException(ErrorCode.REPORT_TARGET_NOT_FOUND.message)
                 if (reply.email == reporter) {
                     throw ReportException(ErrorCode.REPORT_SELF_NOT_ALLOWED.message)

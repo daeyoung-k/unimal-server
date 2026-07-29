@@ -38,6 +38,20 @@ class S3Manager(
         return key
     }
 
+    fun uploadFile(
+        key: String,
+        path: java.nio.file.Path,
+        contentType: String?,
+    ): String {
+        val fileReq = PutObjectRequest.builder()
+            .bucket(s3Bucket)
+            .key(key)
+            .contentType(contentType)
+            .build()
+        s3Client.putObject(fileReq, RequestBody.fromFile(path))
+        return key
+    }
+
     fun multiUploadFile(multipleFiles: List<MultipleFiles>): List<UploadFileResult> {
         try {
             // uploadFile 트랜스퍼들을 한 번에 제출 → 내부적으로 병렬 수행

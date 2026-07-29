@@ -49,7 +49,7 @@ class MapPostService(
         return mapBoardList.map { mapPostInfo ->
             val fileInfoList = boardFiles.mapNotNull {
                 if (it.board.id.toString() == mapPostInfo.id) {
-                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!)
+                    BoardFileInfo(fileId = hashidsUtil.encode(it.id!!), fileUrl = it.fileUrl!!, thumbUrl = it.thumbUrl)
                 } else null
             }
             mapPostInfo.copy(
