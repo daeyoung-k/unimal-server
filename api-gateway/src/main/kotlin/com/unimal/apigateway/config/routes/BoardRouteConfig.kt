@@ -69,6 +69,7 @@ class BoardRouteConfig(
                 // etc
                 "/post/total",
                 "/post/total/like",
+                "/post/like/stories/total",
 
                 // 게시판 관련
                 "/board/post",
