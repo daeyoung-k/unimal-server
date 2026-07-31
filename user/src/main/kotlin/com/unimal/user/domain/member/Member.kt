@@ -29,6 +29,22 @@ open class Member(
     @Column(length = 10)
     val provider: String? = null,
 
+    /**
+     * 소셜 제공자가 발급한 고유 사용자 식별자.
+     * Apple의 경우 identityToken의 sub claim.
+     * 애플은 사용자가 "이메일 가리기"를 켜고 끄면 relay 이메일이 바뀔 수 있어
+     * 이메일만으로는 동일인 식별이 보장되지 않는다.
+     */
+    @Column(length = 100)
+    var providerId: String? = null,
+
+    /**
+     * Apple 로그인 전용. 탈퇴 시 Apple /auth/revoke 호출에 사용한다.
+     * (App Store 심사 가이드 5.1.1(v) / TN3194 대응)
+     */
+    @Column(length = 500)
+    var appleRefreshToken: String? = null,
+
     @Column(length = 200)
     var password: String? = null,
 
@@ -89,6 +105,16 @@ open class Member(
         this.updatedAt = LocalDateTime.now()
     }
 
+    fun updateProviderId(providerId: String) {
+        this.providerId = providerId
+        this.updatedAt = LocalDateTime.now()
+    }
+
+    fun updateAppleRefreshToken(appleRefreshToken: String?) {
+        this.appleRefreshToken = appleRefreshToken
+        this.updatedAt = LocalDateTime.now()
+    }
+
     fun updateProfileImage(
         profileImage: String
     ) {
@@ -106,6 +132,7 @@ open class Member(
         this.introduction = null
         this.birthday = null
         this.gender = null
+        this.appleRefreshToken = null
         this.updatedAt = LocalDateTime.now()
     }
 

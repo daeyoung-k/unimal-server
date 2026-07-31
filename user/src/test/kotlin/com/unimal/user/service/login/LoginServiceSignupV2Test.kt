@@ -8,6 +8,7 @@ import com.unimal.user.service.token.TokenManager
 import com.unimal.webcommon.exception.DuplicatedException
 import com.unimal.webcommon.exception.LoginException
 import com.unimal.webcommon.exception.TelNotFoundException
+import com.unimal.user.service.login.apple.AppleAuthClient
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -19,7 +20,9 @@ class LoginServiceSignupV2Test {
     private val kakaoLoginObject: LoginInterface = mockk()
     private val naverLoginObject: LoginInterface = mockk()
     private val googleLoginObject: LoginInterface = mockk()
+    private val appleLoginObject: LoginInterface = mockk()
     private val manualLoginObject: ManualLoginObject = mockk()
+    private val appleAuthClient: AppleAuthClient = mockk(relaxed = true)
     private val tokenManager: TokenManager = mockk()
     private val memberObject: MemberObject = mockk()
     private val memberKafkaTopic: MemberKafkaTopic = mockk()
@@ -29,7 +32,9 @@ class LoginServiceSignupV2Test {
         kakaoLoginObject = kakaoLoginObject,
         naverLoginObject = naverLoginObject,
         googleLoginObject = googleLoginObject,
+        appleLoginObject = appleLoginObject,
         manualLoginObject = manualLoginObject,
+        appleAuthClient = appleAuthClient,
         tokenManager = tokenManager,
         memberObject = memberObject,
         memberKafkaTopic = memberKafkaTopic,

@@ -12,6 +12,7 @@ import com.unimal.user.service.login.enums.LoginType
 import com.unimal.user.service.member.MemberObject
 import com.unimal.user.service.token.TokenManager
 import com.unimal.user.service.token.dto.JwtTokenDTO
+import com.unimal.user.service.login.apple.AppleAuthClient
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -23,7 +24,9 @@ class LoginServiceProviderIndependenceTest {
     private val kakaoLoginObject: LoginInterface = mockk()
     private val naverLoginObject: LoginInterface = mockk()
     private val googleLoginObject: LoginInterface = mockk()
+    private val appleLoginObject: LoginInterface = mockk()
     private val manualLoginObject: LoginInterface = mockk()
+    private val appleAuthClient: AppleAuthClient = mockk(relaxed = true)
     private val tokenManager: TokenManager = mockk(relaxed = true)
     private val memberObject: MemberObject = mockk()
     private val memberKafkaTopic: MemberKafkaTopic = mockk(relaxed = true)
@@ -32,7 +35,9 @@ class LoginServiceProviderIndependenceTest {
         kakaoLoginObject = kakaoLoginObject,
         naverLoginObject = naverLoginObject,
         googleLoginObject = googleLoginObject,
+        appleLoginObject = appleLoginObject,
         manualLoginObject = manualLoginObject,
+        appleAuthClient = appleAuthClient,
         tokenManager = tokenManager,
         memberObject = memberObject,
         memberKafkaTopic = memberKafkaTopic,
