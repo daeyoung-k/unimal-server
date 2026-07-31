@@ -2,6 +2,7 @@ package com.unimal.board.controller.map
 
 import com.unimal.board.controller.map.dto.LocationPostRequest
 import com.unimal.board.controller.map.dto.MapFeedRequest
+import com.unimal.board.controller.map.dto.MapFeedSectionRequest
 import com.unimal.board.service.post.MapFeedService
 import com.unimal.board.service.post.MapPostService
 import com.unimal.common.annotation.user.UserInfoAnnotation
@@ -49,5 +50,26 @@ class MapController(
         @ModelAttribute @Valid mapFeedRequest: MapFeedRequest
     ): CommonResponse {
         return CommonResponse(data = mapFeedService.getFeed(mapFeedRequest))
+    }
+
+    /**
+     * 피드 섹션 1개만 조회 (2026-07-31). 앱의 섹션별 새로고침 버튼이 쓴다.
+     *
+     * `/feed` 와 마찬가지로 인증을 받지 않는다 — 같은 캐시를 공유하려면 응답이
+     * 사용자에 의존하지 않아야 한다.
+     *
+     * **`data` 가 null 일 수 있다.** 적응형 섹션 구조라 요청한 섹션이 이번 계산에서
+     * 만들어지지 않을 수 있고, 그건 오류가 아니라 "지금은 그 섹션이 없다"는 정상
+     * 응답이다 ([MapFeedService.getSection] 주석 참고). 앱은 이때 해당 섹션만
+     * 화면에서 지운다.
+     *
+     * 경로가 `/feed/section` 이라 `/feed` 와 겹치지 않는다 — Spring 은 더 구체적인
+     * 패턴을 먼저 매칭한다.
+     */
+    @GetMapping("/feed/section")
+    fun mapFeedSection(
+        @ModelAttribute @Valid mapFeedSectionRequest: MapFeedSectionRequest
+    ): CommonResponse {
+        return CommonResponse(data = mapFeedService.getSection(mapFeedSectionRequest))
     }
 }
