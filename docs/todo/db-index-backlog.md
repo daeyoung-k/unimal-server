@@ -13,21 +13,27 @@
 
 관련 문서: `docs/specs/2026-07-29-지도-바텀카드-피드-api.md` §7
 
-### 1. NEARBY 섹션 인덱스 (신규)
+### 1. ~~NEARBY 섹션 인덱스~~ — 취소 (2026-07-29)
 
 ```sql
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_board_area_created
-    ON board (si_do, gu_gun, dong, created_at DESC)
-    WHERE del = false AND show::text = 'PUBLIC';
+-- 만들지 않는다
+-- CREATE INDEX CONCURRENTLY idx_board_area_created
+--     ON board (si_do, gu_gun, dong, created_at DESC)
+--     WHERE del = false AND show::text = 'PUBLIC';
 ```
 
-- [ ] 로컬
-- [ ] 운영
+`si_do + gu_gun + dong` 으로 행정동 글을 뽑는 `NEARBY` 섹션 전용 인덱스였다.
+**설계가 바뀌어 행정동 섹션 자체가 없어졌으므로 불필요하다.**
 
-`del`/`show` predicate 를 `idx_board_location_gist` 와 **동일하게** 맞췄다.
-두 인덱스 조건이 같아야 쿼리를 고칠 때 한쪽만 인덱스를 놓치는 사고가 안 난다.
+피드는 반경·행정동 필터를 버리고 **거리를 정렬 기준으로만** 쓰는 단일 `NEAR` 섹션이 됐다
+(`ORDER BY location <-> point`, PostGIS KNN). 이유는 스펙 §1 — 출시 후 홍보를 안 해서
+글이 거의 없는 상태에서 반경/행정동 필터를 걸면 피드가 백지가 된다.
 
-`CONCURRENTLY` 는 트랜잭션 블록 안에서 실행할 수 없다. psql 에서 단독 실행.
+KNN 정렬은 기존 `idx_board_location_gist` 를 그대로 탄다. **신규 인덱스가 필요 없다.**
+
+> 나중에 밀도가 올라 행정동 기반 섹션을 다시 도입하면 이 인덱스를 되살린다.
+> 그때 `del`/`show` predicate 를 `idx_board_location_gist` 와 동일하게 맞출 것
+> (두 인덱스 조건이 같아야 쿼리를 고칠 때 한쪽만 인덱스를 놓치는 사고가 안 난다).
 
 ### 2. `board_reply.del` NOT NULL 제약
 
@@ -59,30 +65,99 @@ Hibernate 의 `update` 모드는 기존 컬럼의 nullability 를 변경해 주�
 
 ---
 
-## 이미 운영에 존재하는 것 (2026-07-29 확인, 조치 불필요)
+## 실제 인덱스 목록 (2026-07-29 **로컬** `pg_indexes` 실측)
 
-확인만 하고 남겨두는 기록. 같은 조사를 반복하지 않기 위해.
+> 🔴 **이 문서의 이전 판에 적힌 인덱스 목록은 틀렸었다.** 실물 확인 없이 작성된 것으로,
+> 이름과 정의가 대부분 실제와 다르다. 아래가 실측값이다.
 
 | 테이블 | 인덱스 | 정의 |
 | --- | --- | --- |
-| `board` | `idx_board_location_gist` | `GIST (location) WHERE del = false AND show::text = 'PUBLIC'` |
-| `board_file` | `idx_board_file_board` | `btree (board_id)` |
-| `board_like` | `idx_board_like_board` | `btree (board_id)` |
-| `board_like` | `idx_board_like_email` | `btree (email, board_id)` |
-| `board_reply` | `idx_board_reply_board` | `btree (board_id) WHERE del = false` |
-| `board_member` | `ukib2kl3vjf09y34gk8g8i2n9d0` | `UNIQUE btree (email)` — Hibernate 자동 생성 |
+| `board` | `idx_board_location` | `GIST (location)` — **predicate 없음** |
+| `board` | `idx_board_email_del` | `btree (email, del)` |
+| `board` | `idx_board_show_del_created` | `btree (show, del, created_at DESC)` |
+| `board_file` | `idx_board_file_board_main_id` | `btree (board_id, main DESC, id)` |
+| `board_like` | `idx_board_like_board_id` | `btree (board_id)` |
+| `board_like` | `idx_board_like_board_email` | `UNIQUE btree (board_id, email)` |
+| `board_like` | `idx_board_like_email` | `btree (email)` |
+| `board_reply` | `idx_board_reply_board_del` | `btree (board_id, del)` |
+| `board_reply` | `idx_board_reply_board_reply_created` | `btree (board_id, reply_id, created_at)` |
+| `board_reply` | `idx_board_reply_reply_id` | `btree (reply_id)` |
+| `board_reply` | `idx_board_reply_id_board_email` | `btree (id, board_id, email)` |
+| `board_member` | `idx_board_member_email` | `UNIQUE btree (email)` |
+| `board_member` | `ukib2kl3vjf09y34gk8g8i2n9d0` | `UNIQUE btree (email)` — **위와 완전 중복** |
+| `board_member` | `idx_board_member_status` | `btree (status)` |
 
-### 만들지 않기로 결정한 것
+### 이전 판이 틀렸던 항목
 
-`board_file (board_id, main DESC, id)` — LATERAL 의 `ORDER BY main DESC, id ASC LIMIT 1`
-용으로 검토했으나 **불필요**하다고 판단.
+| 이전 주장 | 실제 |
+| --- | --- |
+| `idx_board_location_gist ... WHERE del=false AND show::text='PUBLIC'` | `idx_board_location` — **부분 인덱스가 아니다** |
+| `idx_board_reply_board (board_id) WHERE del=false` | 존재하지 않음. `idx_board_reply_board_del (board_id, del)` 복합 인덱스 |
+| `idx_board_file_board (board_id)` + "복합 인덱스는 만들지 않기로 결정" | `idx_board_file_board_main_id (board_id, main DESC, id)` — **이미 존재하고 실제로 쓰인다** |
+| `idx_board_like_email (email, board_id)` | `idx_board_like_email (email)` — 단일 컬럼 |
 
-- 글 하나당 사진은 많아도 10장 수준. 기존 `(board_id)` 인덱스로 몇 행 가져와 메모리
-  정렬하는 비용은 사실상 0.
-- 결정적으로 `file_url` 이 인덱스에 없어 **힙 접근이 어차피 일어난다.** index-only scan
-  이 안 되므로 복합 인덱스로 얻는 게 없다.
+### ⚠️ 운영 DB 대조가 필요하다
 
-쓰기 비용만 늘고 읽기 이득이 없다.
+위는 **로컬 `unimal-postgis` 컨테이너** 실측이다. 이전 판은 "운영 DB 실물 확인" 이라고
+적혀 있었는데 로컬과 이렇게 다르면 그 확인을 신뢰할 수 없다.
+
+- [ ] 운영 DB 에서 아래 쿼리 실행해 위 표와 대조
+
+```sql
+SELECT tablename, indexname, indexdef
+FROM pg_indexes
+WHERE schemaname = 'unimal_board'
+  AND tablename IN ('board','board_file','board_like','board_reply','board_member')
+ORDER BY tablename, indexname;
+```
+
+---
+
+## 신규 백로그 (2026-07-29 실측에서 발견, 급하지 않음)
+
+### A. `board_member(email)` 중복 UNIQUE 인덱스 제거
+
+`idx_board_member_email` 과 `ukib2kl3vjf09y34gk8g8i2n9d0` 이 둘 다 `UNIQUE btree (email)` 이다.
+완전 중복이라 **INSERT/UPDATE 마다 같은 일을 두 번 한다.**
+
+```sql
+-- 손으로 만든 쪽을 남기고 Hibernate 자동 생성분을 지우는 게 낫다
+-- (이름이 읽히므로). 단 엔티티의 @Column(unique = true) 를 지우지 않으면
+-- ddl-auto 가 다시 만든다 — 엔티티 수정과 함께 해야 한다.
+DROP INDEX IF EXISTS unimal_board.ukib2kl3vjf09y34gk8g8i2n9d0;
+```
+
+- [ ] 운영 확인 (로컬만의 문제일 수 있다)
+- [ ] `BoardMember` 엔티티의 `@Column(unique = true)` 제거와 함께 처리
+
+### B. `idx_board_location` 을 부분 인덱스로 전환 — **지금은 하지 않는다**
+
+현재 GiST 인덱스는 비공개·삭제 글까지 담는다. 마커·피드 쿼리는 항상
+`del = false AND show = 'PUBLIC'` 을 걸므로, 인덱스가 공개글만 담으면 트리가 작아지고
+KNN 스캔이 버릴 행을 만나지 않는다.
+
+```sql
+-- 측정 가능한 문제가 생긴 뒤에 한다
+CREATE INDEX CONCURRENTLY idx_board_location_public
+    ON board USING gist (location)
+    WHERE del = false AND show::text = 'PUBLIC';
+```
+
+**지금 하는 건 이르다.** 전체 29건 중 제외 대상이 6건이라 이득이 측정되지 않는다.
+글이 수만 건이 되고 비공개 비율이 올라가면 재검토한다.
+
+전환 시 주의: predicate 를 쿼리와 문자 그대로 맞춰야 플래너가 함의를 증명한다.
+`show` 는 `(show)::text = 'PUBLIC'::text` 형태로 쓰고, 쿼리도 문자열 비교여야 한다.
+
+### C. `board_reply.del` NOT NULL 의 근거 정정 (기록용, 조치 불필요)
+
+`1fe7a37` 커밋은 전환 이유로 "부분 인덱스 `idx_board_reply_board(board_id) WHERE del=false`
+의 함의 증명 실패 → 전체 스캔" 을 들었는데, **그 부분 인덱스는 존재하지 않는다.**
+실제는 `idx_board_reply_board_del (board_id, del)` 복합 인덱스이고, 복합 인덱스는
+선행 컬럼 `board_id` 로 스캔하므로 `COALESCE(del, false)` 여도 인덱스를 탄다.
+
+**결론(NOT NULL 전환)은 맞고 근거만 틀렸다.** nullable Boolean 은 그 자체로 나쁜
+모델링이고 `COALESCE` 방어 코드가 걷혀서 코드가 단순해졌으므로 되돌리지 않는다.
 
 ---
 

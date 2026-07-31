@@ -4,6 +4,7 @@ import com.unimal.common.annotation.user.UserInfoAnnotation
 import com.unimal.common.dto.CommonResponse
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.user.config.annotation.SocialLoginToken
+import com.unimal.user.controller.request.AppleLoginRequest
 import com.unimal.user.controller.request.EmailTelAuthCodeVerifyRequest
 import com.unimal.user.controller.request.GoogleLoginRequest
 import com.unimal.user.controller.request.KakaoLoginRequest
@@ -54,6 +55,16 @@ class LoginController(
         response: HttpServletResponse
     ): CommonResponse {
         val jwtToken = loginService.login(googleLoginRequest)
+        response.setJwtHeaders(jwtToken)
+        return CommonResponse()
+    }
+
+    @PostMapping("/login/mobile/apple")
+    fun mobileApple(
+        @RequestBody @Valid appleLoginRequest: AppleLoginRequest,
+        response: HttpServletResponse
+    ): CommonResponse {
+        val jwtToken = loginService.login(appleLoginRequest)
         response.setJwtHeaders(jwtToken)
         return CommonResponse()
     }

@@ -40,6 +40,11 @@ enum class ErrorCode(
     BOARD_OWNER_NOT_MATCH(message = "게시판 작성자가 아닙니다."),
 
     API_CALL_ERROR(message = "API 호출에 실패했습니다."),
+
+    APPLE_TOKEN_INVALID(message = "애플 인증 토큰이 유효하지 않습니다."),
+    APPLE_PUBLIC_KEY_NOT_FOUND(message = "애플 공개키를 찾을 수 없습니다."),
+    APPLE_EMAIL_NOT_FOUND(message = "애플 계정에서 이메일을 가져올 수 없습니다."),
+
     HASHIDS_ENCODE_ERROR(message = "Hashids encode 오류입니다."),
     HASHIDS_DECODE_ERROR(message = "Hashids decode 오류입니다."),
 

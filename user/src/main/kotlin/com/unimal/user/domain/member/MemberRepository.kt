@@ -8,4 +8,5 @@ interface MemberRepository : JpaRepository<Member, Long> {
     fun findByEmail(email: String): Member?
     fun findByTel(tel: String): Member?
     fun findByNickname(nickname: String): Member?
+    fun findByProviderAndProviderId(provider: String, providerId: String): Member?
 }

@@ -105,6 +105,15 @@ custom:
     secret-key: ${JWT_SECRET_KEY:and0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXktand0LXNlY3JldC1rZXk=}
   auth:
     master-code: ${AUTH_MASTER_CODE}
+  apple:
+    # iOS Bundle ID — identityToken의 aud claim과 반드시 일치해야 한다
+    client-id: ${APPLE_CLIENT_ID:com.unimal.ios.stomap}
+    # Apple Developer 팀 ID
+    team-id: ${APPLE_TEAM_ID:}
+    # Sign in with Apple 용 .p8 키의 Key ID
+    key-id: ${APPLE_KEY_ID:}
+    # .p8 파일 내용 (개행은 \n 리터럴로 넣어도 된다)
+    private-key: ${APPLE_PRIVATE_KEY:}
 
 etc:
   base-url:

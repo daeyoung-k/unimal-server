@@ -1,7 +1,7 @@
 package com.unimal.user.service.login.enums
 
 enum class LoginType {
-    MANUAL, KAKAO, NAVER, GOOGLE, TEST
+    MANUAL, KAKAO, NAVER, GOOGLE, APPLE, TEST
     ;
     companion object {
         fun from(value: String?): LoginType {

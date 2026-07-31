@@ -53,6 +53,10 @@ class BoardRouteConfig(
             path(
                 "/board/post/list",
                 "/board/post/{boardId}",
+
+                // 지도 바텀카드 피드 — 비로그인 허용이므로 optional 쪽에 둔다.
+                // 필수 필터 쪽에 넣으면 비로그인 진입이 401 로 막힌다.
+                "/board/map/feed",
             )
                 .filters { f ->
                     f.filter(optionalAccessTokenFilter.apply(OptionalAccessTokenFilter.Config()))
@@ -65,6 +69,7 @@ class BoardRouteConfig(
                 // etc
                 "/post/total",
                 "/post/total/like",
+                "/post/like/stories/total",
 
                 // 게시판 관련
                 "/board/post",

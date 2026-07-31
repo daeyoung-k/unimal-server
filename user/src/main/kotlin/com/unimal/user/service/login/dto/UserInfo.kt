@@ -5,6 +5,7 @@ import com.unimal.user.domain.member.Member
 data class UserInfo(
     val provider: String,
     val email: String,
+    var providerId: String? = null,
     var nickname: String? = null,
     var name: String? = null,
     var tel: String? = null,
@@ -15,6 +16,7 @@ data class UserInfo(
         return Member(
             email = email,
             provider = provider,
+            providerId = providerId,
             nickname = nickname,
             name = name,
             tel = tel,
