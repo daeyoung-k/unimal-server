@@ -38,6 +38,7 @@ unimal-server/
 ├── map/               # 지도 서비스     (포트: 8082, gRPC: 50082, context-path: /map)
 ├── photo/             # 사진 서비스     (포트: 8084, gRPC: 50084, context-path: /photo)
 ├── notification/      # 알림 서비스     (포트: 8085, gRPC: 50085, context-path: /notification)
+├── admin/             # 운영 백오피스   (포트: 8086, gRPC: 50086) — 회원 관리, 신고 처리
 ├── common/            # 공통 유틸리티 (QueryDSL, Hashids, CommonResponse, Kafka DTO)
 ├── web-common/        # 웹 공통 컴포넌트 (JWT 유틸, UserInfo 어노테이션)
 └── proto-common/      # gRPC Protocol Buffers 정의
@@ -119,7 +120,7 @@ X-Unimal-Provider       OAuth 제공자 (kakao / naver / google)
 |------|------|
 | 컨테이너 | Docker + Docker Compose |
 | CI/CD | GitHub Actions (모듈별 변경 감지 빌드) |
-| 모니터링 | Prometheus + Grafana |
+| 모니터링 | Prometheus + Grafana + Loki/Promtail |
 | 헬스 체크 | Spring Boot Actuator |
 
 ---
@@ -384,6 +385,11 @@ Board Service (게시글 좋아요/댓글)
 - Redis 인증 코드 임시 저장 (TTL 관리)
 - Kafka Consumer: `board.postAppPushTopic` → FCM 발송
 
+### 🛠️ Admin Service (8086 / gRPC: 50086)
+- 운영 백오피스 — 앱 회원 관리, 신고 처리 등 운영 기능
+- Thymeleaf 기반 관리 화면 + REST API
+- 독립 스키마(`unimal_admin`) 사용
+
 ---
 
 ## 🗄️ 데이터베이스 스키마
@@ -394,6 +400,7 @@ Board Service (게시글 좋아요/댓글)
 |--------|--------|-----------|
 | `unimal_user` | User | member, member_device, authentication_token |
 | `unimal_board` | Board | board, board_file, board_like, board_reply, board_member, notice |
+| `unimal_admin` | Admin | 운영 백오피스 (회원 관리, 신고 처리) |
 | `unimal_map` | Map | — |
 | `unimal_photo` | Photo | — |
 | `unimal_notification` | Notification | — |
@@ -420,6 +427,7 @@ deploy to server (SSH + docker-compose pull & up)
 - `board/**` → board 빌드
 - `photo/**` → photo 빌드
 - `notification/**` → notification 빌드
+- `admin/**` → admin 빌드
 - `docker-compose*.yml` → 설정 동기화만 수행
 
 ---
@@ -438,106 +446,11 @@ deploy to server (SSH + docker-compose pull & up)
 
 ---
 
-## ⚙️ 로컬 환경 설정
-
-### 요구사항
-- Java 21
-- Docker & Docker Compose
-
-### 환경 변수 설정 (`.env`)
-
-```env
-# 서비스 포트
-API_GATEWAY_SERVICE_PORT=8080
-USER_SERVICE_PORT=8081
-MAP_SERVICE_PORT=8082
-BOARD_SERVICE_PORT=8083
-PHOTO_SERVICE_PORT=8084
-NOTIFICATION_SERVICE_PORT=8085
-
-# 데이터베이스
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_NAME=unimal
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=your_password
-DATABASE_USER_SCHEMA=unimal_user
-DATABASE_BOARD_SCHEMA=unimal_board
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=your_password
-
-# JWT (Base64 Encoded HS256 Secret)
-JWT_SECRET_KEY=your_base64_encoded_secret_key
-
-# Kafka
-KAFKA_SERVER_1=localhost:9091
-KAFKA_SERVER_2=localhost:9092
-KAFKA_SERVER_3=localhost:9093
-
-# OAuth
-KAKAO_CLIENT_ID=your_kakao_client_id
-KAKAO_CLIENT_SECRET=your_kakao_client_secret
-
-# Google
-GOOGLE_GEOCODING_API_KEY=your_google_api_key
-
-# AWS
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_S3_BUCKET_NAME=unimal-bucket
-AWS_REGION=ap-northeast-2
-
-# Email
-SMTP_MAIL_USERNAME=support@unimal.co.kr
-SMTP_MAIL_PASSWORD=your_smtp_password
-
-# Naver Cloud SMS
-NAVER_CLOUD_SMS_SERVICE_ID=your_service_id
-NAVER_CLOUD_SMS_ACCESS_KEY=your_access_key
-NAVER_CLOUD_SMS_SECRET_KEY=your_secret_key
-```
-
-### Docker Compose 구성
-
-| 파일 | 설명 |
-|------|------|
-| `docker-compose.yml` | 전체 마이크로서비스 |
-| `docker-compose-db.yml` | PostgreSQL + PostGIS |
-| `docker-compose-kafka.yml` | Kafka 3 브로커 클러스터 |
-| `docker-compose-monitoring.yml` | Prometheus + Grafana |
-| `docker-compose-local.yml` | 로컬 개발 통합 환경 |
-
-### 시작하기
-
-```bash
-# 1. 리포지토리 클론
-git clone https://github.com/daeyoung-k/unimal-server.git
-cd unimal-server
-
-# 2. .env 파일 생성 (위 환경 변수 참고)
-
-# 3. 인프라 실행 (DB, Redis, Kafka)
-docker-compose -f docker-compose-db.yml -f docker-compose-kafka.yml up -d
-
-# 4. 프로젝트 빌드
-./gradlew clean build
-
-# 5. 전체 서비스 실행
-docker-compose up -d
-
-# 6. 헬스 체크
-curl http://localhost:8080/actuator/health
-```
-
----
-
-## 📈 모니터링
+## 📈 모니터링 · 로그
 
 - **Prometheus**: 각 서비스 `/actuator/prometheus` 메트릭 수집
-- **Grafana**: 대시보드 시각화
+- **Grafana**: 메트릭·로그 대시보드 시각화
+- **Loki + Promtail**: 전 컨테이너 로그 수집·검색 파이프라인
 - **Spring Actuator**: `/actuator/health`, `/actuator/metrics`
 
 ---
