@@ -1,5 +1,6 @@
 package com.unimal.apigateway.config.routes
 
+import com.unimal.apigateway.config.routes.RoutePrefix.MAP
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
@@ -29,7 +30,7 @@ class MapRouteConfig {
         baseUri: String
     ) {
         route("mapPublicRoutes") {
-            path("/map/**")
+            path("$MAP/**")
             uri(baseUri)
         }
     }

@@ -1,5 +1,6 @@
 package com.unimal.apigateway.config.routes
 
+import com.unimal.apigateway.config.routes.RoutePrefix.NOTIFICATION
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
@@ -30,7 +31,7 @@ class NotificationRouteConfig {
     ) {
         route("notificationPublicRoutes") {
             path(
-                "/notification/app-push",
+                "$NOTIFICATION/app-push",
             )
             uri(baseUri)
         }
