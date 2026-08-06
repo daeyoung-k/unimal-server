@@ -92,3 +92,19 @@ etc:
     photo: http://${BASE_URI}:${API_GATEWAY_SERVICE_PORT}
   files:
     base-url: ${AWS_CLOUDFRONT_DOMAIN}
+
+# 게시글 공유 (docs/specs/2026-08-07-게시글-공유.md)
+#
+# base-url 은 앱에 하드코딩하지 않고 API 응답(shareUrl)으로 내려준다.
+# 앱은 배포하면 못 고치므로, 도메인이 바뀌면 서버 배포 한 번으로 끝나야 한다.
+custom:
+  share:
+    base-url: ${SHARE_BASE_URL:https://stomap.unimal.co.kr}
+    # 앱 딥링크 커스텀 스킴. AndroidManifest / Info.plist 등록값과 반드시 같아야 한다.
+    scheme: ${SHARE_APP_SCHEME:stomap}
+    store:
+      android: ${SHARE_STORE_ANDROID:https://play.google.com/store/apps/details?id=com.unimal.android.stomap}
+      # App Store 숫자 ID 발급 후 채운다. 비워두면 iOS 미설치 사용자가 갈 곳이 없다.
+      ios: ${SHARE_STORE_IOS:https://apps.apple.com/kr/app/stomap/id0000000000}
+    # 사진 없는 글의 og:image 폴백. 없으면 카톡 카드가 텍스트만 남는다.
+    default-image: ${SHARE_DEFAULT_IMAGE:${AWS_CLOUDFRONT_DOMAIN}/static/share-default.png}

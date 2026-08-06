@@ -4,8 +4,13 @@ package com.unimal.apigateway.config.routes
  * 모듈별 경로 프리픽스.
  *
  * 게이트웨이는 [org.springframework.cloud.gateway.filter.factory.StripPrefixGatewayFilterFactory]
- * 를 쓰지 않는다. 즉 **프리픽스는 다운스트림까지 그대로 전달되며, 각 서비스의 컨트롤러
- * 매핑도 이 값으로 시작한다.** 게이트웨이에서만 쓰는 접두어가 아니라 서비스 간 약속이다.
+ * 를 쓰지 않는다. **프리픽스는 다운스트림까지 그대로 전달되고, 각 서비스가
+ * `server.servlet.context-path` 로 그 값을 받는다** (예: board 의 `application.yml` 에
+ * `context-path: /board`). 컨트롤러 매핑은 프리픽스를 빼고 적는다 — `/board/post/list`
+ * 는 게이트웨이 경로이고, `PostController` 에는 `@RequestMapping("/post")` 로 적혀 있다.
+ *
+ * 그래서 이 값은 게이트웨이에서만 쓰는 접두어가 아니라 **게이트웨이와 각 모듈의
+ * context-path 가 맞춰야 하는 약속**이다. 한쪽만 바꾸면 전부 404 다.
  *
  * 상수로 뺀 이유는 오타 방지보다 **누락 방지**에 가깝다. 라우트 파일이 모듈당 하나씩
  * 나뉘어 있어서 경로를 추가할 때 `"/map/feed/section"` 처럼 프리픽스 없이 적어도
@@ -16,7 +21,7 @@ package com.unimal.apigateway.config.routes
  * `"${'$'}BOARD/post/list"` 형태로 적으면 프리픽스가 눈에 보이는 자리에 고정돼 빠뜨리기 어렵다.
  * `const val` 이라 문자열 템플릿도 컴파일 타임에 접혀 런타임 비용은 없다.
  *
- * 값을 바꿀 일이 생기면 여기만 고쳐서는 안 된다 — 해당 모듈의 컨트롤러 매핑과
+ * 값을 바꿀 일이 생기면 여기만 고쳐서는 안 된다 — 해당 모듈의 `context-path` 와
  * Flutter 앱의 API 경로도 같이 바뀌어야 한다.
  */
 object RoutePrefix {
