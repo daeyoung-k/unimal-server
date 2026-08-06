@@ -92,3 +92,14 @@ etc:
     photo: http://${PHOTO_SERVICE_DOCKER_URI}:${PHOTO_SERVICE_PORT}
   files:
     base-url: ${AWS_CLOUDFRONT_DOMAIN}
+
+# 게시글 공유 (docs/specs/2026-08-07-게시글-공유.md)
+# 값의 의미는 application.yml 주석 참고. 여기와 저기가 어긋나면 로컬에서만 되는 링크가 나온다.
+custom:
+  share:
+    base-url: ${SHARE_BASE_URL:https://stomap.unimal.co.kr}
+    scheme: ${SHARE_APP_SCHEME:stomap}
+    store:
+      android: ${SHARE_STORE_ANDROID:https://play.google.com/store/apps/details?id=com.unimal.android.stomap}
+      ios: ${SHARE_STORE_IOS:https://apps.apple.com/kr/app/stomap/id0000000000}
+    default-image: ${SHARE_DEFAULT_IMAGE:${AWS_CLOUDFRONT_DOMAIN}/static/share-default.png}

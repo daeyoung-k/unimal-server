@@ -40,8 +40,8 @@ class BoardRepositoryImpl(
         }
 
         // 검색어
-        postListRequest.keyword?.let {
-            conditions += board.title.containsIgnoreCase(it).or( board.content.containsIgnoreCase(it) )
+        postListRequest.keyword?.takeIf { it.isNotBlank() }?.let {
+            conditions += keywordCondition(it)
         }
 
         // 정렬 적용
@@ -92,8 +92,8 @@ class BoardRepositoryImpl(
         )
 
         // 검색어
-        myPostListRequest.keyword?.let {
-            conditions += board.title.containsIgnoreCase(it).or( board.content.containsIgnoreCase(it) )
+        myPostListRequest.keyword?.takeIf { it.isNotBlank() }?.let {
+            conditions += keywordCondition(it)
         }
 
         // 정렬 적용
@@ -132,6 +132,29 @@ class BoardRepositoryImpl(
             .fetch()
 
         return boards ?: emptyList()
+    }
+
+    /**
+     * 키워드 검색 조건.
+     *
+     * 제목/내용뿐 아니라 게시글 작성 시점에 이미 저장해 둔 주소 컬럼(도로명, 시도, 구군, 동)까지
+     * 함께 본다. "홍대", "강남구" 같은 지역명이 본문에 없어도 그 지역 게시글이 잡히므로
+     * 외부 장소검색 API 없이 "지역으로 글 찾기"가 성립한다. 이 컬럼들은 원래 저장만 되고
+     * 검색에는 전혀 쓰이지 않던 값이라, 추가 비용 없이 검색 품질만 올라간다.
+     *
+     * TODO(해시태그): board_hashtag 테이블 추가 시 여기에 태그 조건을 .or() 로 덧붙인다.
+     *
+     * 주의: containsIgnoreCase 는 LIKE '%kw%' 로 나가 인덱스를 타지 못한다(선행 와일드카드).
+     * 게시글이 수만 건 규모가 되면 pg_trgm + GIN 인덱스로 교체해야 한다.
+     * ddl-auto 로는 확장/인덱스를 만들 수 없으니 board/migration/ 에 수동 실행 SQL 로 남길 것.
+     */
+    private fun keywordCondition(keyword: String): BooleanExpression {
+        return board.title.containsIgnoreCase(keyword)
+            .or(board.content.containsIgnoreCase(keyword))
+            .or(board.streetName.containsIgnoreCase(keyword))
+            .or(board.siDo.containsIgnoreCase(keyword))
+            .or(board.guGun.containsIgnoreCase(keyword))
+            .or(board.dong.containsIgnoreCase(keyword))
     }
 
     private fun locationDistance(

@@ -29,6 +29,7 @@ import com.unimal.board.service.post.enums.UserCountCalculateType
 import com.unimal.board.service.post.manager.LikeManager
 import com.unimal.board.service.post.manager.PostManager
 import com.unimal.board.service.post.manager.ReplyManager
+import com.unimal.board.service.share.ShareUrlFactory
 import com.unimal.board.utils.HashidsUtil
 import com.unimal.common.dto.CommonUserInfo
 import com.unimal.common.dto.kafka.post.PostAppPushEvent
@@ -56,6 +57,7 @@ class PostService(
     private val postKafkaTopic: PostKafkaTopic,
 
     private val hashidsUtil: HashidsUtil,
+    private val shareUrlFactory: ShareUrlFactory,
     private val fileDeleteGrpcService: FileDeleteGrpcService,
 
     ) {
@@ -130,7 +132,13 @@ class PostService(
                 encryptBoardId
             ),
             isLike = isLike,
-            isOwner = isOwner
+            isOwner = isOwner,
+            // 공유 불가한 글이면 null 이 내려가고 앱은 버튼을 숨긴다.
+            shareUrl = shareUrlFactory.ofShareable(
+                encodedBoardId = hashidsUtil.encode(board.id!!),
+                show = board.show,
+                deleted = board.del,
+            ),
         )
     }
 

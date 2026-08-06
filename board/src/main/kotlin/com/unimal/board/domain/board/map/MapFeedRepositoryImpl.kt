@@ -26,13 +26,15 @@ class MapFeedRepositoryImpl(
      * ## 반경 필터가 없는 것이 핵심이다
      *
      * `ORDER BY location <-> point` (PostGIS KNN)만 쓴다. 반경 파라미터가 없으므로
-     * - 밀도가 낮으면 자동으로 먼 글까지 채운다 → 피드가 절대 비지 않는다
+     * - 밀도가 낮아도 후보 풀이 비지 않는다 → 반경 제한이 없는 `LATEST`/`ALL` 이 살아남는다
      * - 밀도가 높아지면 자동으로 가까운 글만 상단에 온다 → 별도 조치 없이 "동네 피드"가 된다
      *
      * `NEAR` 섹션의 5km 제한은 **여기가 아니라 서비스에서** 건다
-     * ([com.unimal.board.service.post.MapFeedService]). 쿼리를 반경으로 자르면 5km 안이
-     * 비었을 때 폴백할 후보 자체가 없어져, "가까운 게 없으면 조금 멀어도 보여준다"를
-     * 두 번 조회해야 구현할 수 있다.
+     * ([com.unimal.board.service.post.MapFeedService]). 반경 제한이 필요한 섹션은 셋 중
+     * 하나뿐인데 풀 전체를 잘라내면 나머지 두 섹션이 같이 죽는다.
+     *
+     * 참고: 예전에는 "5km 안이 비면 반경을 풀어 폴백한다"가 여기 근거로 적혀 있었으나,
+     * 그 폴백은 2026-08-06 에 제거했다(거리 약속을 못 지키면 섹션을 내리지 않는다).
      *
      * `Board.location` 은 `geography(Point, 4326)` 이고, PostGIS 2.2+ 에서 geography 의
      * `<->` 는 **인덱스 보조 정확 거리 정렬**이다. 따라서 `idx_board_location_gist` 를 타고
@@ -84,7 +86,7 @@ class MapFeedRepositoryImpl(
      *
      * `board_file` LATERAL 은 `LEFT` 다 — **사진 없는 글도 남긴다.** 48시간 안쪽 텍스트
      * 글은 `LATEST`/`NEAR` 섹션에 정상적으로 들어가야 하기 때문이다. 사진을 요구하는 건
-     * `HOT` 섹션뿐이고 그건 서비스에서 `fileUrl != null` 로 거른다.
+     * `ALL` 섹션뿐이고 그건 서비스에서 `fileUrl != null` 로 거른다.
      */
     fun findNearCandidates(
         lat: Double,

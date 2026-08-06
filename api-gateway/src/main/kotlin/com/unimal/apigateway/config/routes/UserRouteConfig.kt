@@ -1,5 +1,6 @@
 package com.unimal.apigateway.config.routes
 
+import com.unimal.apigateway.config.routes.RoutePrefix.USER
 import com.unimal.apigateway.config.routes.filter.RefreshTokenFilter
 import com.unimal.apigateway.config.routes.filter.AccessTokenFilter
 import org.springframework.beans.factory.annotation.Value
@@ -42,20 +43,20 @@ class UserRouteConfig(
     ) {
         route("userAuthPublicRoutes") {
             path(
-                "/user/auth/login/**",
-                "/user/auth/signup/**",
-                "/user/auth/email/**",
-                "/user/auth/tel/**",
-                "/user/auth/email-tel/**"
+                "$USER/auth/login/**",
+                "$USER/auth/signup/**",
+                "$USER/auth/email/**",
+                "$USER/auth/tel/**",
+                "$USER/auth/email-tel/**",
             )
             uri(baseUri)
         }
         route("userMemberPublicRoutes") {
-            path("/user/member/find/**")
+            path("$USER/member/find/**")
             uri(baseUri)
         }
         route("userSlangPublicRoutes") {
-            path("/user/slang/**")
+            path("$USER/slang/**")
             uri(baseUri)
         }
     }
@@ -65,9 +66,9 @@ class UserRouteConfig(
     ) {
         route("userAuthRefreshTokenFilterRoutes") {
             path(
-                "/user/auth/token-reissue",
-                "/user/auth/logout",
-                "/user/auth/withdrawal",
+                "$USER/auth/token-reissue",
+                "$USER/auth/logout",
+                "$USER/auth/withdrawal",
             )
             .filters { f ->
                 f.filter(refreshTokenFilter.apply(RefreshTokenFilter.Config()))
@@ -77,10 +78,10 @@ class UserRouteConfig(
 
         route("userMember-onlyAccessTokenFilterRoutes") {
             path(
-                "/user/member/info/**",
-                "/user/member/change/password",
-                "/user/member/device/info/update",
-                "/user/member/profile/image/upload",
+                "$USER/member/info/**",
+                "$USER/member/change/password",
+                "$USER/member/device/info/update",
+                "$USER/member/profile/image/upload",
             )
             .filters { f ->
                 f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))

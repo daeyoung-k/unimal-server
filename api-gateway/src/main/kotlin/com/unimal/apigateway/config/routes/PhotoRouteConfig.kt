@@ -1,5 +1,6 @@
 package com.unimal.apigateway.config.routes
 
+import com.unimal.apigateway.config.routes.RoutePrefix.PHOTO
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
@@ -30,7 +31,7 @@ class PhotoRouteConfig {
         baseUri: String
     ) {
         route("photoPublicRoutes") {
-            path("/photo/**")
+            path("$PHOTO/**")
             uri(baseUri)
         }
     }
