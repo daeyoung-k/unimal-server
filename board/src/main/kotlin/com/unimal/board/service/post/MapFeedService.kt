@@ -68,7 +68,7 @@ import kotlin.math.pow
  * |---|---|---|
  * | [FeedSectionType.NEAR] | [NEAR_RADIUS_METERS] 이내, 기간 무제한 | 가까운 순 |
  * | [FeedSectionType.LATEST] | [RECENT_WINDOW_HOURS] 이내, 거리 무제한 | 최신순 |
- * | [FeedSectionType.ALL] | 사진 있음 + 반응 ≥ 1, 거리·기간 무제한 | 시간감쇠순 |
+ * | [FeedSectionType.ALL] | 사진 있음, 거리·기간 무제한 | 시간감쇠순 |
  *
  * 표의 순서는 표시 순서다. 배정 순서는 다르다([buildSections]).
  *
@@ -157,27 +157,33 @@ class MapFeedService(
      * 실제로 완전히 비는 경우는 드물다 — [FeedSectionType.LATEST] 는 반경 제한이 없어
      * 전국에 48시간 이내 글이 [MIN_SECTION_SIZE] 건만 있으면 살아남는다.
      *
-     * ## 배정 순서 — 복구 불가능한 섹션부터 (2026-08-06 개정)
+     * ## 배정 순서 — 좁은 섹션부터 (2026-08-06 개정)
      *
-     * `NEAR → ALL → LATEST`.
+     * `NEAR → LATEST → ALL`. 모집단이 좁은(= 다른 데서 보충할 수 없는) 순서다.
      *
-     * **NEAR 와 LATEST 는 크게 겹친다.** NEAR 는 "5km 이내"(기간 무관), LATEST 는
-     * "48시간 이내"(거리 무관) — 5km 안에 방금 올라온 글은 양쪽 다 해당한다. 주변에
-     * 글이 적을 때 LATEST 를 먼저 배정하면 그 겹치는 글을 [SECTION_LIMIT] 건까지
-     * 통째로 가져가고 **NEAR 가 매번 빈다.**
+     * | 섹션 | 모집단 | 못 채웠을 때 |
+     * |---|---|---|
+     * | NEAR | 5km 이내 | 5km 밖에서 보충 불가 → 섹션 소멸 |
+     * | LATEST | 48시간 이내 | 시간을 되돌릴 수 없음 → 섹션 소멸 |
+     * | ALL | 사진 있는 전국 글 | 대체 후보 많음 |
      *
-     * 개정 전에는 이 섹션(당시 이름 `HOT`)이 맨 앞이었다. "사진 + 반응이라는 가장 좁은 조건"이라는 이유였는데,
-     * 그건 NEAR 에 반경 폴백이라는 안전망이 있을 때 이야기다. 폴백을 없앤 지금은
-     * **ALL 이 NEAR 를 굶길 수 있다.** ALL 의 모집단은 전국이고 `hotScore` 가 시간감쇠라
-     * 최근 글을 선호하는데, 그게 정확히 NEAR 의 후보(5km + 48시간)와 겹친다. 동네에
-     * 사진+반응 글이 10건 있으면 ALL 이 전부 가져가고 NEAR 는 3건을 못 채워 사라진다.
-     * 표시 순서에서 맨 위로 올린 섹션이 가장 잘 사라지는 셈이라 앞뒤가 안 맞는다.
+     * **세 섹션은 크게 겹친다.** 5km 안에 방금 올라온 사진 글은 셋 다 해당한다.
+     * 그래서 배정 순서가 곧 "누가 굶는가"를 결정한다.
      *
-     * 그래서 **되돌릴 수 없는 쪽을 먼저 채운다.** NEAR 는 5km 밖에서 보충할 방법이
-     * 아예 없지만, ALL 은 모집단이 전국이라 근처 몇 건을 뺏겨도 대체 후보가 있다.
+     * 이 순서는 두 번 뒤집혔다.
      *
-     * 대가로 **LATEST 는 실질적으로 "주변에서 이미 본 것 말고 새로 올라온 것"이 된다.**
-     * 5km 밖에서 방금 올라온 글이 주로 여기 앉는데, 섹션 이름과도 어긋나지 않는다.
+     * - 원래는 `ALL(당시 HOT) → …` 이 맨 앞이었다. "사진 + 반응이라는 가장 좁은 조건"이
+     *   이유였고, NEAR 에는 반경 폴백이라는 안전망이 있었다.
+     * - 폴백을 없애자 ALL 이 NEAR 를 굶겼다(동네 사진+반응 글 10건을 ALL 이 다 가져감).
+     *   → `NEAR → ALL → LATEST`.
+     * - ALL 에서 반응 조건을 빼자 **가장 좁던 모집단이 가장 넓어졌다.** 같은 이유로
+     *   이번엔 ALL 이 LATEST 를 굶긴다. → `NEAR → LATEST → ALL`.
+     *
+     * 교훈: **섹션 조건을 바꿀 때마다 배정 순서를 다시 본다.** 순서의 근거는 "조건이
+     * 좁은 순"이 아니라 **"못 채웠을 때 보충 가능성이 없는 순"**이다.
+     *
+     * 대가로 **ALL 은 실질적으로 "주변에서도 최근에서도 못 본 나머지"가 된다.**
+     * 거리·기간을 주장하지 않는 이름이라 어긋나지 않는다.
      *
      * (배정 순서는 여기, 표시 순서는 [FeedSectionType] 선언 순서다. 서로 다르다.)
      */
@@ -210,20 +216,10 @@ class MapFeedService(
             minSize = MIN_SECTION_SIZE,
         )?.let { picked[FeedSectionType.NEAR] = it }
 
-        // 2) ALL("전국 스토리") — 사진 있는 글 중 반응 1개 이상, 시간감쇠 순. 전국 대상.
-        //    기간 제한이 없다: 사진 글은 48시간 컷 대상이 아니고 hotScore 가 묵은 글을 알아서 민다.
-        //    NEAR 가 가져간 근처 글은 여기서 빠지므로, 이름대로 "전국"에 가까워진다.
-        pickSection(
-            source = ordered
-                .filter { it.fileUrl != null && it.likeCount + it.replyCount > 0 }
-                .sortedWith(
-                    compareByDescending<MapFeedCandidate> { hotScore(it, now) }.thenByDescending { it.id }
-                ),
-            used = used,
-            minSize = MIN_SECTION_SIZE,
-        )?.let { picked[FeedSectionType.ALL] = it }
-
-        // 3) LATEST("방금 올라온 스토리") — 48시간 이내, 최신순. NEAR 가 가져가고 남은 것.
+        // 2) LATEST("방금 올라온 스토리") — 48시간 이내, 최신순. NEAR 가 가져가고 남은 것.
+        //
+        //    ALL 보다 먼저 배정한다(2026-08-06). ALL 이 사진 조건만 남으면서 가장 넓은
+        //    모집단이 됐기 때문 — 뒤로 미루면 ALL 이 최신 사진 글을 쓸어가 LATEST 가 굶는다.
         pickSection(
             source = recent.sortedWith(
                 compareByDescending<MapFeedCandidate> { it.createdAt }.thenByDescending { it.id }
@@ -231,6 +227,24 @@ class MapFeedService(
             used = used,
             minSize = MIN_SECTION_SIZE,
         )?.let { picked[FeedSectionType.LATEST] = it }
+
+        // 3) ALL("전국 스토리") — 사진 있는 전국 글, 시간감쇠 순. 거리·기간 제한 없음.
+        //
+        //    반응(좋아요·댓글) ≥ 1 조건은 2026-08-06 에 뺐다. HOT("인기") 시절의 잔재인데,
+        //    ALL 로 이름을 바꾸며 인기 컨셉을 접었으므로 조건도 같이 갔어야 했다. 남겨두니
+        //    반응이 거의 없는 현재 데이터에서 MIN_SECTION_SIZE 를 못 채워 피드가 통째로
+        //    비었다(평택에서 조회 시 sections=[]). "전국 스토리"는 반응을 약속하지 않는다.
+        //
+        //    정렬은 hotScore 를 유지한다. 반응이 있으면 위로, 없으면 사실상 최신순.
+        pickSection(
+            source = ordered
+                .filter { it.fileUrl != null }
+                .sortedWith(
+                    compareByDescending<MapFeedCandidate> { hotScore(it, now) }.thenByDescending { it.id }
+                ),
+            used = used,
+            minSize = MIN_SECTION_SIZE,
+        )?.let { picked[FeedSectionType.ALL] = it }
 
         // 표시 순서 = enum 선언 순서. 순서를 바꾸려면 FeedSectionType 만 고치면 된다.
         // 헤더 문구도 enum 이 단일 출처다 — 서비스가 갈아끼우는 경로는 이제 없다.
@@ -340,11 +354,14 @@ class MapFeedService(
      * 버전을 안 올리면 배포 후 60초간 옛 구성이 섞여 나와 "왜 NEAR 가 5km 를 안 지키지"로
      * 헛디버깅하게 된다. 캐시 무효화는 싸고 혼란은 비싸다.
      *
+     * **`v5` → `v6` (2026-08-06):** ALL 의 반응 조건 제거 + 배정 순서 변경.
+     * 스키마는 그대로지만 같은 좌표에서 나오는 섹션 구성이 달라진다.
+     *
      * 격자 좌표는 키에 그대로 남는다 — 섹션 단건 조회도 이 캐시를 읽으므로 전체/부분이
      * 같은 값을 본다.
      */
     private fun feedCacheKey(lat: Double, lng: Double): String =
-        "map:feed:v5:${snap(lat)}:${snap(lng)}"
+        "map:feed:v6:${snap(lat)}:${snap(lng)}"
 
     // Locale 을 고정하지 않으면 환경에 따라 소수점이 ',' 가 되어 캐시 키가 달라진다.
     private fun snap(value: Double): String = String.format(Locale.ROOT, "%.3f", value)
