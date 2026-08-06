@@ -26,11 +26,12 @@ import kotlin.math.pow
  * [MapPostService] 에 넣지 않았다. 마커 조회와 피드 조립은 책임이 다르고
  * [MapPostService] 는 이미 파일 매칭 로직으로 비대하다.
  *
- * ## 2026-07-30 개정 — 적응형 섹션
+ * ## 섹션 구성 (2026-08-06 개정)
  *
- * 섹션을 [FeedSectionType.NEAR] 하나로 고정하던 것을 **후보 풀 크기에 따라 자동으로
- * 늘어나는 구조**로 바꿨다. 임계값을 코드에 박아두고 런타임에 판정하면 글이 쌓이는
- * 대로 저절로 전환된다.
+ * 세 섹션을 항상 시도하고, [MIN_SECTION_SIZE] 를 못 채운 섹션만 빠진다. 풀 크기로
+ * "단일 섹션 모드 / 다중 섹션 모드"를 가르던 임계값은 없앴다 — 그 모드가 반경·기간
+ * 제한을 통째로 풀어버려 저밀도 지역에서 100km 밖 글이 "가까운 이야기"로 나왔다.
+ * 자세한 경위는 [buildSections] KDoc.
  *
  * **쿼리는 여전히 1개다.** 섹션별 전용 SQL 을 짜지 않고 KNN 후보 [POOL_SIZE] 건을
  * 한 번 뽑아 메모리에서 나눈다. 지금 밀도(공개 글 50건 미만)에서는 KNN 80건이 사실상
@@ -65,9 +66,11 @@ import kotlin.math.pow
  *
  * | 섹션 | 조건 | 정렬 |
  * |---|---|---|
- * | [FeedSectionType.HOT] | 사진 있음 + 반응 ≥ 1, 기간 무제한 | 시간감쇠 인기순 |
- * | [FeedSectionType.NEAR] | 5km 이내 + [RECENT_WINDOW_HOURS] 이내 | 가까운 순 |
- * | [FeedSectionType.LATEST] | [RECENT_WINDOW_HOURS] 이내 | 최신순 |
+ * | [FeedSectionType.NEAR] | [NEAR_RADIUS_METERS] 이내, 기간 무제한 | 가까운 순 |
+ * | [FeedSectionType.LATEST] | [RECENT_WINDOW_HOURS] 이내, 거리 무제한 | 최신순 |
+ * | [FeedSectionType.ALL] | 사진 있음 + 반응 ≥ 1, 거리·기간 무제한 | 시간감쇠순 |
+ *
+ * 표의 순서는 표시 순서다. 배정 순서는 다르다([buildSections]).
  *
  * 여기에 더해 **사진 없는 글은 리포지토리 단계에서 이미 48시간으로 잘려 온다**
  * (`MapFeedRepositoryImpl` 참고 — 마커 쿼리와 같은 규칙). 그래서 각 섹션에 "텍스트 글
@@ -89,9 +92,9 @@ class MapFeedService(
     /**
      * 섹션 1개만 돌려준다. 해당 섹션이 이번 계산에서 만들어지지 않았으면 null.
      *
-     * null 은 오류가 아니라 **정상적인 "지금은 이 섹션이 없다"** 이다. 적응형 구조라
-     * 후보 풀이 [MULTI_SECTION_THRESHOLD] 아래로 떨어지거나 HOT/LATEST 가
-     * [MIN_SECTION_SIZE] 를 못 채우면 섹션이 사라진다. 앱은 이때 그 섹션을 화면에서
+     * null 은 오류가 아니라 **정상적인 "지금은 이 섹션이 없다"** 이다. 세 섹션 모두
+     * [MIN_SECTION_SIZE] 를 못 채우면 사라지고, NEAR 는 [NEAR_RADIUS_METERS] 안에서
+     * 못 채우면 반경을 풀지 않고 그냥 사라진다. 앱은 이때 그 섹션을 화면에서
      * 지우고 나머지는 그대로 둔다.
      */
     fun getSection(request: MapFeedSectionRequest): MapFeedSection? =
@@ -119,8 +122,9 @@ class MapFeedService(
         val candidates = mapFeedRepository.findNearCandidates(
             lat = latitude,
             lng = longitude,
-            // +1 은 단일 섹션 모드의 has_more 판정용. 풀을 다 쓰는 다중 섹션
-            // 모드에서도 "더 있다"를 알려면 limit 를 한 칸 넘겨 받아야 한다.
+            // 여유 1건. 단일 섹션 모드가 있던 시절의 has_more 판정 잔재지만, 섹션별
+            // has_more 는 pickSection 이 자체적으로 SECTION_LIMIT + 1 로 재므로
+            // 지금은 순수한 여유분이다. 한 행이 200~300 bytes 라 두고 손해는 없다.
             limit = POOL_SIZE + 1,
         )
 
@@ -137,36 +141,45 @@ class MapFeedService(
      * 시간감쇠([hotScore])와 최신 윈도우를 테스트할 방법이 없다. Clock 빈을 주입할
      * 만큼의 일은 아니라 인자 하나로 끝낸다.
      *
-     * ## 왜 임계값 이하에서는 섹션을 나누지 않나
+     * ## 조건을 못 채운 섹션은 그냥 뺀다 (2026-08-06 개정)
      *
-     * 섹션 분리는 "각 섹션이 서로 다른 발견 경험을 준다"는 전제에서만 값을 한다.
-     * 풀이 작으면 세 섹션이 같은 풀을 나눠 갖고, 중복 제거까지 걸리면 섹션당 1~2장이
-     * 남는다. **가로 캐러셀에 카드 한 장은 단일 섹션 20장보다 초라하다.**
-     * 그래서 [MULTI_SECTION_THRESHOLD] 미만이면 NEAR 하나만 낸다 — 이때는 반경·기간
-     * 제한을 걸지 않는다([fallbackNearSection]). 보여줄 게 적어서 안 나누기로 한
-     * 상태에서 필터까지 더하면 화면이 통째로 빈다.
+     * 예전에는 "피드가 절대 비면 안 된다"를 우선해 두 겹의 폴백을 뒀다.
+     * (1) 5km 안이 부족하면 NEAR 의 반경을 풀고 헤더만 "가까운 이야기"로 교체,
+     * (2) 후보가 20건 미만이면 반경·기간 없이 가까운 순 20건을 단일 섹션으로.
      *
-     * ## 배정 순서 — 좁은 섹션부터 (2026-07-31 개정)
+     * 저밀도 지역에서 이게 그대로 드러났다 — 서산에서 앱을 열면 100km 넘게 떨어진 글이
+     * "가까운 이야기"라는 이름으로 나왔다. 헤더를 바꿔도 "가까운"이라는 단어가 남는 한
+     * 거짓말이고, 사용자는 카드의 `112km` 를 보고서야 알아챈다.
      *
-     * `HOT → NEAR → LATEST`.
+     * 그래서 **거리·시간 약속을 못 지키면 섹션을 내리지 않는다.** 빈 피드보다 거짓 피드가
+     * 나쁘다. 섹션이 하나도 안 만들어지면 응답의 `sections` 가 비고, 앱은 시트를 아예
+     * 렌더하지 않는다(`map_feed_sheet.dart` — "올릴 게 없으면 없는 것이 맞다").
+     * 실제로 완전히 비는 경우는 드물다 — [FeedSectionType.LATEST] 는 반경 제한이 없어
+     * 전국에 48시간 이내 글이 [MIN_SECTION_SIZE] 건만 있으면 살아남는다.
      *
-     * **NEAR ⊂ LATEST 라는 게 핵심이다.** NEAR 는 "5km 이내 + 48시간 이내", LATEST 는
-     * "48시간 이내" — NEAR 의 모든 후보가 LATEST 의 후보이기도 하다. 그래서 LATEST 를
-     * 먼저 배정하면 48시간 이내 글을 [SECTION_LIMIT] 건까지 통째로 가져가고, 주변에
-     * 글이 그보다 적은 흔한 상황에서 **NEAR 가 매번 빈다.** 좁은 쪽을 먼저 채워야
-     * 양쪽이 다 산다.
+     * ## 배정 순서 — 복구 불가능한 섹션부터 (2026-08-06 개정)
+     *
+     * `NEAR → ALL → LATEST`.
+     *
+     * **NEAR 와 LATEST 는 크게 겹친다.** NEAR 는 "5km 이내"(기간 무관), LATEST 는
+     * "48시간 이내"(거리 무관) — 5km 안에 방금 올라온 글은 양쪽 다 해당한다. 주변에
+     * 글이 적을 때 LATEST 를 먼저 배정하면 그 겹치는 글을 [SECTION_LIMIT] 건까지
+     * 통째로 가져가고 **NEAR 가 매번 빈다.**
+     *
+     * 개정 전에는 이 섹션(당시 이름 `HOT`)이 맨 앞이었다. "사진 + 반응이라는 가장 좁은 조건"이라는 이유였는데,
+     * 그건 NEAR 에 반경 폴백이라는 안전망이 있을 때 이야기다. 폴백을 없앤 지금은
+     * **ALL 이 NEAR 를 굶길 수 있다.** ALL 의 모집단은 전국이고 `hotScore` 가 시간감쇠라
+     * 최근 글을 선호하는데, 그게 정확히 NEAR 의 후보(5km + 48시간)와 겹친다. 동네에
+     * 사진+반응 글이 10건 있으면 ALL 이 전부 가져가고 NEAR 는 3건을 못 채워 사라진다.
+     * 표시 순서에서 맨 위로 올린 섹션이 가장 잘 사라지는 셈이라 앞뒤가 안 맞는다.
+     *
+     * 그래서 **되돌릴 수 없는 쪽을 먼저 채운다.** NEAR 는 5km 밖에서 보충할 방법이
+     * 아예 없지만, ALL 은 모집단이 전국이라 근처 몇 건을 뺏겨도 대체 후보가 있다.
      *
      * 대가로 **LATEST 는 실질적으로 "주변에서 이미 본 것 말고 새로 올라온 것"이 된다.**
      * 5km 밖에서 방금 올라온 글이 주로 여기 앉는데, 섹션 이름과도 어긋나지 않는다.
-     * HOT 이 맨 앞인 건 개정 전과 같다 — 사진 + 반응이라는 가장 좁은 조건이라 뒤로
-     * 미루면 [MIN_SECTION_SIZE] 를 못 채우고 사라진다.
      *
-     * ## 아무 섹션도 못 만들면 단일 모드로 되돌린다
-     *
-     * [MULTI_SECTION_THRESHOLD] 판정은 **필터 걸기 전** 풀 크기로 한다. 그래서 후보가
-     * 20건이어도 전부 48시간을 넘긴 사진 글이면 HOT 도 NEAR 도 LATEST 도 못 만들어져
-     * `sections` 가 빈 채로 나갈 수 있다 — 앱은 그때 시트를 아예 렌더하지 않는다.
-     * 마지막에 [fallbackNearSection] 으로 되돌려 **피드가 비는 경우를 없앤다.**
+     * (배정 순서는 여기, 표시 순서는 [FeedSectionType] 선언 순서다. 서로 다르다.)
      */
     private fun buildSections(
         candidates: List<MapFeedCandidate>,
@@ -178,18 +191,28 @@ class MapFeedService(
         )
         if (ordered.isEmpty()) return emptyList()
 
-        if (ordered.size < MULTI_SECTION_THRESHOLD) {
-            return listOf(fallbackNearSection(ordered))
-        }
-
         val used = mutableSetOf<Long>()
-        val picked = mutableMapOf<FeedSectionType, PickedSection>()
+        val picked = mutableMapOf<FeedSectionType, List<MapFeedCandidate>>()
         val recentFrom = now.minusHours(RECENT_WINDOW_HOURS)
-        // `ordered` 가 거리순이므로 이 리스트도 거리순이다 — NEAR 정렬이 공짜로 나온다.
+        // LATEST 전용 모집단. NEAR 는 기간을 안 걸므로 `ordered` 를 직접 쓴다.
         val recent = ordered.filter { it.createdAt.isAfter(recentFrom) }
 
-        // 1) HOT — 사진 있는 글 중 반응 1개 이상, 시간감쇠 인기순.
+        // 1) NEAR("가까운 스토리") — 5km 이내, 가까운 순. 가장 먼저 배정한다(위 KDoc).
+        //    못 채우면 **섹션을 만들지 않는다.** 반경을 푸는 폴백은 2026-08-06 에 제거했다.
+        //    "가까운"이라는 이름을 달고 100km 밖 글을 내보내지 않는다.
+        //
+        //    `recent` 가 아니라 `ordered` 에서 뽑는다 — 이름이 거리만 약속하므로 기간도
+        //    걸지 않는다. 걸어두면 447m 짜리 3일 전 글이 여기가 아니라 ALL 로 새는데,
+        //    사용자 눈엔 "가까운 글이 전국 스토리에 있는" 버그로 보인다.
+        pickSection(
+            source = ordered.filter { it.distanceMeters <= NEAR_RADIUS_METERS },
+            used = used,
+            minSize = MIN_SECTION_SIZE,
+        )?.let { picked[FeedSectionType.NEAR] = it }
+
+        // 2) ALL("전국 스토리") — 사진 있는 글 중 반응 1개 이상, 시간감쇠 순. 전국 대상.
         //    기간 제한이 없다: 사진 글은 48시간 컷 대상이 아니고 hotScore 가 묵은 글을 알아서 민다.
+        //    NEAR 가 가져간 근처 글은 여기서 빠지므로, 이름대로 "전국"에 가까워진다.
         pickSection(
             source = ordered
                 .filter { it.fileUrl != null && it.likeCount + it.replyCount > 0 }
@@ -198,58 +221,23 @@ class MapFeedService(
                 ),
             used = used,
             minSize = MIN_SECTION_SIZE,
-        )?.let { picked[FeedSectionType.HOT] = PickedSection(it, FeedSectionType.HOT.title) }
+        )?.let { picked[FeedSectionType.ALL] = it }
 
-        // 2) NEAR — 5km 이내, 가까운 순. 5km 안에서 최소 건수를 못 채우면 반경을 풀어
-        //    폴백하고 헤더 문구를 바꾼다. "지금 여기"라고 해놓고 30km 밖 글을 보여주면
-        //    거짓말이 된다. 폴백은 minSize=1 — 여기가 피드를 비지 않게 하는 sink 다.
-        val withinRadius = recent.filter { it.distanceMeters <= NEAR_RADIUS_METERS }
-        val near = pickSection(withinRadius, used, MIN_SECTION_SIZE)
-        if (near != null) {
-            picked[FeedSectionType.NEAR] = PickedSection(near, FeedSectionType.NEAR.title)
-        } else {
-            pickSection(recent, used, 1)?.let {
-                picked[FeedSectionType.NEAR] = PickedSection(it, NEAR_FALLBACK_TITLE)
-            }
-        }
-
-        // 3) LATEST — 48시간 이내, 최신순. NEAR 가 가져가고 남은 것.
+        // 3) LATEST("방금 올라온 스토리") — 48시간 이내, 최신순. NEAR 가 가져가고 남은 것.
         pickSection(
             source = recent.sortedWith(
                 compareByDescending<MapFeedCandidate> { it.createdAt }.thenByDescending { it.id }
             ),
             used = used,
             minSize = MIN_SECTION_SIZE,
-        )?.let { picked[FeedSectionType.LATEST] = PickedSection(it, FeedSectionType.LATEST.title) }
-
-        // 필터를 다 통과한 섹션이 하나도 없으면 단일 모드로 되돌린다 (위 주석 참고).
-        if (picked.isEmpty()) return listOf(fallbackNearSection(ordered))
+        )?.let { picked[FeedSectionType.LATEST] = it }
 
         // 표시 순서 = enum 선언 순서. 순서를 바꾸려면 FeedSectionType 만 고치면 된다.
+        // 헤더 문구도 enum 이 단일 출처다 — 서비스가 갈아끼우는 경로는 이제 없다.
         return FeedSectionType.entries.mapNotNull { type ->
-            picked[type]?.let { toSection(type, it.candidates, SECTION_LIMIT, it.title) }
+            picked[type]?.let { toSection(type, it) }
         }
     }
-
-    /**
-     * 반경·기간 제한 없이 가까운 순으로 채우는 [FeedSectionType.NEAR] 단일 섹션.
-     *
-     * 단일 섹션 모드와 "아무 섹션도 못 만든 경우"의 공통 출구다. 헤더 문구가
-     * [NEAR_FALLBACK_TITLE] 인 이유는 5km 보장이 없기 때문이다.
-     */
-    private fun fallbackNearSection(ordered: List<MapFeedCandidate>): MapFeedSection =
-        toSection(
-            FeedSectionType.NEAR,
-            ordered.take(SINGLE_SECTION_LIMIT + 1),
-            SINGLE_SECTION_LIMIT,
-            NEAR_FALLBACK_TITLE,
-        )
-
-    /** 배정 결과 + 그때 쓸 헤더 문구. 폴백이면 enum 의 [FeedSectionType.title] 과 다르다. */
-    private data class PickedSection(
-        val candidates: List<MapFeedCandidate>,
-        val title: String,
-    )
 
     /**
      * [source] 에서 아직 안 쓴 후보를 `SECTION_LIMIT + 1` 건까지 집는다.
@@ -273,18 +261,21 @@ class MapFeedService(
         return taken
     }
 
+    /**
+     * 헤더 문구는 [FeedSectionType.title] 이 단일 출처다. 서비스가 갈아끼우는 경로는
+     * 2026-08-06(반경 폴백 제거) 이후로 없다 — 다시 만들지 말 것. 문구가 두 곳에서
+     * 나오기 시작하면 "이 섹션 제목이 어디서 오는지" 추적이 안 된다.
+     */
     private fun toSection(
         type: FeedSectionType,
         taken: List<MapFeedCandidate>,
-        limit: Int,
-        title: String = type.title,
     ) = MapFeedSection(
         type = type,
-        title = title,
-        // `limit + 1` 건을 받아 초과분 존재로 판정한다. 별도 COUNT(*) 를 돌리지 않는다 —
-        // 총 개수는 UI에 안 쓰이는데 count 쿼리는 비싸다.
-        hasMore = taken.size > limit,
-        items = taken.take(limit).map { it.toCard() },
+        title = type.title,
+        // `SECTION_LIMIT + 1` 건을 받아 초과분 존재로 판정한다. 별도 COUNT(*) 를 돌리지
+        // 않는다 — 총 개수는 UI에 안 쓰이는데 count 쿼리는 비싸다.
+        hasMore = taken.size > SECTION_LIMIT,
+        items = taken.take(SECTION_LIMIT).map { it.toCard() },
     )
 
     /**
@@ -298,7 +289,7 @@ class MapFeedService(
      * - 분모 `+2`: 방금 올라온 글의 점수가 발산하는 걸 막는다.
      * - 지수 `1.5`: 하루 지나면 약 1/9 로 떨어져 어제 인기 글이 상단을 영구 점유하지 못한다.
      *
-     * 사진 유무는 여기에 넣지 않는다. HOT 후보를 고를 때 이미 사진 있는 글만 남기므로
+     * 사진 유무는 여기에 넣지 않는다. ALL 후보를 고를 때 이미 사진 있는 글만 남기므로
      * 점수에 보너스를 더해봐야 모든 후보가 똑같이 받아 순서가 바뀌지 않는다.
      *
      * 서버 시계가 뒤로 튀거나 미래 `created_at` 이 섞여도 음수 시간이 되지 않게 0 으로 자른다.
@@ -353,7 +344,7 @@ class MapFeedService(
      * 같은 값을 본다.
      */
     private fun feedCacheKey(lat: Double, lng: Double): String =
-        "map:feed:v4:${snap(lat)}:${snap(lng)}"
+        "map:feed:v5:${snap(lat)}:${snap(lng)}"
 
     // Locale 을 고정하지 않으면 환경에 따라 소수점이 ',' 가 되어 캐시 키가 달라진다.
     private fun snap(value: Double): String = String.format(Locale.ROOT, "%.3f", value)
@@ -397,7 +388,7 @@ class MapFeedService(
          * KNN 후보 조회 건수. 세 섹션이 나눠 갖는 공용 풀이다.
          *
          * `SECTION_LIMIT(10) × 3 = 30` 이면 딱 맞아떨어지지만, 중복 제거로 뒤 섹션이
-         * 굶지 않으려면 여유가 필요하다. 80 은 HOT/NEAR/LATEST 필터를 통과 못 하는 글까지
+         * 굶지 않으려면 여유가 필요하다. 80 은 ALL/NEAR/LATEST 필터를 통과 못 하는 글까지
          * 감안한 값이다. 한 행이 200~300 bytes 라 80행은 여전히 가볍다.
          */
         private const val POOL_SIZE = 80
@@ -412,28 +403,18 @@ class MapFeedService(
         private const val SECTION_LIMIT = 10
 
         /**
-         * 단일 [FeedSectionType.NEAR] 모드일 때의 건수. 세로가 아니라 가로 한 줄뿐이라
-         * 다중 모드보다 넉넉하게 준다.
-         */
-        private const val SINGLE_SECTION_LIMIT = 20
-
-        /**
          * 섹션이 살아남기 위한 최소 건수. 2 장짜리 캐러셀은 섹션 헤더 값을 못 한다.
-         * NEAR 반경 폴백에는 적용하지 않는다 (sink).
+         *
+         * 예외 없이 세 섹션에 모두 적용한다. 2026-08-06 이전에는 NEAR 반경 폴백만
+         * `minSize = 1` 로 빠져나가는 sink 였는데, 그 폴백 자체를 없앴다.
          */
         private const val MIN_SECTION_SIZE = 3
 
         /**
-         * 이 건수 미만이면 섹션을 나누지 않고 NEAR 하나만 낸다.
+         * [FeedSectionType.LATEST] 의 시간 윈도우.
          *
-         * **필터 걸기 전** 풀 크기로 판정한다. 사진·반경·기간 조건을 다 적용한 뒤에
-         * 판정하면 계산을 두 번 하게 되고, 어차피 다 걸러졌을 때의 안전망은
-         * [buildSections] 끝의 `picked.isEmpty()` 가 맡는다.
-         */
-        private const val MULTI_SECTION_THRESHOLD = 20
-
-        /**
-         * [FeedSectionType.LATEST] / [FeedSectionType.NEAR] 의 시간 윈도우.
+         * 2026-08-06 이전에는 [FeedSectionType.NEAR] 에도 적용했으나, "가까운 스토리"는
+         * 이름이 거리만 약속하므로 기간 필터를 뗐다(해당 enum KDoc 참고).
          *
          * 48시간이다. **리포지토리의 "사진 없는 글 48시간 컷"과 같은 값이어야 한다** —
          * 다르면 "마커에는 없는데 피드에는 있는 글" 또는 그 반대가 생긴다.
@@ -447,29 +428,17 @@ class MapFeedService(
         private const val RECENT_WINDOW_HOURS = 48L
 
         /**
-         * [FeedSectionType.NEAR] 의 반경. "진짜 내 주변"의 기준이다.
+         * [FeedSectionType.NEAR] 의 반경 상한. 도보권을 조금 넘는 5km.
          *
-         * 5km 는 지도 줌 14(반경 5km)와 같은 값이라, 사용자가 기본 줌에서 보는 마커
-         * 범위와 NEAR 섹션의 범위가 대체로 겹친다. 지도에 보이는 핀이 아래 피드에도
-         * 있어야 두 목록이 같은 곳을 말하는 것으로 읽힌다.
+         * 피드 전체에서 유일한 반경 필터다. 리포지토리 SQL 에는 `ST_DWithin` 이 없고
+         * KNN 정렬만 하므로(밀도가 낮아도 후보가 비지 않게), 거리 제한은 여기서만 건다.
+         *
+         * **이 값을 못 채우면 섹션을 내리지 않는다.** 예전에는 반경을 풀고 헤더만
+         * 바꿔 내보냈는데, 저밀도 지역에서 100km 밖 글이 "가까운"이라는 이름을 달고
+         * 나왔다. 빈 섹션이 거짓 섹션보다 낫다. (2026-08-06)
          */
         private const val NEAR_RADIUS_METERS = 5_000.0
 
-        /**
-         * 반경 폴백 시 [FeedSectionType.NEAR] 헤더 문구.
-         *
-         * 5km 안이 비어 범위를 넓혔을 때 "지금 여기 이야기"를 그대로 쓰면 30km 밖 글을
-         * 가리키는 거짓말이 된다. 문구가 응답에 실려 오므로 앱은 고칠 게 없다.
-         */
-        private const val NEAR_FALLBACK_TITLE = "가까운 이야기"
-
-        /**
-         * 새 글이 최대 1분 늦게 보인다. 지도 피드에서 그 정도 지연은 체감되지 않고,
-         * 대신 지도를 흔드는 동안의 반복 요청을 전부 흡수한다.
-         *
-         * 수동 새로고침은 [MapFeedRequest.refresh] 로 이 캐시를 우회한다 — 사용자가
-         * 명시적으로 요청한 갱신까지 1분 묶어두면 버튼이 고장난 것처럼 보인다.
-         */
         private const val FEED_CACHE_TTL_SECONDS = 60L
     }
 }
