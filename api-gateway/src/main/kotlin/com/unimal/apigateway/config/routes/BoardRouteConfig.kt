@@ -57,6 +57,11 @@ class BoardRouteConfig(
                 // 지도 바텀카드 피드 — 비로그인 허용이므로 optional 쪽에 둔다.
                 // 필수 필터 쪽에 넣으면 비로그인 진입이 401 로 막힌다.
                 "/board/map/feed",
+                // 섹션 단위 새로고침(헤더 ↻ 버튼). PathPattern 은 하위 경로를
+                // 자동으로 먹지 않아 별도 등록이 필요하다 — 이게 없으면 게이트웨이가
+                // 라우팅하지 못하고, 앱은 실패를 조용히 삼켜(MapFeedSectionResult.failed)
+                // "버튼을 눌러도 아무 일도 안 일어나는" 상태가 된다. (2026-08-06 수정)
+                "/board/map/feed/section",
             )
                 .filters { f ->
                     f.filter(optionalAccessTokenFilter.apply(OptionalAccessTokenFilter.Config()))
