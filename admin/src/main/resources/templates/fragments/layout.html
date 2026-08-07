@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<!--
+  어드민 공통 조각.
+
+  `<head>` 와 사이드바를 여기 모은다. 메뉴를 추가할 때 이 파일 한 줄만 고치면 된다 —
+  전에는 화면마다 nav 를 복제해서, 메뉴가 늘 때마다 모든 템플릿을 찾아 고쳐야 했고
+  실제로 한쪽만 고쳐 모바일 레이아웃이 어긋난 적이 있다.
+
+  ## 쓰는 법
+
+  ```html
+  <!doctype html>
+  <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('공지 관리 · Stomap Admin', ~{::style})}">
+      <style>/* 이 화면에서만 쓰는 규칙 */</style>
+  </head>
+  <body>
+  <div class="shell">
+      <th:block th:replace="~{fragments/layout :: sidebar('notices')}"></th:block>
+      <main class="content">...</main>
+  </div>
+  </body>
+  </html>
+  ```
+
+  - 페이지 고유 스타일이 없으면 두 번째 인자로 `~{}` 를 넘긴다.
+  - `activeMenu` 는 아래 nav 의 `data-menu` 값과 맞춰야 활성 표시가 된다.
+
+  ## `<html>` 을 통째로 교체하지 않는 이유
+
+  `<html th:replace="...">` 로 레이아웃을 상속하는 방식이 더 짧지만, 그러면 페이지의
+  DOCTYPE 선언이 결과에서 빠져 브라우저가 quirks mode 로 렌더한다. 각 페이지가 자기
+  `<html>`·DOCTYPE 을 갖고 `<head>` 와 사이드바만 받아 가는 편이 안전하다.
+-->
+
+<head th:fragment="head(title, pageStyle)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title}">Stomap Admin</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <!-- 공통 CSS 뒤에 와야 페이지 규칙이 덮어쓸 수 있다. -->
+    <th:block th:replace="${pageStyle}"></th:block>
+</head>
+
+<body>
+<aside th:fragment="sidebar(activeMenu)">
+    <div class="brand">Stomap Admin</div>
+    <nav aria-label="관리자 메뉴">
+        <a data-menu="members"
+           th:href="@{/members}"
+           th:classappend="${activeMenu == 'members'} ? 'active'">회원 관리</a>
+        <a data-menu="notices"
+           th:href="@{/notices}"
+           th:classappend="${activeMenu == 'notices'} ? 'active'">공지 관리</a>
+        <a data-menu="reports"
+           th:href="@{/reports}"
+           th:classappend="${activeMenu == 'reports'} ? 'active'">신고 관리</a>
+        <a data-menu="admin-members"
+           th:href="@{/admin-members}"
+           th:classappend="${activeMenu == 'admin-members'} ? 'active'">관리자 계정</a>
+    </nav>
+
+    <form class="sidebar-footer" method="post" th:action="@{/logout}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button class="sidebar-logout" type="submit">로그아웃</button>
+    </form>
+</aside>
+</body>
+</html>
