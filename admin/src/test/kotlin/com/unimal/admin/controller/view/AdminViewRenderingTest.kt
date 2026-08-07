@@ -78,6 +78,18 @@ class AdminViewRenderingTest @Autowired constructor(
     }
 
     @Test
+    @WithMockUser(username = "admin", roles = ["SUPER_ADMIN"])
+    fun `신고 목록 화면이 렌더된다`() {
+        mockMvc.get("/reports")
+            .andExpect {
+                status { isOk() }
+                view { name("report/list") }
+                content { string(containsString("신고 관리")) }
+                content { string(containsString("미처리")) }
+            }
+    }
+
+    @Test
     fun `로그인 화면은 인증 없이 열리고 공통 CSS 를 참조한다`() {
         mockMvc.get("/login")
             .andExpect {
