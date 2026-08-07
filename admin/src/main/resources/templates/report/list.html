@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('신고 관리 · Stomap Admin', ~{::style})}">
+    <style>
+        .filters.report-filters {
+            grid-template-columns: repeat(4, minmax(132px, 180px)) auto auto;
+        }
+
+        .badge.PENDING {
+            background: #fffaeb;
+            color: var(--warning);
+        }
+
+        .badge.RESOLVED {
+            background: #ecfdf3;
+            color: var(--success);
+        }
+
+        .badge.REJECTED {
+            background: #f2f4f7;
+            color: #475467;
+        }
+
+        .report-reason {
+            display: grid;
+            gap: 3px;
+        }
+
+        .report-reason-name {
+            color: #101828;
+            font-weight: 800;
+        }
+
+        .report-desc {
+            display: -webkit-box;
+            overflow: hidden;
+            max-width: 420px;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+            color: var(--muted);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <th:block th:replace="~{fragments/layout :: sidebar('reports')}"></th:block>
+
+    <main class="content">
+        <div class="topbar">
+            <div>
+                <h1>신고 관리</h1>
+                <div class="summary">
+                    <span>미처리 <strong th:text="${pendingCount}">0</strong>건</span>
+                    <span>조회 결과 <strong th:text="${reportsPage.totalElements}">0</strong>건</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="table-panel">
+            <form class="filters report-filters" method="get" th:action="@{/reports}">
+                <input type="hidden" name="size" th:value="${size}">
+
+                <div class="field">
+                    <label for="status">처리 상태</label>
+                    <select id="status" name="status">
+                        <option value="" th:selected="${filter.status == null}">전체</option>
+                        <option th:each="statusOption : ${statuses}"
+                                th:value="${statusOption.name()}"
+                                th:text="${statusOption.description}"
+                                th:selected="${filter.status == statusOption}">접수</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="targetType">대상</label>
+                    <select id="targetType" name="targetType">
+                        <option value="" th:selected="${filter.targetType == null}">전체</option>
+                        <option th:each="typeOption : ${targetTypes}"
+                                th:value="${typeOption.name()}"
+                                th:text="${typeOption.description}"
+                                th:selected="${filter.targetType == typeOption}">게시글 유형</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="reason">사유</label>
+                    <select id="reason" name="reason">
+                        <option value="" th:selected="${filter.reason == null}">전체</option>
+                        <option th:each="reasonOption : ${reasons}"
+                                th:value="${reasonOption.name()}"
+                                th:text="${reasonOption.description}"
+                                th:selected="${filter.reason == reasonOption}">스팸/광고</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="sort">정렬</label>
+                    <select id="sort" name="sort">
+                        <option th:each="sortOption : ${sortOptions}"
+                                th:value="${sortOption.parameterName}"
+                                th:text="${sortOption.label}"
+                                th:selected="${filter.sort == sortOption}">오래된순</option>
+                    </select>
+                </div>
+
+                <button class="filter-action" type="submit">검색</button>
+                <a class="filter-reset" th:href="@{/reports(size=${size}, status='')}">전체 보기</a>
+            </form>
+
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">사유</th>
+                    <th scope="col">대상</th>
+                    <th scope="col">신고자</th>
+                    <th scope="col">상태</th>
+                    <th scope="col">접수일</th>
+                    <th scope="col">처리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="report : ${reportsPage.content}">
+                    <td>
+                        <div class="report-reason">
+                            <span class="report-reason-name" th:text="${report.reason.description}">스팸/광고</span>
+                            <span class="report-desc"
+                                  th:if="${report.description != null}"
+                                  th:text="${report.description}">상세 내용</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge" th:text="${report.targetType.description}">게시글 유형</span>
+                    </td>
+                    <td th:text="${report.reporterEmail}">reporter@unimal.co.kr</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${report.status.name()}"
+                              th:text="${report.status.description}">접수</span>
+                    </td>
+                    <td th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
+                    <td>
+                        <a class="page-link" th:href="@{/reports/{id}(id=${report.id})}">확인</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="empty" th:if="${reportsPage.empty}">조회된 신고가 없습니다.</div>
+
+            <div class="pagination">
+                <a class="page-link"
+                   th:classappend="${reportsPage.first} ? 'disabled'"
+                   th:href="@{/reports(page=${reportsPage.number - 1}, size=${size}, status=${filter.status != null ? filter.status.name() : ''}, targetType=${filter.targetType != null ? filter.targetType.name() : ''}, reason=${filter.reason != null ? filter.reason.name() : ''}, sort=${filter.sort.parameterName})}">이전</a>
+                <span class="page-current"
+                      th:text="|${reportsPage.number + 1} / ${reportsPage.totalPages == 0 ? 1 : reportsPage.totalPages}|">1 / 1</span>
+                <a class="page-link"
+                   th:classappend="${reportsPage.last} ? 'disabled'"
+                   th:href="@{/reports(page=${reportsPage.number + 1}, size=${size}, status=${filter.status != null ? filter.status.name() : ''}, targetType=${filter.targetType != null ? filter.targetType.name() : ''}, reason=${filter.reason != null ? filter.reason.name() : ''}, sort=${filter.sort.parameterName})}">다음</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

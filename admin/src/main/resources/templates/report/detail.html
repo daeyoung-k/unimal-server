@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('신고 상세 · Stomap Admin', ~{::style})}">
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .badge.PENDING {
+            background: #fffaeb;
+            color: var(--warning);
+        }
+
+        .badge.RESOLVED {
+            background: #ecfdf3;
+            color: var(--success);
+        }
+
+        .badge.REJECTED {
+            background: #f2f4f7;
+            color: #475467;
+        }
+
+        /* 신고된 내용은 원문 그대로 보여야 판단할 수 있다. 줄바꿈 유지. */
+        .target-content {
+            margin: 10px 0 0;
+            padding: 14px;
+            border: 1px solid var(--line-soft);
+            border-radius: 8px;
+            background: #fcfcfd;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .target-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .target-meta {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .target-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .target-images img {
+            width: 140px;
+            height: 140px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #f9fafb;
+            object-fit: cover;
+        }
+
+        .missing {
+            padding: 28px 14px;
+            border: 1px dashed var(--line);
+            border-radius: 8px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .context-note {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line-soft);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .review-form {
+            display: grid;
+            gap: 10px;
+        }
+
+        .review-form textarea {
+            min-height: 110px;
+        }
+
+        .review-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .review-actions button {
+            flex: 1;
+        }
+
+        @media (max-width: 920px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <th:block th:replace="~{fragments/layout :: sidebar('reports')}"></th:block>
+
+    <main class="content">
+        <div class="topbar align-start">
+            <div>
+                <h1>신고 상세</h1>
+                <div class="summary">
+                    <span th:text="${report.reason.description}">스팸/광고</span>
+                    <span class="badge"
+                          th:classappend="${report.status.name()}"
+                          th:text="${report.status.description}">접수</span>
+                </div>
+            </div>
+            <a class="back-link" th:href="@{/reports}">목록</a>
+        </div>
+
+        <div class="grid">
+            <section class="panel">
+                <h2>신고된 내용</h2>
+
+                <!-- 게시글 -->
+                <div th:if="${target.kind == 'POST'}">
+                    <h3 class="target-title"
+                        th:text="${target.board.title != null and !target.board.title.isEmpty()} ? ${target.board.title} : '(제목 없음)'">제목</h3>
+                    <div class="target-meta">
+                        <span th:text="${target.author != null and target.author.nickname != null} ? ${target.author.nickname} : ${target.board.email}">작성자</span>
+                        ·
+                        <span th:text="${target.board.dong ?: target.board.streetName ?: '위치 없음'}">역삼동</span>
+                        ·
+                        <span th:text="${#temporals.format(target.board.createdAt, 'yyyy-MM-dd HH:mm')}">-</span>
+                        <span th:if="${target.board.del}"> · <strong>삭제됨</strong></span>
+                        <span th:unless="${target.board.show == 'PUBLIC'}"> · 공개범위 <span th:text="${target.board.show}">PRIVATE</span></span>
+                    </div>
+
+                    <p class="target-content" th:text="${target.board.content}">본문</p>
+
+                    <div class="target-images" th:if="${!target.images.isEmpty()}">
+                        <img th:each="image : ${target.images}"
+                             th:src="${image.displayUrl}"
+                             alt="신고된 게시글 이미지">
+                    </div>
+                </div>
+
+                <!-- 댓글 -->
+                <div th:if="${target.kind == 'REPLY'}">
+                    <h3 class="target-title">댓글</h3>
+                    <div class="target-meta">
+                        <span th:text="${target.author != null and target.author.nickname != null} ? ${target.author.nickname} : ${target.reply.email}">작성자</span>
+                        ·
+                        <span th:text="${#temporals.format(target.reply.createdAt, 'yyyy-MM-dd HH:mm')}">-</span>
+                        <span th:if="${target.reply.del}"> · <strong>삭제됨</strong></span>
+                    </div>
+
+                    <p class="target-content" th:text="${target.reply.comment}">댓글 내용</p>
+
+                    <!-- 댓글만 보면 맥락을 알 수 없어 원글을 함께 보여준다. -->
+                    <div class="context-note" th:if="${target.board != null}">
+                        <strong>달린 글</strong>
+                        <span th:text="${target.board.title != null and !target.board.title.isEmpty()} ? ${target.board.title} : '(제목 없음)'">원글 제목</span>
+                        <p class="target-content" th:text="${target.board.content}">원글 본문</p>
+                    </div>
+                    <div class="context-note" th:if="${target.board == null}">
+                        원글을 찾을 수 없습니다 (삭제되었을 수 있습니다).
+                    </div>
+                </div>
+
+                <!-- 회원 -->
+                <div th:if="${target.kind == 'USER'}">
+                    <h3 class="target-title"
+                        th:text="${target.member.nickname ?: '(닉네임 없음)'}">닉네임</h3>
+                    <div class="target-meta">
+                        <span th:text="${target.member.email}">user@unimal.co.kr</span>
+                        ·
+                        <span th:text="${target.member.status.description}">활성화</span>
+                    </div>
+
+                    <!--
+                      회원 상세로는 이메일로 잇는다. 신고의 targetId 는 board_member.id 라
+                      unimal_user.member.id 와 값이 달라 그대로 링크할 수 없다.
+                    -->
+                    <div class="context-note">
+                        회원 관리에서 이 이메일로 검색해 제재할 수 있습니다.
+                        <a class="page-link"
+                           th:href="@{/members(keyword=${target.member.email})}">회원 찾기</a>
+                    </div>
+                </div>
+
+                <!-- 대상 소실 -->
+                <div class="missing"
+                     th:if="${target.kind == 'MISSING'}"
+                     th:text="${target.note}">삭제되었거나 찾을 수 없는 대상입니다.</div>
+            </section>
+
+            <section class="panel">
+                <h2>신고 정보</h2>
+                <dl class="info-list">
+                    <dt>신고 사유</dt>
+                    <dd th:text="${report.reason.description}">스팸/광고</dd>
+                    <dt>상세 내용</dt>
+                    <dd th:text="${report.description ?: '-'}">-</dd>
+                    <dt>대상 유형</dt>
+                    <dd th:text="${report.targetType.description}">게시글 유형</dd>
+                    <dt>신고자</dt>
+                    <dd th:text="${report.reporterEmail}">reporter@unimal.co.kr</dd>
+                    <dt>접수일</dt>
+                    <dd th:text="${#temporals.format(report.createdAt, 'yyyy-MM-dd HH:mm')}">-</dd>
+                    <dt>처리자</dt>
+                    <dd th:text="${report.reviewedBy ?: '-'}">-</dd>
+                    <dt>처리일</dt>
+                    <dd th:text="${report.reviewedAt != null ? #temporals.format(report.reviewedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</dd>
+                    <dt>처리 메모</dt>
+                    <dd th:text="${report.adminMemo ?: '-'}">-</dd>
+                </dl>
+
+                <div style="margin-top: 18px;">
+                    <h2>처리</h2>
+
+                    <form class="review-form"
+                          th:if="${report.status.name() == 'PENDING'}"
+                          method="post"
+                          th:action="@{/reports/{id}/review(id=${report.id})}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                        <div class="field">
+                            <label for="memo">메모 (선택)</label>
+                            <textarea id="memo" name="memo" maxlength="500"
+                                      placeholder="판단 근거나 후속 조치를 남겨두면 나중에 도움이 됩니다."></textarea>
+                        </div>
+
+                        <div class="review-actions">
+                            <button class="action-button danger" type="submit"
+                                    name="status" value="RESOLVED">처리완료</button>
+                            <button class="action-button" type="submit"
+                                    name="status" value="REJECTED">반려</button>
+                        </div>
+
+                        <p class="context-note">
+                            처리 상태만 바뀝니다. 게시글 숨김이나 회원 차단은 회원 관리에서
+                            사유를 남기고 진행하세요.
+                        </p>
+                    </form>
+
+                    <form th:unless="${report.status.name() == 'PENDING'}"
+                          method="post"
+                          th:action="@{/reports/{id}/revert(id=${report.id})}"
+                          onsubmit="return confirm('이 신고를 미처리 상태로 되돌릴까요?');">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <p class="context-note" style="margin-top: 0; border-top: 0; padding-top: 0;">
+                            이미 처리된 신고입니다.
+                        </p>
+                        <button class="row-button" type="submit">미처리로 되돌리기</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+</body>
+</html>

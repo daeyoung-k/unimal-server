@@ -92,6 +92,13 @@ class BoardRouteConfig(
                 // 지도 관련
                 "$BOARD/map/location/post",
                 "$BOARD/map/post",
+
+                // 신고 — 인증 필수. 누가 신고했는지 남겨야 중복 신고를 막을 수 있고,
+                // 익명 신고를 허용하면 도배로 특정 글을 묻어버릴 수 있다.
+                //
+                // board 에 컨트롤러가 구현돼 있었는데 여기 등록이 빠져 있어서
+                // 앱에서 호출하면 404 가 났다 (2026-08-07 발견).
+                "$BOARD/report",
             )
             .filters { f ->
                 f.filter(accessTokenFilter.apply(AccessTokenFilter.Config()))
