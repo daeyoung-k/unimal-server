@@ -98,6 +98,8 @@ class SharePageService(
             profileImage = email.profileImage,
             // 지도 마커와 같은 규칙 — 400px 파생 우선, 백필 전 파일은 원본 폴백.
             imageUrl = mainImage?.thumbUrl ?: mainImage?.fileUrl,
+            // og:image 는 우선순위가 반대다. 크롤러가 가져가는 값이라 커야 한다.
+            ogImageUrl = mainImage?.fileUrl ?: mainImage?.thumbUrl,
             likeCount = likeManager.getCachePostLikeCount(id!!.toString()),
             replyCount = replyManager.getCachePostReplyCount(id!!.toString()),
             createdAt = createdAt,

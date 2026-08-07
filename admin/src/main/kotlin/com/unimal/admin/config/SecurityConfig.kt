@@ -15,7 +15,10 @@ class SecurityConfig {
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .authorizeHttpRequests {
-                it.requestMatchers("/login", "/admin/**").permitAll()
+                // 정적 리소스는 인증 밖에 둔다. 막아두면 로그인 화면이 스타일 없이
+                // 뜬다 — CSS 요청이 로그인 페이지로 리다이렉트되기 때문이다.
+                it.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                    .requestMatchers("/login", "/admin/**").permitAll()
                     .requestMatchers("/admin-members/**").hasRole("SUPER_ADMIN")
                     .anyRequest().authenticated()
             }

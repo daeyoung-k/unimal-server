@@ -1,0 +1,553 @@
+/*
+ * 어드민 공통 스타일.
+ *
+ * 화면마다 <style> 을 인라인으로 두다 보니 같은 규칙이 세 벌 복제됐고, 사이드바에
+ * 메뉴 하나를 추가할 때마다 모든 파일을 찾아 고쳐야 했다(실제로 nav 의 모바일
+ * grid-template-columns 를 한쪽만 고쳐 어긋난 적이 있다). 앞으로 페이지가 계속
+ * 늘어날 예정이라 여기로 모은다.
+ *
+ * 페이지 고유 스타일은 각 템플릿의 <style> 에 남긴다 — 그 화면에서만 쓰는 규칙까지
+ * 여기 넣으면 이 파일이 다시 아무도 못 건드리는 덩어리가 된다.
+ *
+ * 클래스 이름은 옮기기 전 그대로 뒀다. 이름 체계를 손보는 건 별도 작업이다.
+ */
+
+:root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-strong: #111827;
+    --text: #172033;
+    --muted: #667085;
+    --line: #dde3eb;
+    --line-soft: #eef2f6;
+    --primary: #2563eb;
+    --primary-soft: #e8f0ff;
+    --success: #047857;
+    --danger: #b42318;
+    --warning: #b54708;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ── 셸 · 사이드바 ─────────────────────────────────────────── */
+
+.shell {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+aside {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-strong);
+    color: #f9fafb;
+    padding: 24px 18px;
+}
+
+.brand {
+    margin-bottom: 28px;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+nav {
+    display: grid;
+    gap: 6px;
+}
+
+nav a {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 6px;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+nav a.active {
+    background: #1f2937;
+    color: #ffffff;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 18px;
+    border-top: 1px solid #243244;
+}
+
+.sidebar-logout {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    background: #1f2937;
+    color: #f9fafb;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sidebar-logout:hover {
+    background: #273449;
+}
+
+/* ── 콘텐츠 헤더 ───────────────────────────────────────────── */
+
+.content {
+    min-width: 0;
+    padding: 28px;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.topbar.align-start {
+    align-items: flex-start;
+}
+
+h1 {
+    margin: 0;
+    font-size: 26px;
+}
+
+h2 {
+    margin: 0 0 14px;
+    font-size: 18px;
+}
+
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.summary strong {
+    color: #101828;
+}
+
+.summary-provider {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #475467;
+    white-space: nowrap;
+}
+
+/* ── 폼 요소 ──────────────────────────────────────────────── */
+
+label {
+    color: #475467;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+}
+
+input,
+select {
+    height: 38px;
+    padding: 0 10px;
+}
+
+textarea {
+    padding: 10px;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+/* ── 버튼 · 링크 ───────────────────────────────────────────── */
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    color: #344054;
+    padding: 0 13px;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.primary-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    background: var(--primary);
+    color: #ffffff;
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border-radius: 6px;
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.button.primary {
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.button.ghost {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: #344054;
+}
+
+.action-button {
+    justify-self: start;
+    min-height: 36px;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    background: var(--primary);
+    color: #ffffff;
+    padding: 0 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.action-button.danger {
+    border-color: var(--danger);
+    background: var(--danger);
+}
+
+.action-button.warning {
+    border-color: var(--warning);
+    background: var(--warning);
+}
+
+.row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.row-actions form {
+    margin: 0;
+}
+
+.row-button {
+    height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    color: #344054;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.row-button.danger {
+    border-color: #fda29b;
+    color: var(--danger);
+}
+
+/* ── 패널 · 테이블 ─────────────────────────────────────────── */
+
+.panel {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 18px;
+}
+
+.table-panel {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.filters {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) repeat(3, minmax(132px, 160px)) auto auto;
+    gap: 10px;
+    align-items: end;
+    padding: 16px;
+    border-bottom: 1px solid var(--line-soft);
+    background: #fcfcfd;
+}
+
+.filter-action,
+.filter-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    border-radius: 6px;
+    padding: 0 13px;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.filter-action {
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.filter-reset {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: #344054;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    text-align: left;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+th {
+    background: #f9fafb;
+    color: #475467;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+tr:last-child td {
+    border-bottom: 0;
+}
+
+.info-list {
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr);
+    gap: 12px 14px;
+    margin: 0;
+}
+
+.info-list dt {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.info-list dd {
+    min-width: 0;
+    margin: 0;
+    color: #101828;
+    font-size: 14px;
+    word-break: break-all;
+}
+
+.empty {
+    padding: 56px 16px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.empty-value {
+    color: var(--muted);
+}
+
+/* ── 배지 ─────────────────────────────────────────────────── */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: #f2f4f7;
+    color: #475467;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.badge.type {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.badge.shown {
+    background: #ecfdf3;
+    color: var(--success);
+}
+
+.badge.hidden {
+    background: #fef3f2;
+    color: var(--danger);
+}
+
+/*
+ * 회원 상태 배지. 클래스명이 UserStatus enum 이름이라 값을 추가하면
+ * 여기에도 같이 넣어야 한다 (없으면 회색 기본형으로 떨어진다).
+ */
+.status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: #f2f4f7;
+    color: #475467;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.status.ACTIVE {
+    background: #ecfdf3;
+    color: var(--success);
+}
+
+.status.INACTIVE,
+.status.WITHDRAWAL {
+    background: #f2f4f7;
+    color: #475467;
+}
+
+.status.BLOCK {
+    background: #fef3f2;
+    color: var(--danger);
+}
+
+.status.RESIGNIN {
+    background: #fffaeb;
+    color: var(--warning);
+}
+
+/* ── 페이지네이션 ──────────────────────────────────────────── */
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--line-soft);
+    background: #fcfcfd;
+}
+
+.page-link,
+.page-current {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    border-radius: 6px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.page-link {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: #344054;
+}
+
+.page-current {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.page-link.disabled {
+    color: #98a2b3;
+    pointer-events: none;
+}
+
+/* ── 반응형 ───────────────────────────────────────────────── */
+
+@media (max-width: 920px) {
+    .shell {
+        grid-template-columns: 1fr;
+    }
+
+    aside {
+        padding: 18px;
+    }
+
+    /*
+     * 메뉴 개수만큼 칸을 나눈다. auto-fit 을 쓰면 메뉴를 추가할 때 이 값을
+     * 고치는 걸 잊어도 알아서 늘어난다 — 실제로 잊어서 어긋난 적이 있다.
+     */
+    nav {
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    }
+
+    nav a {
+        justify-content: center;
+    }
+
+    .sidebar-footer {
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+
+    .content {
+        padding: 20px 14px;
+    }
+
+    .filters {
+        grid-template-columns: 1fr;
+    }
+}

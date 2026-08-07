@@ -27,8 +27,21 @@ data class SharePage(
     val place: String?,
     val nickname: String,
     val profileImage: String?,
-    /** 대표 이미지. 400px 썸네일 우선, 없으면 원본, 사진 없는 글이면 null. */
+    /**
+     * 페이지에 표시할 대표 이미지. 400px 썸네일 우선, 없으면 원본, 사진 없는 글이면 null.
+     *
+     * 사람이 브라우저에서 보는 값이라 **빠른 게 낫다.**
+     */
     val imageUrl: String?,
+    /**
+     * `og:image` 에 넣을 대표 이미지. **원본 우선** — [imageUrl] 과 우선순위가 반대다.
+     *
+     * 크롤러가 가져가는 값이라 **커야 한다.** 400px 썸네일을 주면 카카오톡이 큰 카드 대신
+     * 옆에 붙는 작은 썸네일 카드로 떨어뜨려서 사진이 우표만 하게 나온다.
+     *
+     * 한 필드를 두 용도로 쓰면 이 요구가 충돌한다. 그래서 나눠 둔다.
+     */
+    val ogImageUrl: String?,
     val likeCount: Long,
     val replyCount: Long,
     val createdAt: LocalDateTime,

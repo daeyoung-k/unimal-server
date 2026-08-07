@@ -1,7 +1,7 @@
 package com.unimal.board.domain.notice
 
 import com.unimal.board.controller.notice.dto.NoticeResponse
-import com.unimal.board.enums.NoticeType
+import com.unimal.common.enums.notice.NoticeType
 import com.unimal.common.domain.BaseIdEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
