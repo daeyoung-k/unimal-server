@@ -31,6 +31,9 @@ class SharePageRendererTest {
         content: String = "오늘 산책하다 발견한 골목",
         nickname: String = "대영",
         imageUrl: String? = "https://cdn.unimal.co.kr/images/a.jpg",
+        // 명시하지 않으면 [imageUrl] 을 따라간다. 실제 서비스에서는 원본/썸네일로
+        // 다른 값이 들어오지만, 대부분의 테스트는 그 차이에 관심이 없다.
+        ogImageUrl: String? = imageUrl,
         profileImage: String? = null,
     ) = SharePage(
         boardId = "aBc123",
@@ -41,6 +44,7 @@ class SharePageRendererTest {
         nickname = nickname,
         profileImage = profileImage,
         imageUrl = imageUrl,
+        ogImageUrl = ogImageUrl,
         likeCount = 3,
         replyCount = 1,
         createdAt = LocalDateTime.now().minusHours(2),
@@ -86,10 +90,26 @@ class SharePageRendererTest {
 
     @Test
     fun `사진이 없으면 og image 는 기본 이미지로 폴백한다`() {
-        val html = renderer.render(page(imageUrl = null))
+        val html = renderer.render(page(imageUrl = null, ogImageUrl = null))
 
         assertContains(html, """<meta property="og:image" content="https://cdn.unimal.co.kr/static/share-default.png">""")
         assertFalse(html.contains("""class="photo""""), "사진이 없는데 img 태그가 있다")
+    }
+
+    @Test
+    fun `og image 는 원본을 쓰고 페이지 사진은 썸네일을 쓴다`() {
+        // 한 필드로 합치면 안 되는 이유가 여기다. 크롤러가 가져가는 이미지는 커야 하고
+        // (작으면 카톡이 큰 카드 대신 작은 썸네일 카드로 떨어뜨린다), 페이지에서
+        // 사람이 보는 이미지는 빨라야 한다.
+        val html = renderer.render(
+            page(
+                imageUrl = "https://cdn.unimal.co.kr/images/a_400.jpg",
+                ogImageUrl = "https://cdn.unimal.co.kr/images/a.jpg",
+            )
+        )
+
+        assertContains(html, """<meta property="og:image" content="https://cdn.unimal.co.kr/images/a.jpg">""")
+        assertContains(html, """<img class="photo" src="https://cdn.unimal.co.kr/images/a_400.jpg" alt="">""")
     }
 
     @Test

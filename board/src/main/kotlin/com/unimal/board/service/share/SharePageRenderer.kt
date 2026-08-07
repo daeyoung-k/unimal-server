@@ -86,7 +86,7 @@ class SharePageRenderer(
 <meta property="og:site_name" content="스토맵">
 <meta property="og:title" content="${esc(displayTitle)}">
 <meta property="og:description" content="${esc(ogDescription)}">
-<meta property="og:image" content="${safeUrl(page.imageUrl) ?: esc(defaultImageUrl)}">
+<meta property="og:image" content="${safeUrl(page.ogImageUrl) ?: esc(defaultImageUrl)}">
 <meta property="og:url" content="${esc(page.shareUrl)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="robots" content="index, follow">
