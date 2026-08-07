@@ -19,6 +19,8 @@ class SecurityConfig {
                 // 뜬다 — CSS 요청이 로그인 페이지로 리다이렉트되기 때문이다.
                 it.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                     .requestMatchers("/login", "/admin/**").permitAll()
+                    // 관리자 계정 화면은 아직 없다(사이드바 메뉴도 내려둔 상태).
+                    // 규칙만 미리 두어, 나중에 화면을 만들 때 권한 거는 걸 잊지 않게 한다.
                     .requestMatchers("/admin-members/**").hasRole("SUPER_ADMIN")
                     .anyRequest().authenticated()
             }

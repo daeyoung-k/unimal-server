@@ -56,9 +56,14 @@
         <a data-menu="reports"
            th:href="@{/reports}"
            th:classappend="${activeMenu == 'reports'} ? 'active'">신고 관리</a>
-        <a data-menu="admin-members"
-           th:href="@{/admin-members}"
-           th:classappend="${activeMenu == 'admin-members'} ? 'active'">관리자 계정</a>
+        <!--
+          '관리자 계정' 메뉴는 화면을 만들 때 여기 되살린다.
+          지금은 운영자가 한 명이라 계정을 추가하거나 권한을 나눌 일이 없고,
+          링크만 있고 화면이 없으면 눌렀을 때 404 가 나 혼란스럽다.
+
+          되살릴 때 SecurityConfig 의 /admin-members/** = hasRole("SUPER_ADMIN")
+          규칙이 이미 걸려 있다는 점을 함께 확인할 것.
+        -->
     </nav>
 
     <form class="sidebar-footer" method="post" th:action="@{/logout}">
