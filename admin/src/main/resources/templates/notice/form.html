@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${notice != null ? '공지 수정 · Stomap Admin' : '공지 작성 · Stomap Admin'}, ~{::style})}">
+    <style>
+        .form-panel {
+            max-width: 820px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+        }
+
+        .form-body {
+            display: grid;
+            gap: 18px;
+            padding: 22px;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 공지 본문은 길다. 공통 textarea 규칙에 높이만 얹는다. */
+        .form-body textarea {
+            min-height: 320px;
+        }
+
+        .form-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 22px;
+            border-top: 1px solid var(--line-soft);
+            background: #fcfcfd;
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <th:block th:replace="~{fragments/layout :: sidebar('notices')}"></th:block>
+
+    <main class="content">
+        <div class="topbar">
+            <h1 th:text="${notice != null ? '공지 수정' : '공지 작성'}">공지 작성</h1>
+            <a class="back-link" th:href="@{/notices}">목록</a>
+        </div>
+
+        <!--
+          작성과 수정이 같은 폼을 쓴다. action 만 갈린다 —
+          신규는 POST /notices, 수정은 POST /notices/{id}.
+        -->
+        <form class="form-panel"
+              method="post"
+              th:action="${notice != null} ? @{/notices/{id}(id=${notice.id})} : @{/notices}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+            <div class="form-body">
+                <div class="field">
+                    <label for="type">분류</label>
+                    <select id="type" name="type" required>
+                        <option th:each="typeOption : ${types}"
+                                th:value="${typeOption.name()}"
+                                th:text="${typeOption.description}"
+                                th:selected="${notice != null and notice.type == typeOption}">일반 공지</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="title">제목</label>
+                    <input id="title"
+                           name="title"
+                           type="text"
+                           maxlength="100"
+                           required
+                           placeholder="공지 제목을 입력하세요"
+                           th:value="${notice != null ? notice.title : ''}">
+                </div>
+
+                <div class="field">
+                    <label for="content">내용</label>
+                    <span class="hint">앱에서는 줄바꿈이 그대로 보입니다. 문단 사이를 한 줄 띄우면 읽기 좋습니다.</span>
+                    <textarea id="content"
+                              name="content"
+                              required
+                              placeholder="공지 내용을 입력하세요"
+                              th:text="${notice != null ? notice.content : ''}"></textarea>
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <a class="button ghost" th:href="@{/notices}">취소</a>
+                <button class="button primary" type="submit"
+                        th:text="${notice != null ? '수정 저장' : '공지 등록'}">공지 등록</button>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>
