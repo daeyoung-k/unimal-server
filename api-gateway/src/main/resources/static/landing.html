@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스토맵 - 지도 위에 이야기를 남기세요</title>
+  <meta name="description" content="나만 아는 러닝 코스, 조용한 카페. 지도 위 좌표에 사진과 글을 남기고, 그 장소에 있었던 다른 사람의 이야기도 찾아보는 앱." />
+
+  <!-- 카톡·슬랙 미리보기. 공유 페이지(SharePageRenderer)와 같은 태그 세트를 쓴다. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="스토맵" />
+  <meta property="og:title" content="스토맵 - 지도 위에 이야기를 남기세요" />
+  <meta property="og:description" content="나만 아는 러닝 코스, 조용한 카페. 지도에 사진과 글을 핀으로 남기는 앱." />
+  <meta property="og:url" content="https://stomap.unimal.co.kr/" />
+  <!--
+    공유 페이지의 기본 이미지(share-default.png)를 재사용한다. 이미 1200x630 이고
+    "지도 위에 남기는 나의 스토리" 카피가 들어가 있어 OG 카드로 그대로 맞다.
+    OG 이미지는 webp 로 안 바꾼다 — 카카오 등 일부 크롤러가 webp 를 렌더하지 않는다.
+  -->
+  <meta property="og:image" content="https://stomap.unimal.co.kr/img/stomap-og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="canonical" href="https://stomap.unimal.co.kr/" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <style>
+    :root {
+      --primary: #3578E5;
+      --primary-strong: #4D91FF;
+      --primary-soft: #7AB3FF;
+      --wash: #EEF6FF;
+      --accent: #FF6B6B;
+      --text: #1A1A2E;
+      --text-2: #4B5563;
+      --text-3: #9CA3AF;
+      --border: #E5E7EB;
+      --surface: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Noto Sans KR', sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+    /* ---------- 히어로 ---------- */
+    .hero {
+      padding: 72px 0 56px;
+      text-align: center;
+      background: linear-gradient(180deg, var(--wash) 0%, #FFFFFF 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 76px; height: 76px;
+      border-radius: 20px;
+      margin: 0 auto 24px;
+      display: block;
+      box-shadow: 0 6px 20px rgba(53, 120, 229, 0.18);
+    }
+    .hero h1 {
+      font-size: 34px; font-weight: 800; letter-spacing: -0.5px;
+      line-height: 1.35; margin-bottom: 16px;
+    }
+    .hero h1 em { font-style: normal; color: var(--primary); }
+    .hero .sub {
+      font-size: 17px; color: var(--text-2);
+      max-width: 520px; margin: 0 auto 36px;
+    }
+
+    /* ---------- 다운로드 ---------- */
+    .cta {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px;
+      height: 56px; padding: 0 36px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, var(--primary) 0%, var(--primary-strong) 100%);
+      color: #fff; font-size: 17px; font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(53, 120, 229, 0.3);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .cta:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(53,120,229,.3); }
+    .store-links {
+      margin-top: 16px;
+      font-size: 14px; color: var(--text-3);
+    }
+    .store-links a { color: var(--text-2); text-decoration: none; border-bottom: 1px solid var(--border); }
+    .store-links span { margin: 0 8px; }
+
+    /* ---------- 섹션 공통 ---------- */
+    section { padding: 64px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    h2 {
+      font-size: 22px; font-weight: 800; letter-spacing: -0.3px;
+      margin-bottom: 8px;
+    }
+    .lead { font-size: 15px; color: var(--text-2); margin-bottom: 32px; }
+
+    /* ---------- 기능 3블록 ---------- */
+    .features { display: grid; gap: 20px; grid-template-columns: repeat(3, 1fr); }
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+    }
+    .feature .badge {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--wash);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .feature h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .feature p { font-size: 14px; color: var(--text-2); }
+
+    /* ---------- 스크린샷 ---------- */
+    .shots {
+      display: flex; gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .shots img {
+      width: 240px;
+      /* height: auto 가 반드시 있어야 한다.
+         <img> 의 height 속성(1564)은 '지정된 높이'로 취급되므로, CSS 가 width 만
+         주면 240x1564 로 세로로 늘어난다. auto 로 덮어야 width/height 속성이
+         종횡비 힌트로만 쓰이고 실제 높이는 비율대로 계산된다. */
+      height: auto;
+      flex: 0 0 auto;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      scroll-snap-align: start;
+      background: var(--wash);
+    }
+
+    /* ---------- 만든 사람 ---------- */
+    .maker {
+      background: var(--wash);
+      border-radius: 20px;
+      padding: 28px 28px;
+    }
+    .maker p { font-size: 15px; color: var(--text-2); }
+    .maker p + p { margin-top: 10px; }
+    .maker a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+    /* ---------- 푸터 ---------- */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0 48px;
+      font-size: 13px; color: var(--text-3);
+    }
+    footer nav { margin-bottom: 12px; }
+    footer nav a { color: var(--text-2); text-decoration: none; }
+    footer nav span { margin: 0 8px; color: var(--border); }
+
+    /* ---------- 모바일 ---------- */
+    @media (max-width: 720px) {
+      .hero { padding: 56px 0 44px; }
+      .hero h1 { font-size: 27px; }
+      .hero .sub { font-size: 16px; }
+      section { padding: 48px 0; }
+      .features { grid-template-columns: 1fr; }
+      .cta { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= 히어로 ================= -->
+  <header class="hero">
+    <div class="wrap">
+      <img class="logo" src="/img/stomap-icon.png" alt="스토맵 아이콘" width="256" height="256" />
+      <h1>지도 위에 <em>당신의 이야기</em>를 남기세요</h1>
+      <p class="sub">
+        나만 아는 러닝 코스, 조용한 카페.<br />
+        기억은 날짜가 아니라 장소에 붙어 있으니까.
+      </p>
+
+      <a id="cta" class="cta" href="#download">앱 다운로드</a>
+
+      <p class="store-links">
+        <a href="https://apps.apple.com/kr/app/id6762319739">App Store</a>
+        <span>·</span>
+        <a href="https://play.google.com/store/apps/details?id=com.unimal.android.stomap">Google Play</a>
+      </p>
+    </div>
+  </header>
+
+  <!-- ================= 기능 ================= -->
+  <section>
+    <div class="wrap">
+      <h2>지도가 곧 피드입니다</h2>
+      <p class="lead">타임라인을 스크롤하는 대신, 지도를 움직이면서 이야기를 만납니다.</p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="badge">📍</div>
+          <h3>좌표에 기록하기</h3>
+          <p>지금 있는 자리에 사진과 글을 남깁니다. 사진은 한 번에 10장까지.</p>
+        </div>
+        <div class="feature">
+          <div class="badge">🗺</div>
+          <h3>주변에서 발견하기</h3>
+          <p>가까운 스토리, 방금 올라온 스토리, 전국 스토리를 지도 아래에서 넘겨봅니다.</p>
+        </div>
+        <div class="feature">
+          <div class="badge">🔖</div>
+          <h3>내 지도 모아보기</h3>
+          <p>내가 남긴 핀만 모아 보면, 다녀온 곳들이 하나의 지도가 됩니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 스크린샷 ================= -->
+  <section>
+    <div class="wrap">
+      <h2>화면 미리보기</h2>
+      <p class="lead">옆으로 넘겨보세요.</p>
+      <!--
+        스토어용 iOS 스크린샷(1320x2868)을 폭 720 webp 로 줄여 재사용한다.
+        표시폭 240px 의 3배라 레티나에서도 흐리지 않고, 7장 합쳐 530KB 다.
+        모두 width/height 를 박아 로딩 중 레이아웃 점프를 막는다.
+      -->
+      <div class="shots">
+        <img src="/img/shot-1-map-feed.webp" width="720" height="1564" alt="지도에 뜬 스토리 마커와 하단 피드" loading="lazy" />
+        <img src="/img/shot-2-feed-sections.webp" width="720" height="1564" alt="가까운 스토리와 전국 스토리 피드" loading="lazy" />
+        <img src="/img/shot-3-bottom-card.webp" width="720" height="1564" alt="마커를 눌러 스토리를 읽는 화면" loading="lazy" />
+        <img src="/img/shot-4-write.webp" width="720" height="1564" alt="사진과 위치를 담아 스토리를 올리는 화면" loading="lazy" />
+        <img src="/img/shot-5-mymap.webp" width="720" height="1564" alt="내가 남긴 핀만 모아 보는 내 지도" loading="lazy" />
+        <img src="/img/shot-6-detail.webp" width="720" height="1564" alt="스토리 상세와 댓글" loading="lazy" />
+        <img src="/img/shot-7-mystory-list.webp" width="720" height="1564" alt="내 스토리 목록" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 만든 사람 ================= -->
+  <section id="download">
+    <div class="wrap">
+      <h2>혼자 만들고 있습니다</h2>
+      <p class="lead">직장 다니면서 기획부터 서버·앱·배포까지 1인으로 운영 중입니다.</p>
+      <div class="maker">
+        <p>
+          불편한 점이나 있으면 좋겠는 기능이 있으면 이메일로 알려주세요.
+          하나하나 읽고 있습니다.
+        </p>
+        <p><a href="mailto:support@unimal.co.kr">support@unimal.co.kr</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 푸터 ================= -->
+  <footer>
+    <div class="wrap">
+      <nav>
+        <a href="/stomap/privacy">개인정보 처리방침</a>
+        <span>|</span>
+        <a href="/stomap/terms">이용약관</a>
+        <span>|</span>
+        <a href="/stomap/support">고객 지원</a>
+        <span>|</span>
+        <a href="/stomap/delete-account">계정 삭제</a>
+      </nav>
+      <p>스토맵 · 유니멀 아틀라스</p>
+    </div>
+  </footer>
+
+  <script>
+    // 다운로드 버튼만 UA로 분기한다.
+    //
+    // 서버 리다이렉트를 쓰지 않는 이유: 카카오/슬랙/구글 크롤러가 루트를 먼저 긁는데
+    // 302로 스토어로 던지면 미리보기 카드가 통째로 죽는다. (공유 페이지에서 같은 이유로
+    // 인증 필터를 뺐다 — ShareRouteConfig KDoc 참고)
+    //
+    // 데스크톱은 어느 스토어로 보내도 반은 틀리니 스토어 선택 화면 대신 그냥
+    // 아래 텍스트 링크 두 개를 쓰게 둔다.
+    (function () {
+      var IOS = 'https://apps.apple.com/kr/app/id6762319739';
+      var ANDROID = 'https://play.google.com/store/apps/details?id=com.unimal.android.stomap';
+
+      var ua = navigator.userAgent || '';
+      var cta = document.getElementById('cta');
+      if (!cta) return;
+
+      // iPadOS 13+ 는 Macintosh 로 위장하므로 터치 포인트로 판별한다.
+      var isIOS = /iPhone|iPad|iPod/.test(ua)
+        || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+      var isAndroid = /Android/.test(ua);
+
+      if (isIOS) {
+        cta.href = IOS;
+        cta.textContent = 'App Store에서 받기';
+      } else if (isAndroid) {
+        cta.href = ANDROID;
+        cta.textContent = 'Google Play에서 받기';
+      }
+      // 그 외(데스크톱·크롤러)는 기본값 유지: #download 앵커 + 하단 텍스트 링크
+    })();
+  </script>
+
+</body>
+</html>

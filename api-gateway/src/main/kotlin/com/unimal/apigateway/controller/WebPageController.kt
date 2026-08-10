@@ -10,6 +10,21 @@ import reactor.core.publisher.Mono
 @RestController
 class WebPageController {
 
+    /**
+     * 서비스 랜딩 페이지 — `https://stomap.unimal.co.kr/`
+     *
+     * 설계: `docs/specs/2026-08-10-랜딩페이지.md`
+     *
+     * 루트 경로인 이유, 스토어 리다이렉트를 쓰지 않는 이유는 위 문서에 있다.
+     * 이 파일만 캐싱하는 이유는 유입 전면이라 크롤러가 반복 호출하기 때문이다.
+     */
+    private val landingHtml: String by lazy {
+        ClassPathResource("static/landing.html").inputStream.readBytes().toString(Charsets.UTF_8)
+    }
+
+    @GetMapping("/", produces = [MediaType.TEXT_HTML_VALUE])
+    fun landing(): Mono<String> = Mono.just(landingHtml)
+
     @GetMapping("/stomap/privacy", produces = [MediaType.TEXT_HTML_VALUE])
     fun privacy(): Mono<String> {
         val html = ClassPathResource("static/privacy.html").inputStream.readBytes().toString(Charsets.UTF_8)
