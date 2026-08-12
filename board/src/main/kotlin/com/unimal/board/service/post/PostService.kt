@@ -16,6 +16,7 @@ import com.unimal.board.domain.board.reply.BoardReply
 import com.unimal.board.domain.board.reply.BoardReplyRepository
 import com.unimal.board.domain.board.reply.toDto
 import com.unimal.board.domain.member.BoardMemberRepository
+import com.unimal.board.enums.PostShow
 import com.unimal.board.grpc.file.FileDeleteGrpcService
 import com.unimal.board.kafka.topics.PostKafkaTopic
 import com.unimal.board.kafka.topics.dto.UserCountIssue
@@ -96,6 +97,10 @@ class PostService(
         encryptBoardId: String
     ): PostInfo? {
         val board = getBoard(encryptBoardId)
+        // 관리자 블락 글은 상세도 막는다. 목록·지도는 show = PUBLIC 조건으로 걸러지지만
+        // 딥링크(FCM·공유 링크)로는 이 경로가 뚫려 있었다. 작성자 본인에게도 숨긴다 —
+        // 소명은 CS 채널로 받는 것이 원칙이고, 앱에 "블락됨" 화면이 따로 없다.
+        if (board.show == PostShow.BLOCKED) throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
 
         val boardMember = board.email
         val boardFileInfo = board.images.mapNotNull {
@@ -310,6 +315,8 @@ class PostService(
     ) {
         val board = getBoard(encryptBoardId)
         if (!postManager.postOwnerCheck(userInfo.email, board.email.email)) throw BoardOwnerException(ErrorCode.BOARD_OWNER_NOT_MATCH.message)
+        // 블락 글은 수정 불가. isShow 를 PUBLIC 으로 덮어써서 블락을 우회하는 경로를 막는다.
+        if (board.show == PostShow.BLOCKED) throw BoardNotFoundException(ErrorCode.BOARD_NOT_FOUND.message)
 
         if (!postUpdateRequest.title.isNullOrBlank() && board.title?.equals(postUpdateRequest.title) == false) {
             board.title = postUpdateRequest.title

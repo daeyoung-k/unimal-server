@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('게시글 상세 · Stomap Admin', ~{::style})}">
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .badge.PUBLIC {
+            background: #ecfdf3;
+            color: var(--success);
+        }
+
+        .badge.PRIVATE {
+            background: #f2f4f7;
+            color: #475467;
+        }
+
+        .badge.FRIENDS {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .badge.BLOCKED,
+        .badge.deleted {
+            background: #fef3f2;
+            color: var(--danger);
+        }
+
+        .board-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .board-meta {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* 본문은 원문 그대로 보여야 한다. 줄바꿈 유지. */
+        .board-content {
+            margin: 10px 0 0;
+            padding: 14px;
+            border: 1px solid var(--line-soft);
+            border-radius: 8px;
+            background: #fcfcfd;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .board-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        /*
+         * 썸네일은 목록용이라 상세에서는 원본을 건다. 문제 이미지 판별은
+         * 원본을 봐야 확실하고, 상세는 한 번에 한 건이라 트래픽 부담도 없다.
+         */
+        .board-images a {
+            display: block;
+        }
+
+        .board-images img {
+            width: 160px;
+            height: 160px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #f9fafb;
+            object-fit: cover;
+        }
+
+        .images-empty {
+            margin-top: 12px;
+            padding: 28px 14px;
+            border: 1px dashed var(--line);
+            border-radius: 8px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .context-note {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line-soft);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .action-form {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line-soft);
+        }
+
+        .log-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line-soft);
+        }
+
+        .log-item {
+            display: grid;
+            gap: 3px;
+            font-size: 13px;
+        }
+
+        .log-item-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+        }
+
+        .log-reason {
+            color: #101828;
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <th:block th:replace="~{fragments/layout :: sidebar('boards')}"></th:block>
+
+    <main class="content">
+        <div class="topbar align-start">
+            <div>
+                <h1>게시글 상세</h1>
+                <div class="summary">
+                    <span class="badge" th:classappend="${board.show}" th:text="${showLabel}">전체 공개</span>
+                    <span class="badge deleted" th:if="${board.del}">삭제됨</span>
+                </div>
+            </div>
+            <a class="back-link" th:href="@{/boards}">목록</a>
+        </div>
+
+        <div class="grid">
+            <section class="panel">
+                <h2>게시글</h2>
+
+                <h3 class="board-title"
+                    th:text="${board.title != null and !board.title.isEmpty()} ? ${board.title} : '(제목 없음)'">제목</h3>
+                <div class="board-meta">
+                    <span th:text="${board.email}">writer@unimal.co.kr</span>
+                    ·
+                    <span th:text="${board.regionLabel ?: '위치 없음'}">서울 강남구 역삼동</span>
+                    ·
+                    <span th:text="${#temporals.format(board.createdAt, 'yyyy-MM-dd HH:mm')}">-</span>
+                </div>
+
+                <p class="board-content" th:text="${board.content}">본문</p>
+
+                <div class="board-images" th:if="${!images.isEmpty()}">
+                    <a th:each="image : ${images}"
+                       th:href="${image.fileUrl ?: image.displayUrl}"
+                       target="_blank" rel="noopener">
+                        <img th:src="${image.displayUrl}" alt="게시글 이미지">
+                    </a>
+                </div>
+                <div class="images-empty" th:if="${images.isEmpty()}">첨부된 사진이 없습니다.</div>
+            </section>
+
+            <section class="panel">
+                <h2>게시글 정보</h2>
+                <dl class="info-list">
+                    <dt>작성자</dt>
+                    <dd th:text="${board.email}">writer@unimal.co.kr</dd>
+                    <dt>공개 상태</dt>
+                    <dd th:text="${showLabel}">전체 공개</dd>
+                    <dt>삭제 여부</dt>
+                    <dd th:text="${board.del} ? '삭제됨' : '정상'">정상</dd>
+                    <dt>사진</dt>
+                    <dd th:text="|${images.size()}장|">0장</dd>
+                    <dt>도로명 주소</dt>
+                    <dd th:text="${board.streetName ?: '-'}">-</dd>
+                    <dt>지역</dt>
+                    <dd th:text="${board.regionLabel ?: '-'}">-</dd>
+                    <dt>우편번호</dt>
+                    <dd th:text="${board.postalCode ?: '-'}">-</dd>
+                    <dt>작성일</dt>
+                    <dd th:text="${#temporals.format(board.createdAt, 'yyyy-MM-dd HH:mm')}">-</dd>
+                    <dt>수정일</dt>
+                    <dd th:text="${board.updatedAt != null ? #temporals.format(board.updatedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</dd>
+                </dl>
+
+                <h2 style="margin-top: 18px;">조치</h2>
+
+                <!-- 블락 — 사유 필수. -->
+                <form class="action-form"
+                      th:unless="${isBlocked}"
+                      method="post"
+                      th:action="@{/boards/{id}/block(id=${board.id})}"
+                      onsubmit="return confirm('이 게시글을 블락할까요? 앱의 목록·지도에서 즉시 내려갑니다.');">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                    <div class="field">
+                        <label for="block-reason">사유</label>
+                        <input id="block-reason" name="reason" maxlength="500" required
+                               placeholder="음란물 게시 / 신고 확인 등">
+                    </div>
+
+                    <button class="action-button danger" type="submit">게시글 블락</button>
+                </form>
+
+                <!-- 해제 — 블락 직전 공개 상태로 복구된다. -->
+                <form class="action-form"
+                      th:if="${isBlocked}"
+                      method="post"
+                      th:action="@{/boards/{id}/unblock(id=${board.id})}"
+                      onsubmit="return confirm('블락을 해제할까요? 블락 직전 공개 상태로 복구됩니다.');">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                    <div class="field">
+                        <label for="unblock-reason">사유</label>
+                        <input id="unblock-reason" name="reason" maxlength="500" required
+                               placeholder="오조치 복구 / 소명 확인 등">
+                    </div>
+
+                    <button class="action-button warning" type="submit">블락 해제</button>
+                </form>
+
+                <div class="context-note">
+                    회원 자체 제재(차단 등)는 회원 관리에서 진행하세요.
+                    <a class="page-link" th:href="@{/members(keyword=${board.email})}">회원 찾기</a>
+                </div>
+
+                <div class="log-list" th:if="${!actionLogs.isEmpty()}">
+                    <h2 style="margin: 0;">조치 이력</h2>
+                    <div class="log-item" th:each="log : ${actionLogs}">
+                        <div class="log-item-head">
+                            <span class="badge"
+                                  th:classappend="${log.actionType.name() == 'BOARD_BLOCK'} ? 'BLOCKED' : 'PUBLIC'"
+                                  th:text="${log.actionType.description}">게시글 블락</span>
+                            <span th:text="${log.adminLoginId}">admin</span>
+                            <span th:text="${#temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm')}">-</span>
+                        </div>
+                        <span class="log-reason" th:text="${log.reason}">사유</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+</body>
+</html>

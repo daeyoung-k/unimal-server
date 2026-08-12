@@ -50,6 +50,9 @@
         <a data-menu="members"
            th:href="@{/members}"
            th:classappend="${activeMenu == 'members'} ? 'active'">회원 관리</a>
+        <a data-menu="boards"
+           th:href="@{/boards}"
+           th:classappend="${activeMenu == 'boards'} ? 'active'">게시판 관리</a>
         <a data-menu="notices"
            th:href="@{/notices}"
            th:classappend="${activeMenu == 'notices'} ? 'active'">공지 관리</a>

@@ -26,6 +26,9 @@ spring:
     properties:
       hibernate:
         default_schema: ${DATABASE_ADMIN_SCHEMA}
+        hbm2ddl:
+          # ddl-auto: update 가 unimal_admin 밖(board/user 스키마)을 건드리지 못하게 막는다.
+          schema_filter_provider: com.unimal.admin.config.AdminSchemaFilterProvider
 
   sql:
     init:

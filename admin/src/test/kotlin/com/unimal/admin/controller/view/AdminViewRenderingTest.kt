@@ -79,6 +79,48 @@ class AdminViewRenderingTest @Autowired constructor(
 
     @Test
     @WithMockUser(username = "admin", roles = ["SUPER_ADMIN"])
+    fun `게시판 목록 화면이 렌더된다`() {
+        mockMvc.get("/boards")
+            .andExpect {
+                status { isOk() }
+                view { name("board/list") }
+                content { string(containsString("게시판 관리")) }
+                // data.sql 의 1번 게시글 — 목록 행과 썸네일 분기가 렌더됐는지.
+                content { string(containsString("역삼동 맛집")) }
+                content { string(containsString("a_thumb.jpg")) }
+            }
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = ["SUPER_ADMIN"])
+    fun `게시판 상세 화면이 렌더된다`() {
+        // data.sql 의 1번 게시글. 사진 두 장이 모두 걸려야 한다.
+        mockMvc.get("/boards/1")
+            .andExpect {
+                status { isOk() }
+                view { name("board/detail") }
+                content { string(containsString("게시글 상세")) }
+                content { string(containsString("a_thumb.jpg")) }
+                content { string(containsString("b.jpg")) }
+            }
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = ["SUPER_ADMIN"])
+    fun `사진 없는 삭제 게시글 상세도 렌더된다`() {
+        // data.sql 의 2번 게시글 — 제목 없음·사진 없음·삭제됨 분기.
+        mockMvc.get("/boards/2")
+            .andExpect {
+                status { isOk() }
+                view { name("board/detail") }
+                content { string(containsString("(제목 없음)")) }
+                content { string(containsString("첨부된 사진이 없습니다")) }
+                content { string(containsString("삭제됨")) }
+            }
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = ["SUPER_ADMIN"])
     fun `신고 목록 화면이 렌더된다`() {
         mockMvc.get("/reports")
             .andExpect {
