@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('게시판 관리 · Stomap Admin', ~{::style})}">
+    <style>
+        .filters.board-filters {
+            grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(120px, 150px)) auto auto;
+        }
+
+        .badge.PUBLIC {
+            background: #ecfdf3;
+            color: var(--success);
+        }
+
+        .badge.PRIVATE {
+            background: #f2f4f7;
+            color: #475467;
+        }
+
+        .badge.FRIENDS {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .badge.BLOCKED {
+            background: #fef3f2;
+            color: var(--danger);
+        }
+
+        .badge.deleted {
+            background: #fef3f2;
+            color: var(--danger);
+        }
+
+        .board-thumb {
+            position: relative;
+            display: block;
+            width: 64px;
+            height: 64px;
+        }
+
+        .board-thumb img {
+            width: 64px;
+            height: 64px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #f9fafb;
+            object-fit: cover;
+        }
+
+        .board-thumb .image-count {
+            position: absolute;
+            right: 3px;
+            bottom: 3px;
+            padding: 1px 6px;
+            border-radius: 999px;
+            background: rgba(17, 24, 39, 0.72);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .board-thumb-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            border: 1px dashed var(--line);
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .board-text {
+            display: grid;
+            gap: 3px;
+            max-width: 380px;
+        }
+
+        .board-title {
+            color: #101828;
+            font-weight: 800;
+        }
+
+        .board-content {
+            display: -webkit-box;
+            overflow: hidden;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .board-location {
+            color: #344054;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <th:block th:replace="~{fragments/layout :: sidebar('boards')}"></th:block>
+
+    <main class="content">
+        <div class="topbar">
+            <div>
+                <h1>게시판 관리</h1>
+                <div class="summary">
+                    <span>조회 결과 <strong th:text="${boardsPage.totalElements}">0</strong>건</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="table-panel">
+            <form class="filters board-filters" method="get" th:action="@{/boards}">
+                <input type="hidden" name="size" th:value="${size}">
+
+                <div class="field">
+                    <label for="keyword">검색</label>
+                    <input id="keyword" name="keyword" type="search"
+                           placeholder="제목·내용·작성자 이메일"
+                           th:value="${filter.keyword}">
+                </div>
+
+                <div class="field">
+                    <label for="show">공개 상태</label>
+                    <select id="show" name="show">
+                        <option value="" th:selected="${filter.show == null}">전체</option>
+                        <option th:each="showOption : ${showTypes}"
+                                th:value="${showOption.name()}"
+                                th:text="${showOption.description}"
+                                th:selected="${filter.show == showOption}">전체 공개</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="del">삭제 상태</label>
+                    <select id="del" name="del">
+                        <option value="" th:selected="${filter.del == null}">전체</option>
+                        <option value="false" th:selected="${filter.del == false}">삭제 제외</option>
+                        <option value="true" th:selected="${filter.del == true}">삭제만</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="hasImage">유형</label>
+                    <select id="hasImage" name="hasImage">
+                        <option value="" th:selected="${filter.hasImage == null}">전체</option>
+                        <option value="true" th:selected="${filter.hasImage == true}">사진 게시글</option>
+                        <option value="false" th:selected="${filter.hasImage == false}">텍스트 게시글</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="sort">정렬</label>
+                    <select id="sort" name="sort">
+                        <option th:each="sortOption : ${sortOptions}"
+                                th:value="${sortOption.parameterName}"
+                                th:text="${sortOption.label}"
+                                th:selected="${filter.sort == sortOption}">최신순</option>
+                    </select>
+                </div>
+
+                <button class="filter-action" type="submit">검색</button>
+                <a class="filter-reset" th:href="@{/boards(size=${size})}">전체 보기</a>
+            </form>
+
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">사진</th>
+                    <th scope="col">제목 / 내용</th>
+                    <th scope="col">작성자</th>
+                    <th scope="col">위치</th>
+                    <th scope="col">공개</th>
+                    <th scope="col">상태</th>
+                    <th scope="col">작성일</th>
+                    <th scope="col">보기</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="board : ${boardsPage.content}"
+                    th:with="imageSummary=${imageSummaries[board.id]}">
+                    <td>
+                        <a class="board-thumb"
+                           th:if="${imageSummary != null and imageSummary.thumbnailUrl != null}"
+                           th:href="@{/boards/{id}(id=${board.id})}">
+                            <img th:src="${imageSummary.thumbnailUrl}" alt="게시글 대표 이미지">
+                            <span class="image-count"
+                                  th:if="${imageSummary.count > 1}"
+                                  th:text="${imageSummary.count}">3</span>
+                        </a>
+                        <span class="board-thumb-empty"
+                              th:if="${imageSummary == null or imageSummary.thumbnailUrl == null}">없음</span>
+                    </td>
+                    <td>
+                        <div class="board-text">
+                            <span class="board-title"
+                                  th:text="${board.title != null and !board.title.isEmpty()} ? ${board.title} : '(제목 없음)'">제목</span>
+                            <span class="board-content" th:text="${board.content}">내용</span>
+                        </div>
+                    </td>
+                    <td th:text="${board.email}">writer@unimal.co.kr</td>
+                    <td>
+                        <span class="board-location" th:text="${board.regionLabel ?: '-'}">서울 강남구 역삼동</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${board.show}"
+                              th:text="${showDescriptions[board.show] ?: board.show}">전체 공개</span>
+                    </td>
+                    <td>
+                        <span class="badge deleted" th:if="${board.del}">삭제됨</span>
+                        <span class="empty-value" th:unless="${board.del}">-</span>
+                    </td>
+                    <td th:text="${#temporals.format(board.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
+                    <td>
+                        <a class="page-link" th:href="@{/boards/{id}(id=${board.id})}">보기</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="empty" th:if="${boardsPage.empty}">조회된 게시글이 없습니다.</div>
+
+            <div class="pagination">
+                <a class="page-link"
+                   th:classappend="${boardsPage.first} ? 'disabled'"
+                   th:href="@{/boards(page=${boardsPage.number - 1}, size=${size}, keyword=${filter.keyword}, show=${filter.show != null ? filter.show.name() : ''}, del=${filter.del}, hasImage=${filter.hasImage}, sort=${filter.sort.parameterName})}">이전</a>
+                <span class="page-current"
+                      th:text="|${boardsPage.number + 1} / ${boardsPage.totalPages == 0 ? 1 : boardsPage.totalPages}|">1 / 1</span>
+                <a class="page-link"
+                   th:classappend="${boardsPage.last} ? 'disabled'"
+                   th:href="@{/boards(page=${boardsPage.number + 1}, size=${size}, keyword=${filter.keyword}, show=${filter.show != null ? filter.show.name() : ''}, del=${filter.del}, hasImage=${filter.hasImage}, sort=${filter.sort.parameterName})}">다음</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
