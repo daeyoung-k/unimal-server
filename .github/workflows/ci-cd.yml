@@ -195,10 +195,18 @@ jobs:
           mkdir -p notification/src/main/resources/firebase
           echo '${{ secrets.FIREBASE_ADMIN_SDK }}' > notification/src/main/resources/firebase/unimal-project-firebase-adminsdk.json
 
+      # `-x test` 를 뺐다 (2026-08-21).
+      #
+      # 각 모듈에 자동 생성된 contextLoads() 껍데기가 환경변수 미주입으로 죽어
+      # 모듈 test 태스크가 통째로 빨간불이었고, 그걸 덮으려고 테스트를 꺼둔
+      # 상태였다. 그 바람에 admin 15개·user 14개를 비롯한 실제 테스트 40여 개가
+      # 배포 경로에서 아무것도 지키지 못했다.
+      # 껍데기를 걷어내고 순수 단위 테스트에서 불필요한 @SpringBootTest 를 떼서
+      # 전 모듈 green 을 확인한 뒤 되살린다.
       - name: Build ${{ matrix.module }}
         if: steps.check.outputs.changed == 'true'
         run: |
-          ./gradlew :${{ matrix.module }}:build -x test --no-daemon
+          ./gradlew :${{ matrix.module }}:build --no-daemon
           ./gradlew :${{ matrix.module }}:bootJar --no-daemon
 
       - name: Upload build artifact

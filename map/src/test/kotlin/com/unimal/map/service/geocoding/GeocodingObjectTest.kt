@@ -9,19 +9,17 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.client.RestTemplate
-import kotlin.jvm.java
 
-@SpringBootTest
-@ActiveProfiles("local")
+/**
+ * 순수 단위 테스트 — 스프링 컨텍스트를 띄우지 않는다.
+ *
+ * 예전엔 `@SpringBootTest @ActiveProfiles("local")` 이 붙어 있었다. 정작
+ * 테스트는 [RestTemplate] 을 mockk 로 만들고 [GeocodingObject] 를 직접
+ * 생성하므로 컨텍스트가 전혀 필요 없는데, 어노테이션 때문에 map 모듈 전체
+ * 컨텍스트를 띄우려다 환경변수 미주입으로 죽고 14건이 통째로 실패했다.
+ * (그리고 그게 CI 에서 테스트를 꺼두는 이유가 됐다)
+ */
 class GeocodingObjectTest {
 
     private val geocodingJson = geocodingTestJson

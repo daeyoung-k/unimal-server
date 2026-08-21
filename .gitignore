@@ -52,3 +52,7 @@ docker/
 *local.yml
 CLAUDE.md
 tmp/
+
+# JVM 크래시 덤프. 빌드/테스트 중 JVM 이 죽으면 실행 디렉터리에 떨어진다.
+hs_err_pid*.log
+replay_pid*.log

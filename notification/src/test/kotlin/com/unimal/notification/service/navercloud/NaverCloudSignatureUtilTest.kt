@@ -2,13 +2,16 @@ package com.unimal.notification.service.navercloud
 
 import org.junit.jupiter.api.Test
 
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
-@SpringBootTest
-@ActiveProfiles("local")
+/**
+ * 순수 단위 테스트 — 스프링 컨텍스트를 띄우지 않는다.
+ *
+ * makeSignature 는 인자만 받아 서명 문자열을 만드는 함수라 컨텍스트가 필요
+ * 없는데, `@SpringBootTest` 탓에 notification 모듈 컨텍스트 로딩 실패에
+ * 휩쓸려 같이 죽고 있었다.
+ */
 class NaverCloudSignatureUtilTest {
 
     @Test
